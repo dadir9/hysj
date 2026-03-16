@@ -6,13 +6,7 @@
        Shell.FlyoutBehavior="Disabled"
        BackgroundColor="{StaticResource PrimaryBg}">
 
-    <!-- Language selection (shown on first run) -->
     <ShellContent Route="LanguagePage"
-                  ContentTemplate="{DataTemplate views:LanguageSelectionPage}"
-                  Shell.FlyoutItemIsVisible="False" />
-
-    <!-- Login -->
-    <ShellContent Route="LoginPage"
-                  Shell.FlyoutItemIsVisible="False" />
+                  ContentTemplate="{DataTemplate views:LanguageSelectionPage}" />
 
 </Shell>

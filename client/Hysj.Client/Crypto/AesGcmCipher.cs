@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+#pragma warning disable CA1416 // AesGcm supported on all MAUI targets at runtime
 
 namespace Hysj.Client.Crypto;
 
