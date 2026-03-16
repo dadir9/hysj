@@ -63,6 +63,62 @@ namespace Hysj.Api.Migrations
                     b.ToTable("Devices");
                 });
 
+            modelBuilder.Entity("Hysj.Api.Models.Group", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsAnonymous")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("MembersCanAdd")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.ToTable("Groups");
+                });
+
+            modelBuilder.Entity("Hysj.Api.Models.GroupMember", b =>
+                {
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Alias")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTimeOffset>("JoinedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("GroupId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("GroupId", "Alias")
+                        .IsUnique();
+
+                    b.ToTable("GroupMembers");
+                });
+
             modelBuilder.Entity("Hysj.Api.Models.LoginAttempt", b =>
                 {
                     b.Property<long>("Id")
@@ -136,6 +192,9 @@ namespace Hysj.Api.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<bool>("Has2FAEnabled")
+                        .HasColumnType("boolean");
+
                     b.Property<byte[]>("IdentityPublicKey")
                         .IsRequired()
                         .HasColumnType("bytea");
@@ -146,6 +205,11 @@ namespace Hysj.Api.Migrations
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.Property<byte[]>("Salt")
                         .IsRequired()
@@ -161,6 +225,9 @@ namespace Hysj.Api.Migrations
                         .HasColumnType("character varying(50)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PhoneNumber")
+                        .IsUnique();
 
                     b.HasIndex("Username")
                         .IsUnique();
@@ -179,6 +246,36 @@ namespace Hysj.Api.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Hysj.Api.Models.Group", b =>
+                {
+                    b.HasOne("Hysj.Api.Models.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CreatedBy");
+                });
+
+            modelBuilder.Entity("Hysj.Api.Models.GroupMember", b =>
+                {
+                    b.HasOne("Hysj.Api.Models.Group", "Group")
+                        .WithMany("Members")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Hysj.Api.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Hysj.Api.Models.PreKey", b =>
                 {
                     b.HasOne("Hysj.Api.Models.Device", "Device")
@@ -193,6 +290,11 @@ namespace Hysj.Api.Migrations
             modelBuilder.Entity("Hysj.Api.Models.Device", b =>
                 {
                     b.Navigation("PreKeys");
+                });
+
+            modelBuilder.Entity("Hysj.Api.Models.Group", b =>
+                {
+                    b.Navigation("Members");
                 });
 
             modelBuilder.Entity("Hysj.Api.Models.User", b =>

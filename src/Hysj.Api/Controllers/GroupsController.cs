@@ -197,6 +197,26 @@ public class GroupsController(HysjDbContext db) : ControllerBase
         return rows > 0 ? NoContent() : NotFound();
     }
 
+    [HttpPost("{groupId:guid}/leave")]
+    public async Task<IActionResult> LeaveGroup(Guid groupId)
+    {
+        var userId = GetUserId();
+        var group = await db.Groups.FindAsync(groupId);
+        if (group is null) return NotFound();
+
+        // Admin cannot leave without transferring admin first
+        if (group.CreatedByUserId == userId)
+            return BadRequest(new { error = "Transfer admin before leaving the group." });
+
+        var member = await db.GroupMembers
+            .FirstOrDefaultAsync(gm => gm.GroupId == groupId && gm.UserId == userId);
+        if (member is null) return NotFound();
+
+        db.GroupMembers.Remove(member);
+        await db.SaveChangesAsync();
+        return NoContent();
+    }
+
     [HttpDelete("{groupId:guid}")]
     public async Task<IActionResult> DeleteGroup(Guid groupId)
     {

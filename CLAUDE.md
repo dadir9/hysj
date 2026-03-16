@@ -1,8 +1,8 @@
-# CLAUDE.md — Hysj Backend
+# CLAUDE.md — Hysj
 
-> Null-lagring meldingsserver. Ingenting blir lagret. Alt slettes etter levering. Remote wipe fra hvilken som helst enhet.
-> 
-> **IDE: Visual Studio 2022** | **Stack: C# 12 / .NET 8** | **Arkitektur: ASP.NET Core Web API**
+> Null-lagring meldingsapp. Ingenting blir lagret. Alt slettes etter levering. Remote wipe fra hvilken som helst enhet.
+>
+> **Backend: C# 12 / .NET 8 / ASP.NET Core Web API** | **Frontend: React Native / Expo ~55 / TypeScript**
 
 ---
 
@@ -14,130 +14,224 @@ Meldinger lever KUN på avsender og mottakerens enheter — og selv der kan de f
 
 ---
 
-## Visual Studio 2022 — Prosjektoppsett
-
-### Solution-struktur (.sln)
-
-Opprett via VS2022: `File → New → Project → ASP.NET Core Web API`
+## Prosjektstruktur
 
 ```
-Hysj.sln
+Hysj/
 │
 ├── src/
-│   ├── Hysj.Api/                         # ASP.NET Core Web API
-│   │   ├── Hysj.Api.csproj
-│   │   ├── Program.cs
-│   │   ├── appsettings.json
-│   │   ├── appsettings.Development.json
-│   │   │
-│   │   ├── Properties/
-│   │   │   └── launchSettings.json
-│   │   │
+│   ├── Hysj.Api/                         # ASP.NET Core Web API (backend)
 │   │   ├── Controllers/
-│   │   │   ├── AuthController.cs          # [ApiController] Registrering, login, 2FA
-│   │   │   ├── KeysController.cs          # [ApiController] Offentlige nøkler, pre-keys
-│   │   │   ├── DevicesController.cs       # [ApiController] Enhetshåndtering
-│   │   │   └── WipeController.cs          # [ApiController] Remote wipe-kommandoer
+│   │   │   ├── AuthController.cs          # Registrering, login, 2FA
+│   │   │   ├── KeysController.cs          # Offentlige nokler, pre-keys
+│   │   │   ├── DevicesController.cs       # Enhetshåndtering
+│   │   │   ├── GroupsController.cs        # Gruppechat
+│   │   │   ├── WipeController.cs          # Remote wipe-kommandoer
+│   │   │   ├── RelayController.cs         # Onion relay-noder
+│   │   │   └── UsersController.cs         # Brukeroppslag
 │   │   │
 │   │   ├── Hubs/
-│   │   │   └── ChatHub.cs                # SignalR Hub: meldinger + wipe
+│   │   │   └── ChatHub.cs                 # SignalR Hub: meldinger + wipe
 │   │   │
 │   │   ├── Services/
-│   │   │   ├── IMessageQueueService.cs    # Interface
-│   │   │   ├── MessageQueueService.cs     # Redis midlertidig kø
-│   │   │   ├── IWipeService.cs
-│   │   │   ├── WipeService.cs             # Remote wipe-distribusjon
-│   │   │   ├── IAuthService.cs
 │   │   │   ├── AuthService.cs             # Autentisering + Argon2id
-│   │   │   ├── IKeyService.cs
-│   │   │   ├── KeyService.cs              # Nøkkelbunt-håndtering
-│   │   │   ├── IDeviceService.cs
-│   │   │   └── DeviceService.cs           # Enhetshåndtering
+│   │   │   ├── MessageQueueService.cs     # Redis midlertidig ko
+│   │   │   └── WipeService.cs             # Remote wipe-distribusjon
 │   │   │
 │   │   ├── Models/
-│   │   │   ├── User.cs
-│   │   │   ├── Device.cs
-│   │   │   ├── PreKeyBundle.cs
-│   │   │   └── LoginAttempt.cs
+│   │   │   ├── User.cs, Device.cs, PreKey.cs, LoginAttempt.cs
+│   │   │   ├── Group.cs, GroupMember.cs
 │   │   │
-│   │   ├── DTOs/
-│   │   │   ├── SendMessageDto.cs
-│   │   │   ├── DeliveryAckDto.cs
-│   │   │   ├── WipeCommandDto.cs
-│   │   │   ├── WipeAckDto.cs
-│   │   │   ├── RegisterRequestDto.cs
-│   │   │   ├── RegisterResponseDto.cs
-│   │   │   ├── LoginRequestDto.cs
-│   │   │   ├── LoginResponseDto.cs
-│   │   │   └── DeviceRegistrationDto.cs
-│   │   │
-│   │   ├── Data/
-│   │   │   └── HysjDbContext.cs           # EF Core DbContext
-│   │   │
-│   │   ├── Middleware/
-│   │   │   ├── RateLimitMiddleware.cs
-│   │   │   └── NoLogMiddleware.cs
-│   │   │
-│   │   ├── BackgroundServices/
-│   │   │   ├── MessageExpiryService.cs    # IHostedService: fei Redis
-│   │   │   └── WipePendingService.cs      # IHostedService: retry wipe
-│   │   │
-│   │   └── Extensions/
-│   │       ├── ServiceCollectionExtensions.cs  # DI-oppsett
-│   │       └── WebApplicationExtensions.cs     # Middleware-pipeline
+│   │   ├── DTOs/                          # Request/Response records
+│   │   ├── Data/HysjDbContext.cs          # EF Core DbContext
+│   │   ├── Middleware/                    # RateLimit, NoLog
+│   │   ├── BackgroundServices/            # MessageExpiry, WipePending
+│   │   └── Migrations/
 │   │
 │   └── Hysj.Shared/                      # Class Library (delte modeller)
-│       ├── Hysj.Shared.csproj
-│       └── Constants/
-│           └── HysjConstants.cs
+│
+├── hysj-app/                              # React Native / Expo (frontend)
+│   ├── App.tsx                            # Entry point
+│   ├── app.json                           # Expo-konfigurasjon
+│   ├── package.json
+│   ├── src/
+│   │   ├── navigation/
+│   │   │   └── AppNavigator.tsx           # Stack navigator (8 skjermer)
+│   │   │
+│   │   ├── screens/
+│   │   │   ├── LoginScreen.tsx
+│   │   │   ├── RegisterScreen.tsx
+│   │   │   ├── ConversationListScreen.tsx
+│   │   │   ├── ChatScreen.tsx
+│   │   │   ├── NewChatScreen.tsx
+│   │   │   ├── SettingsScreen.tsx
+│   │   │   ├── SecurityScreen.tsx
+│   │   │   └── CreateGroupScreen.tsx
+│   │   │
+│   │   ├── services/
+│   │   │   ├── api.ts                     # Axios REST-klient (auth, keys, devices, groups, wipe, relay, users)
+│   │   │   ├── chatHub.ts                 # SignalR-tilkobling + Double Ratchet kryptering
+│   │   │   ├── auth.ts                    # Session-håndtering (AsyncStorage)
+│   │   │   ├── config.ts                  # BASE_URL / HUB_URL
+│   │   │   ├── keyManager.ts              # Nokkelgenerering og -lagring
+│   │   │   ├── sessionManager.ts          # Ratchet session-opprett
+│   │   │   ├── localStore.ts              # Lokal meldingslagring
+│   │   │   ├── wipeService.ts             # Lokal wipe-handtering
+│   │   │   ├── notifications.ts           # Push-varslinger (expo-notifications)
+│   │   │   └── locale.ts                  # Lokalisering
+│   │   │
+│   │   ├── crypto/                        # Ende-til-ende kryptografi
+│   │   │   ├── index.ts                   # Re-eksporter alt
+│   │   │   ├── keys.ts                    # X25519 nokkelpar (tweetnacl)
+│   │   │   ├── cipher.ts                  # XChaCha20-Poly1305 (@stablelib)
+│   │   │   ├── kdf.ts                     # HKDF-SHA256, HMAC-SHA256
+│   │   │   ├── encoding.ts                # Base64, UTF-8
+│   │   │   ├── x3dh/x3dh.ts              # Extended Triple Diffie-Hellman
+│   │   │   ├── ratchet/doubleRatchet.ts   # Double Ratchet Protocol
+│   │   │   ├── ratchet/serialize.ts       # Ratchet state serialisering
+│   │   │   ├── sealed/sealedSender.ts     # Anonym avsender
+│   │   │   ├── onion/onionLayer.ts        # Onion-krypteringslag
+│   │   │   ├── onion/onionRouter.ts       # 3-hop relay-ruting
+│   │   │   ├── postquantum/kyberKem.ts    # ML-KEM-768 (FIPS 203)
+│   │   │   └── postquantum/hybridKeyExchange.ts  # Hybrid X25519 + ML-KEM
+│   │   │
+│   │   ├── constants/
+│   │   │   └── theme.ts                   # Farger, spacing, radius, fonts
+│   │   │
+│   │   ├── types/
+│   │   │   └── index.ts                   # TypeScript-typer + RootStackParamList
+│   │   │
+│   │   ├── components/                    # Gjenbrukbare UI-komponenter
+│   │   └── hooks/
+│   │
+│   └── assets/                            # Ikoner, splash
 │
 ├── tests/
-│   └── Hysj.Api.Tests/                   # xUnit Test Project
-│       ├── Hysj.Api.Tests.csproj
-│       ├── MessageQueueTests.cs
-│       ├── WipeServiceTests.cs
-│       ├── ExpiryTests.cs
-│       └── RateLimitTests.cs
+│   ├── Hysj.Api.Tests/                   # xUnit backend-tester
+│   └── Hysj.Crypto.Tests/               # Kryptografi-tester (28 tester)
 │
-├── docker-compose.yml
-├── docker-compose.dcproj                  # VS2022 Docker Compose project
-├── .editorconfig
+├── Hysj.sln
 ├── CLAUDE.md
-└── README.md
-```
-
-### Opprette prosjektene i VS2022
-
-```
-1. File → New → Project → "ASP.NET Core Web API"
-   - Navn: Hysj.Api
-   - Solution: Hysj
-   - .NET 8.0
-   - ✅ Use controllers
-   - ✅ Enable OpenAPI support
-   - ✅ Do not use top-level statements (valgfritt)
-
-2. Høyreklikk Solution → Add → New Project → "Class Library"
-   - Navn: Hysj.Shared
-
-3. Høyreklikk Solution → Add → New Project → "xUnit Test Project"
-   - Navn: Hysj.Api.Tests
-
-4. Høyreklikk Solution → Add → Docker Compose Support
-   - Legger til docker-compose.dcproj
-
-5. Referanser:
-   - Hysj.Api → Add Reference → Hysj.Shared
-   - Hysj.Api.Tests → Add Reference → Hysj.Api
+└── .editorconfig
 ```
 
 ---
 
-## NuGet-pakker (installer via VS2022 Package Manager)
+## Kommandoer
 
-### Hysj.Api
-Høyreklikk Hysj.Api → `Manage NuGet Packages` → installer:
+### Backend (ASP.NET Core)
+```bash
+# Kjor backend-server
+dotnet run --project src/Hysj.Api
 
+# Build
+dotnet build
+
+# Kjor tester
+dotnet test
+
+# EF Core migrasjoner
+dotnet ef migrations add <Navn> --project src/Hysj.Api
+dotnet ef database update --project src/Hysj.Api
+```
+
+### Frontend (React Native / Expo)
+```bash
+cd hysj-app
+
+npm start              # Expo dev server
+npm run android        # Android emulator
+npm run ios            # iOS simulator
+npm run web            # Nettleser
+```
+
+---
+
+## Teknisk Stack
+
+| Komponent | Teknologi |
+|-----------|-----------|
+| **Backend** | |
+| API | ASP.NET Core 8 Web API (C# 12) |
+| Sanntid | SignalR (WebSocket) |
+| Midlertidig ko | Redis (in-memory, ingen disk) |
+| Database | PostgreSQL via EF Core 8 |
+| Autentisering | JWT Bearer + TOTP 2FA |
+| Passord-hashing | Argon2id |
+| Rate-limiting | AspNetCoreRateLimit |
+| Testing | xUnit + FluentAssertions + Testcontainers |
+| **Frontend** | |
+| Framework | React Native 0.83 / Expo ~55 |
+| Sprak | TypeScript ~5.9 (strict) |
+| Navigasjon | React Navigation (Stack) |
+| HTTP | Axios |
+| Sanntid | @microsoft/signalr |
+| Lokal lagring | AsyncStorage |
+| Krypto-primitiver | tweetnacl, @stablelib/x25519, @stablelib/xchacha20poly1305, @stablelib/hkdf |
+| Post-kvantum | mlkem (ML-KEM-768 / FIPS 203) |
+| Push-varslinger | expo-notifications |
+
+---
+
+## Frontend — React Native / Expo
+
+### Navigasjonsstruktur (Stack Navigator)
+
+```
+Login → Register
+  ↓
+ConversationList → Chat
+                 → NewChat
+                 → CreateGroup
+                 → Settings → Security
+```
+
+### API-tilkobling
+
+Konfigurert i `hysj-app/src/services/config.ts`:
+```
+Android emulator: http://10.0.2.2:5076
+iOS / Web:        http://localhost:5076
+```
+
+Alle API-kall gar gjennom Axios med automatisk JWT-token fra AsyncStorage.
+
+### Kryptografi-lag (hysj-app/src/crypto/)
+
+| Protokoll | Bibliotek | Beskrivelse |
+|-----------|-----------|-------------|
+| X25519 | tweetnacl | Diffie-Hellman nokkelutveksling |
+| XChaCha20-Poly1305 | @stablelib | Autentisert kryptering (24-byte nonce) |
+| HKDF-SHA256 | @stablelib | Nokkelavledning |
+| X3DH | Egen impl. | Signal-kompatibel handshake |
+| Double Ratchet | Egen impl. | Forward secrecy per melding |
+| Sealed Sender | Egen impl. | Server-blind avsenderidentitet |
+| Onion Routing | Egen impl. | 3-hop relay |
+| ML-KEM-768 | mlkem | Post-kvantum hybrid nokkelutveksling |
+
+### Meldingsflyt (klient)
+
+1. **Registrering**: Generer X25519 identitetsnokkler + SignedPreKey + OneTimePreKeys + ML-KEM nokkelpar
+2. **Ny samtale**: X3DH handshake med mottakers PreKey-bunt → initialiser Double Ratchet
+3. **Send melding**: `ratchetEncrypt()` → base64 wire-format → SignalR `SendMessage`
+4. **Motta melding**: SignalR `ReceiveMessage` → `ratchetDecrypt()` → vis i chat
+5. **Ratchet state**: Persisteres i AsyncStorage per samtale
+
+### TypeScript-typer (hysj-app/src/types/)
+
+```typescript
+User, Conversation, Message, AuthSession, RootStackParamList
+```
+
+### Tema (hysj-app/src/constants/theme.ts)
+
+Mork tema med lilla aksent (#7C3AED). Eksporterer `colors`, `spacing`, `radius`, `font`.
+
+---
+
+## Backend — ASP.NET Core
+
+### NuGet-pakker (Hysj.Api)
 ```
 Microsoft.AspNetCore.SignalR.Core
 Microsoft.AspNetCore.Authentication.JwtBearer          8.*
@@ -150,153 +244,22 @@ AspNetCoreRateLimit                                    5.*
 Otp.NET                                                1.*
 ```
 
-### Hysj.Api.Tests
+### Kodekonvensjoner (C#)
+- C# 12 med `file-scoped namespaces`
+- `nullable enable` i alle prosjekter
+- `ImplicitUsings enable`
+- Interface for alle services (`IMessageQueueService` → `MessageQueueService`)
+- `record` for DTOs, `class` for EF Core-modeller
+- `DateTimeOffset` (ikke `DateTime`) for alle tidsstempler
+
+### Navngivning
 ```
-Microsoft.NET.Test.Sdk
-xunit
-xunit.runner.visualstudio
-Moq
-FluentAssertions
-Microsoft.AspNetCore.Mvc.Testing                       8.*
-Testcontainers                                         # Docker-basert integrasjonstest
-Testcontainers.Redis
-Testcontainers.PostgreSql
+PascalCase:    Klasser, metoder, properties, enums
+camelCase:     Lokale variabler, parametere
+_camelCase:    Private felt
+I-prefix:      Interfaces (IMessageQueueService)
+Async-suffix:  Async metoder (SendMessageAsync)
 ```
-
----
-
-## Hysj.Api.csproj
-
-```xml
-<Project Sdk="Microsoft.NET.Sdk.Web">
-
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>Hysj.Api</RootNamespace>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.*" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.*" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.*">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.*" />
-    <PackageReference Include="StackExchange.Redis" Version="2.*" />
-    <PackageReference Include="Konscious.Security.Cryptography.Argon2" Version="1.*" />
-    <PackageReference Include="AspNetCoreRateLimit" Version="5.*" />
-    <PackageReference Include="Otp.NET" Version="1.*" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Hysj.Shared\Hysj.Shared.csproj" />
-  </ItemGroup>
-
-</Project>
-```
-
----
-
-## Konfigurasjonsfiler
-
-### appsettings.json
-```json
-{
-  "ConnectionStrings": {
-    "Postgres": "Host=localhost;Port=5432;Database=hysj;Username=hysj;Password=CHANGE_ME",
-    "Redis": "localhost:6379"
-  },
-  "Jwt": {
-    "Secret": "CHANGE_ME_MIN_32_CHARS_LONG_SECRET_KEY_HERE",
-    "Issuer": "Hysj",
-    "Audience": "HysjApp",
-    "ExpiryMinutes": 60
-  },
-  "MessagePolicy": {
-    "TtlSeconds": 259200,
-    "MaxPerMinute": 60
-  },
-  "WipePolicy": {
-    "TtlSeconds": 2592000,
-    "MaxPerHour": 3,
-    "Require2FA": true
-  },
-  "RateLimit": {
-    "LoginAttemptsPerWindow": 5,
-    "WindowMinutes": 15,
-    "LockoutMinutes": 30
-  },
-  "Logging": {
-    "LogLevel": {
-      "Default": "Warning",
-      "Hysj.Api.Hubs": "Warning",
-      "Hysj.Api.Services": "Warning"
-    }
-  }
-}
-```
-
-### appsettings.Development.json
-```json
-{
-  "ConnectionStrings": {
-    "Postgres": "Host=localhost;Port=5432;Database=hysj_dev;Username=hysj;Password=dev_password",
-    "Redis": "localhost:6379"
-  },
-  "Jwt": {
-    "Secret": "DEV_ONLY_NOT_FOR_PRODUCTION_32_CHARS!!"
-  },
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information"
-    }
-  }
-}
-```
-
-### Properties/launchSettings.json
-```json
-{
-  "profiles": {
-    "Hysj.Api": {
-      "commandName": "Project",
-      "dotnetRunMessages": true,
-      "launchBrowser": true,
-      "launchUrl": "swagger",
-      "applicationUrl": "https://localhost:7100;http://localhost:5100",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
-    "Docker": {
-      "commandName": "Docker",
-      "launchBrowser": true,
-      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/swagger"
-    }
-  }
-}
-```
-
----
-
-## Teknisk Stack
-
-| Komponent | Teknologi |
-|-----------|-----------|
-| IDE | Visual Studio 2022 (17.x) |
-| Backend API | ASP.NET Core 8 Web API |
-| Sanntid | SignalR (WebSocket) |
-| Midlertidig kø | Redis (in-memory, ingen disk) |
-| Database | PostgreSQL via EF Core 8 |
-| Autentisering | JWT Bearer + TOTP 2FA |
-| Passord-hashing | Argon2id |
-| Rate-limiting | AspNetCoreRateLimit |
-| Testing | xUnit + FluentAssertions + Testcontainers |
-| Debug | VS2022 debugger med Hot Reload |
-| Container | Docker Compose (VS2022 integrert) |
 
 ---
 
@@ -304,30 +267,26 @@ Testcontainers.PostgreSql
 
 ```
 AVSENDER                    SERVER                     MOTTAKER
-   │                          │                           │
-   ├─ Krypterer melding       │                           │
-   │  (AES-256-GCM)           │                           │
-   │                          │                           │
-   ├──── Sender kryptert ────>│                           │
-   │     blob via SignalR     │                           │
-   │                          │                           │
-   │                    ┌─────┴─────┐                     │
-   │                    │ Mottaker  │                     │
-   │                    │ online?   │                     │
-   │                    └─────┬─────┘                     │
-   │                     JA   │   NEI                     │
-   │                     │    │    │                      │
-   │                     │    │    ├─ Legg i Redis        │
-   │                     │    │    │  (maks 72 timer,     │
-   │                     │    │    │   ingen disk)        │
-   │                     │    │    │                      │
-   │                     │    │    ├─ Mottaker kobler til │
-   │                     ▼    │    ▼                      │
-   │              Lever til mottaker ────────────────────>│
-   │                          │                           │
-   │                    SLETT UMIDDELBART                  │
-   │                    fra server-minne                  │
-   │                          │                           │
+   |                          |                           |
+   |  Krypterer melding       |                           |
+   |  (XChaCha20-Poly1305     |                           |
+   |   via Double Ratchet)    |                           |
+   |                          |                           |
+   |---- Sender kryptert ---->|                           |
+   |     blob via SignalR     |                           |
+   |                          |                           |
+   |                    Mottaker online?                   |
+   |                     JA   |   NEI                     |
+   |                     |    |    |                      |
+   |                     |    |    -- Legg i Redis        |
+   |                     |    |       (maks 72 timer,     |
+   |                     |    |        ingen disk)        |
+   |                     |    |                           |
+   |                     v    v                           |
+   |              Lever til mottaker -------------------->|
+   |                          |                           |
+   |                    SLETT UMIDDELBART                  |
+   |                    fra server-minne                  |
 ```
 
 ---
@@ -339,161 +298,44 @@ AVSENDER                    SERVER                     MOTTAKER
 - Mottaker sender `DeliveryAck` → serveren verifiserer sletting
 - Bakgrunnsjobb feier Redis hvert 5. minutt
 
-### 2. TTL-utløp for uleverte meldinger (server)
+### 2. TTL-utlop for uleverte meldinger (server)
 - Mottaker offline → melding i Redis med TTL 72 timer
 - Etter 72 timer: Redis sletter automatisk
-- Avsender får varsel: "Meldingen utløp"
+- Avsender far varsel: "Meldingen utlop"
 
 ### 3. Remote Wipe (klient-til-klient via server)
 
-```
-ENHET A (telefon)              SERVER                ENHET B (PC)
-   │                             │                       │
-   ├── WipeCommand ────────────>│                       │
-   │   {                        │                       │
-   │     Type: "All" |          │                       │
-   │          "Conversation" |  │                       │
-   │          "Device",         │                       │
-   │     ConversationId?,       │                       │
-   │     TargetDeviceId?,       │                       │
-   │     Timestamp              │                       │
-   │   }                        │                       │
-   │                            ├── WipeCommand ───────>│
-   │                            │                       │
-   │                            │                  Slett lokalt:
-   │                            │                  - SQLite meldinger
-   │                            │                  - Krypterte filer
-   │                            │                  - Cached media
-   │                            │                       │
-   │                            │<── WipeAck ───────────┤
-   │<── WipeConfirmed ─────────│                       │
-   │                            │                       │
-   │                            │  SLETT WipeCommand    │
-   │                            │  fra Redis            │
-```
-
-### Wipe-typer:
-
 | Type | Hva slettes | Brukstilfelle |
 |------|------------|---------------|
-| `WipeType.Conversation` | Én samtale på alle enheter | Slett chat med én person |
-| `WipeType.Device` | Alt på én spesifikk enhet | Mistet telefon |
-| `WipeType.All` | Alt på ALLE enheter | Nødssituasjon |
+| `WipeType.Conversation` | En samtale pa alle enheter | Slett chat med en person |
+| `WipeType.Device` | Alt pa en spesifikk enhet | Mistet telefon |
+| `WipeType.All` | Alt pa ALLE enheter | Nodssituasjon |
 
 ---
 
 ## Database-modell (PostgreSQL + EF Core)
 
-**VIKTIG: Databasen lagrer ALDRI meldinger. Kun brukere, enheter og nøkler.**
+**VIKTIG: Databasen lagrer ALDRI meldinger. Kun brukere, enheter og nokler.**
 
-```
-┌─────────────────────────────┐
-│ Users                       │
-├─────────────────────────────┤
-│ Id (Guid, PK)               │
-│ Username (string, unique)   │
-│ PasswordHash (string)       │ ← Argon2id
-│ Salt (byte[])               │
-│ IdentityPublicKey (byte[])  │ ← Langtids ECC-nøkkel
-│ TotpSecret (byte[])         │ ← Kryptert
-│ CreatedAt (DateTimeOffset)  │
-│ LastSeenAt (DateTimeOffset)  │
-└─────────────────────────────┘
-          │ 1:N
-          ▼
-┌─────────────────────────────┐
-│ Devices                     │
-├─────────────────────────────┤
-│ Id (Guid, PK)               │
-│ UserId (Guid, FK → Users)   │
-│ DeviceName (string)         │
-│ PushToken (string?)         │
-│ SignedPreKey (byte[])       │
-│ SignedPreKeySig (byte[])    │
-│ IsOnline (bool)             │
-│ LastActiveAt (DateTimeOffset)│
-│ RegisteredAt (DateTimeOffset)│
-└─────────────────────────────┘
-          │ 1:N
-          ▼
-┌─────────────────────────────┐
-│ PreKeys                     │
-├─────────────────────────────┤
-│ Id (int, PK, identity)      │
-│ DeviceId (Guid, FK)         │
-│ PublicKey (byte[])          │
-│ IsUsed (bool, default false)│
-│ CreatedAt (DateTimeOffset)  │
-└─────────────────────────────┘
+Tabeller: `Users`, `Devices`, `PreKeys`, `LoginAttempts`, `Groups`, `GroupMembers`
 
-┌─────────────────────────────┐
-│ LoginAttempts               │
-├─────────────────────────────┤
-│ Id (long, PK, identity)     │
-│ IpAddress (string)          │
-│ Username (string)           │
-│ Success (bool)              │
-│ Timestamp (DateTimeOffset)  │
-│ UserAgent (string?)         │
-└─────────────────────────────┘
-
-⛔ INGEN Messages-tabell
-⛔ INGEN Conversations-tabell
-⛔ INGEN Attachments-tabell
-```
-
-### EF Core Migrations (Package Manager Console i VS2022)
-
-```powershell
-# Tools → NuGet Package Manager → Package Manager Console
-# Default project: src\Hysj.Api
-
-Add-Migration InitialCreate
-Update-Database
-
-# Eller via terminal:
-dotnet ef migrations add InitialCreate --project src/Hysj.Api
-dotnet ef database update --project src/Hysj.Api
-```
+Ingen `Messages`-tabell. Ingen `Conversations`-tabell. Ingen `Attachments`-tabell.
 
 ---
 
 ## Redis-konfigurasjon (Null Disk)
 
 ```
-# redis.conf — INGEN disk-lagring
 save ""
 appendonly no
 maxmemory 512mb
 maxmemory-policy allkeys-lru
 ```
 
-### Redis nøkkelstruktur:
+Nokkelstruktur:
 ```
 msg:{recipientDeviceId}:{messageId}     → kryptert blob    TTL: 72 timer
 wipe:{targetDeviceId}:{wipeId}          → wipe-kommando    TTL: 30 dager
-```
-
----
-
-## Meldingsflyt
-
-### Online mottaker (direkte):
-```
-1. Avsender → ChatHub.SendMessage(recipientId, encryptedBlob)
-2. Server: mottaker tilkoblet? JA
-3. Server → Mottaker via SignalR
-4. Mottaker → ChatHub.AcknowledgeDelivery(messageId)
-5. Ingenting å slette (aldri lagret)
-```
-
-### Offline mottaker (Redis-kø):
-```
-1. Avsender → ChatHub.SendMessage(recipientId, encryptedBlob)
-2. Server: mottaker tilkoblet? NEI
-3. Redis: SET msg:{deviceId}:{msgId} blob EX 259200
-4. Avsender får: "queued"
-5. Mottaker kobler til → hent alle ventende → lever → DEL fra Redis
 ```
 
 ---
@@ -502,70 +344,34 @@ wipe:{targetDeviceId}:{wipeId}          → wipe-kommando    TTL: 30 dager
 
 ### Rate-limiting:
 ```
-Login:           5 forsøk / 15 min / IP → lås 30 min
+Login:           5 forsok / 15 min / IP → las 30 min
 Meldinger:       60 / min / bruker
 Wipe:            3 / time / bruker (+ krever 2FA)
 PreKey-henting:  30 / min / bruker
 Registrering:    3 / time / IP
 ```
 
-### Hva serveren ALDRI gjør:
-```
-⛔ Lagrer meldingsinnhold
-⛔ Lagrer meldingsmetadata (hvem → hvem)
-⛔ Logger meldingsinnhold
-⛔ Logger IP lenger enn 24 timer
-⛔ Beholder data etter levering
-⛔ Tar backup av Redis
-⛔ Har tilgang til krypteringsnøkler
-```
+### Hva serveren ALDRI gjor:
+- Lagrer meldingsinnhold
+- Lagrer meldingsmetadata (hvem → hvem)
+- Logger meldingsinnhold
+- Logger IP lenger enn 24 timer
+- Beholder data etter levering
+- Tar backup av Redis
+- Har tilgang til krypteringsnokkler
 
 ---
 
-## VS2022-spesifikke konvensjoner
+## Teststrategi
 
-### Kodekonvensjoner
-- C# 12 med `file-scoped namespaces`
-- `nullable enable` i alle prosjekter
-- `ImplicitUsings enable`
-- Interface for alle services (`IMessageQueueService` → `MessageQueueService`)
-- Dependency Injection via `IServiceCollection` extensions
-- `record` for DTOs, `class` for EF Core-modeller
-- Bruk `DateTimeOffset` (ikke `DateTime`) for alle tidsstempler
+### Backend (xUnit — `dotnet test`)
+- MessageQueueTests: Meldinger i Redis-ko
+- WipeServiceTests: Remote wipe-distribusjon
+- ExpiryTests: Uleverte meldinger utloper
+- RateLimitTests: Brute force-beskyttelse
 
-### Navngivning (C# standard)
-```
-PascalCase:  Klasser, metoder, properties, enums
-camelCase:   Lokale variabler, parametere
-_camelCase:  Private felt
-I-prefix:    Interfaces (IMessageQueueService)
-Async-suffix: Async metoder (SendMessageAsync)
-```
-
-### VS2022 Tips
-```
-- Ctrl+Shift+B        → Build Solution
-- F5                   → Start med debugger (sett breakpoints i ChatHub)
-- Ctrl+F5              → Start uten debugger
-- Ctrl+Shift+T         → Test Explorer (kjør xUnit-tester)
-- Alt+Enter            → Quick Actions (generer interface, etc.)
-- Tools → NuGet PMC    → Package Manager Console for EF migrations
-- Docker Compose        → Høyreklikk docker-compose → "Start"
-```
-
-### .editorconfig (legg i solution root)
-```ini
-root = true
-
-[*.cs]
-indent_style = space
-indent_size = 4
-charset = utf-8
-end_of_line = crlf
-dotnet_sort_system_directives_first = true
-csharp_style_namespace_declarations = file_scoped:suggestion
-csharp_style_var_for_built_in_types = true:suggestion
-```
+### Kryptografi (xUnit — 28 tester)
+- AesGcmTests, DoubleRatchetTests, OnionRoutingTests, SealedSenderTests, WipeTests
 
 ---
 
@@ -578,8 +384,7 @@ services:
       context: .
       dockerfile: src/Hysj.Api/Dockerfile
     ports:
-      - "5100:8080"
-      - "7100:8081"
+      - "5076:8080"
     depends_on:
       redis:
         condition: service_started
@@ -596,7 +401,6 @@ services:
     command: redis-server --save "" --appendonly no --maxmemory 512mb --maxmemory-policy allkeys-lru
     ports:
       - "6379:6379"
-    # INGEN volumes — alt forsvinner ved restart
 
   postgres:
     image: postgres:16-alpine
@@ -616,53 +420,4 @@ services:
 
 volumes:
   pgdata:
-```
-
----
-
-## Prioritert utviklingsrekkefølge
-
-```
- 1. VS2022 Solution       → Opprett Hysj.sln med alle prosjekter
- 2. NuGet-pakker           → Installer alle avhengigheter
- 3. Models + DbContext      → User, Device, PreKey, LoginAttempt + EF Core
- 4. EF Migrations           → Add-Migration InitialCreate → Update-Database
- 5. DTOs                    → Request/Response records for alle endepunkter
- 6. AuthService             → Register, Login, JWT, Argon2id, TOTP
- 7. AuthController          → POST /api/auth/register, /api/auth/login
- 8. RateLimitMiddleware     → Brute force-beskyttelse
- 9. MessageQueueService     → Redis SET med TTL, GET+DEL
-10. ChatHub                 → SignalR: SendMessage, AcknowledgeDelivery
-11. MessageExpiryService    → IHostedService: fei Redis
-12. WipeService             → Remote wipe-distribusjon
-13. WipeController          → POST /api/wipe (krever 2FA)
-14. DevicesController       → CRUD for enheter
-15. KeysController          → PreKey-bunter
-16. Tester                  → Verifiser at INGENTING lagres
-```
-
----
-
-## Teststrategi (xUnit + Test Explorer)
-
-Kjør via VS2022: `Test → Test Explorer → Run All`
-
-```
-TEST: "Melding slettes etter levering"
-  → Send melding → Mottaker ACK → Redis nøkkel finnes IKKE
-
-TEST: "Uleverte meldinger utløper"
-  → Send til offline bruker → Vent TTL → Redis nøkkel finnes IKKE
-
-TEST: "Remote wipe leveres til alle enheter"
-  → 3 enheter → wipe_all → alle mottar WipeCommand
-
-TEST: "Remote wipe krever 2FA"
-  → POST /api/wipe uten TOTP → 401 Unauthorized
-
-TEST: "Redis har ingen disk-data"
-  → Send 100 meldinger → Restart Redis → Redis er tomt
-
-TEST: "Ingen meldingstabell i PostgreSQL"
-  → Sjekk schema → Ingen Messages/Conversations-tabell eksisterer
 ```

@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Hysj.Api.Data;
 using Hysj.Api.DTOs;
 using Hysj.Api.Models;
+using Hysj.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -36,6 +37,19 @@ public class DevicesController(HysjDbContext db) : ControllerBase
     public async Task<IActionResult> RegisterDevice([FromBody] DeviceRegistrationDto request)
     {
         var userId = GetUserId();
+
+        // Validate signed pre-key signature against user's identity key
+        var user = await db.Users.FindAsync(userId);
+        if (user is null) return NotFound();
+
+        try
+        {
+            AuthService.ValidateSignedPreKey(user.IdentityPublicKey, request.SignedPreKey, request.SignedPreKeySig);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
 
         var device = new Device
         {

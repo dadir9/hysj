@@ -39,7 +39,7 @@ public class ExpiryTests
               .ReturnsAsync(true);
 
         var service = new MessageQueueService(redisMock.Object, CreateConfig());
-        var act = () => service.EnqueueAsync(Guid.NewGuid(), "msg1", [1, 2, 3], TimeSpan.FromHours(72));
+        var act = () => service.EnqueueAsync(Guid.NewGuid(), "msg1", "encrypted_blob_data", TimeSpan.FromHours(72));
         await act.Should().NotThrowAsync();
     }
 }

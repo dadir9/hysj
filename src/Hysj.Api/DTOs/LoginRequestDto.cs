@@ -1,7 +1,7 @@
 namespace Hysj.Api.DTOs;
 
 public record LoginRequestDto(
-    string Username,
+    string PhoneNumber,
     string Password,
-    string TotpCode
+    string? TotpCode
 );

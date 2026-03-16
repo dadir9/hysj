@@ -16,6 +16,7 @@ public class KeysController(HysjDbContext db) : ControllerBase
     public async Task<IActionResult> GetPreKeyBundle(Guid deviceId)
     {
         var device = await db.Devices
+            .Include(d => d.User)
             .Include(d => d.PreKeys.Where(k => !k.IsUsed))
             .FirstOrDefaultAsync(d => d.Id == deviceId);
 
@@ -30,10 +31,12 @@ public class KeysController(HysjDbContext db) : ControllerBase
         return Ok(new
         {
             DeviceId = device.Id,
+            IdentityPublicKey = device.User.IdentityPublicKey,
             device.SignedPreKey,
             device.SignedPreKeySig,
+            OneTimePreKey = preKey.PublicKey,
             PreKeyId = preKey.Id,
-            PreKey = preKey.PublicKey
+            KyberPublicKey = device.KyberPublicKey
         });
     }
 

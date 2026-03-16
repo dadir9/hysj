@@ -19,6 +19,8 @@ public class HysjDbContext(DbContextOptions<HysjDbContext> options) : DbContext(
             e.HasKey(u => u.Id);
             e.HasIndex(u => u.Username).IsUnique();
             e.Property(u => u.Username).HasMaxLength(50).IsRequired();
+            e.HasIndex(u => u.PhoneNumber).IsUnique();
+            e.Property(u => u.PhoneNumber).HasMaxLength(20).IsRequired();
             e.Property(u => u.PasswordHash).IsRequired();
         });
 

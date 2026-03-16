@@ -7,17 +7,17 @@ public class MessageQueueService(IConnectionMultiplexer redis, IConfiguration co
     private readonly IDatabase _db = redis.GetDatabase();
     private readonly int _ttlSeconds = config.GetValue<int>("MessagePolicy:TtlSeconds");
 
-    public async Task EnqueueAsync(Guid recipientDeviceId, string messageId, byte[] encryptedBlob, TimeSpan ttl)
+    public async Task EnqueueAsync(Guid recipientDeviceId, string messageId, string encryptedBlob, TimeSpan ttl)
     {
         var key = MessageKey(recipientDeviceId, messageId);
         await _db.StringSetAsync(key, encryptedBlob, ttl);
     }
 
-    public async Task<IEnumerable<(string MessageId, byte[] Blob)>> DequeueAllAsync(Guid recipientDeviceId)
+    public async Task<IEnumerable<(string MessageId, string Blob)>> DequeueAllAsync(Guid recipientDeviceId)
     {
         var server = redis.GetServer(redis.GetEndPoints().First());
         var pattern = $"msg:{recipientDeviceId}:*";
-        var results = new List<(string, byte[])>();
+        var results = new List<(string, string)>();
 
         await foreach (var key in server.KeysAsync(pattern: pattern))
         {
@@ -25,7 +25,7 @@ public class MessageQueueService(IConnectionMultiplexer redis, IConfiguration co
             if (blob.HasValue)
             {
                 var messageId = key.ToString().Split(':')[2];
-                results.Add((messageId, (byte[])blob!));
+                results.Add((messageId, (string)blob!));
             }
         }
 

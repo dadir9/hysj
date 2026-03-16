@@ -40,7 +40,7 @@ public class MessageQueueTests
         var service = new MessageQueueService(redisMock.Object, CreateConfig());
 
         // Should not throw
-        var act = () => service.EnqueueAsync(deviceId, messageId, [1, 2, 3], TimeSpan.FromHours(72));
+        var act = () => service.EnqueueAsync(deviceId, messageId, "encrypted_blob_data", TimeSpan.FromHours(72));
         await act.Should().NotThrowAsync();
     }
 

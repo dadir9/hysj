@@ -8,6 +8,7 @@ public class Device
     public string? PushToken { get; set; }
     public byte[] SignedPreKey { get; set; } = [];
     public byte[] SignedPreKeySig { get; set; } = [];
+    public byte[] KyberPublicKey { get; set; } = [];
     public bool IsOnline { get; set; }
     public DateTimeOffset LastActiveAt { get; set; }
     public DateTimeOffset RegisteredAt { get; set; }

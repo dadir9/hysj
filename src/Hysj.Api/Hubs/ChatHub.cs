@@ -75,11 +75,18 @@ public class ChatHub(IMessageQueueService queue, HysjDbContext db) : Hub
         await Clients.Caller.SendAsync("DeliveryAcknowledged", ack.MessageId);
     }
 
-    public async Task SendWipeCommand(string wipeId, Guid targetDeviceId, string wipeType)
+    public async Task SendWipeCommand(string wipeId, Guid targetDeviceId, string wipeType, Guid? conversationPartnerId = null)
     {
         if (_online.TryGetValue(targetDeviceId, out var connId))
         {
-            await Clients.Client(connId).SendAsync("ExecuteWipe", wipeId, wipeType);
+            await Clients.Client(connId).SendAsync("WipeCommand", new
+            {
+                WipeId = wipeId,
+                Type = wipeType,
+                ConversationId = conversationPartnerId?.ToString(),
+                TargetDeviceId = targetDeviceId.ToString(),
+                Timestamp = DateTimeOffset.UtcNow.ToString("o")
+            });
         }
     }
 
