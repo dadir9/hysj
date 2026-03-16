@@ -1,0 +1,6 @@
+@Hysj.Api_HostAddress = http://localhost:5076
+
+GET {{Hysj.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
