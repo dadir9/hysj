@@ -9,6 +9,7 @@ public record GroupResponseDto(
     Guid Id,
     string Name,
     bool IsAnonymous,
+    bool MembersCanAdd,
     bool IsAdmin,
     string MyAlias,
     IEnumerable<GroupMemberDto> Members

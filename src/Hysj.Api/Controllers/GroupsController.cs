@@ -25,29 +25,27 @@ public class GroupsController(HysjDbContext db) : ControllerBase
             Id = Guid.NewGuid(),
             Name = request.Name,
             IsAnonymous = request.IsAnonymous,
+            MembersCanAdd = request.MembersCanAdd,
             CreatedByUserId = userId,
             CreatedAt = DateTimeOffset.UtcNow
         };
 
-        var creatorMember = new GroupMember
+        db.Groups.Add(group);
+        db.GroupMembers.Add(new GroupMember
         {
             GroupId = group.Id,
             UserId = userId,
             Alias = alias,
             JoinedAt = DateTimeOffset.UtcNow
-        };
+        });
 
-        db.Groups.Add(group);
-        db.GroupMembers.Add(creatorMember);
-
-        // Add initial members if provided
         if (request.InitialMemberUserIds is { Count: > 0 })
         {
             var usedAliases = new HashSet<string> { alias };
             foreach (var memberId in request.InitialMemberUserIds.Distinct().Where(id => id != userId))
             {
                 var memberAlias = PickAlias(usedAliases);
-                if (memberAlias is null) break; // pool exhausted
+                if (memberAlias is null) break;
                 usedAliases.Add(memberAlias);
                 db.GroupMembers.Add(new GroupMember
                 {
@@ -60,7 +58,7 @@ public class GroupsController(HysjDbContext db) : ControllerBase
         }
 
         await db.SaveChangesAsync();
-        return Ok(new { group.Id, group.Name, group.IsAnonymous });
+        return Ok(new { group.Id, group.Name, group.IsAnonymous, group.MembersCanAdd });
     }
 
     [HttpGet]
@@ -74,6 +72,7 @@ public class GroupsController(HysjDbContext db) : ControllerBase
                 gm.Group.Id,
                 gm.Group.Name,
                 gm.Group.IsAnonymous,
+                gm.Group.MembersCanAdd,
                 IsAdmin = gm.Group.CreatedByUserId == userId,
                 gm.Alias
             })
@@ -106,7 +105,7 @@ public class GroupsController(HysjDbContext db) : ControllerBase
         ));
 
         return Ok(new GroupResponseDto(
-            group.Id, group.Name, group.IsAnonymous, isAdmin, myAlias, members));
+            group.Id, group.Name, group.IsAnonymous, group.MembersCanAdd, isAdmin, myAlias, members));
     }
 
     [HttpPost("{groupId:guid}/members")]
@@ -118,7 +117,14 @@ public class GroupsController(HysjDbContext db) : ControllerBase
             .FirstOrDefaultAsync(g => g.Id == groupId);
 
         if (group is null) return NotFound();
-        if (group.CreatedByUserId != userId) return Forbid();
+
+        var isMember = group.Members.Any(gm => gm.UserId == userId);
+        if (!isMember) return Forbid();
+
+        // kun admin kan adde hvis MembersCanAdd = false
+        if (!group.MembersCanAdd && group.CreatedByUserId != userId)
+            return Forbid();
+
         if (group.Members.Any(gm => gm.UserId == newUserId))
             return Conflict(new { error = "User is already a member." });
 
@@ -146,6 +152,7 @@ public class GroupsController(HysjDbContext db) : ControllerBase
         var group = await db.Groups.FindAsync(groupId);
         if (group is null) return NotFound();
         if (group.CreatedByUserId != userId) return Forbid();
+        if (memberId == userId) return BadRequest(new { error = "Admin cannot remove themselves. Transfer admin first." });
 
         var member = await db.GroupMembers
             .FirstOrDefaultAsync(gm => gm.GroupId == groupId && gm.UserId == memberId);
@@ -154,6 +161,37 @@ public class GroupsController(HysjDbContext db) : ControllerBase
         db.GroupMembers.Remove(member);
         await db.SaveChangesAsync();
         return NoContent();
+    }
+
+    [HttpPatch("{groupId:guid}/admin")]
+    public async Task<IActionResult> TransferAdmin(Guid groupId, [FromBody] Guid newAdminUserId)
+    {
+        var userId = GetUserId();
+        var group = await db.Groups.FindAsync(groupId);
+        if (group is null) return NotFound();
+        if (group.CreatedByUserId != userId) return Forbid();
+
+        var newAdminIsMember = await db.GroupMembers
+            .AnyAsync(gm => gm.GroupId == groupId && gm.UserId == newAdminUserId);
+        if (!newAdminIsMember)
+            return BadRequest(new { error = "New admin must be a member of the group." });
+
+        await db.Groups
+            .Where(g => g.Id == groupId)
+            .ExecuteUpdateAsync(s => s.SetProperty(g => g.CreatedByUserId, newAdminUserId));
+
+        return NoContent();
+    }
+
+    [HttpPatch("{groupId:guid}/members-can-add")]
+    public async Task<IActionResult> SetMembersCanAdd(Guid groupId, [FromBody] bool membersCanAdd)
+    {
+        var userId = GetUserId();
+        var rows = await db.Groups
+            .Where(g => g.Id == groupId && g.CreatedByUserId == userId)
+            .ExecuteUpdateAsync(s => s.SetProperty(g => g.MembersCanAdd, membersCanAdd));
+
+        return rows > 0 ? NoContent() : NotFound();
     }
 
     [HttpDelete("{groupId:guid}")]
