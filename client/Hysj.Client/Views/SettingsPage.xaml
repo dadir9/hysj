@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Hysj.Client.ViewModels"
+             xmlns:svc="clr-namespace:Hysj.Client.Services"
+             x:Class="Hysj.Client.Views.SettingsPage"
+             x:DataType="vm:SettingsViewModel"
+             BackgroundColor="{StaticResource PrimaryBg}"
+             Shell.NavBarIsVisible="False">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20,52,20,32" Spacing="0">
+
+            <!-- Header -->
+            <Grid ColumnDefinitions="Auto,*" Margin="0,0,0,28">
+                <Button Grid.Column="0" Text="←"
+                        Command="{Binding GoBackCommand}"
+                        BackgroundColor="Transparent"
+                        TextColor="{StaticResource PurpleAccent}"
+                        FontSize="22" Padding="0,0,12,0"/>
+                <Label Grid.Column="1" Text="Settings"
+                       FontSize="22" FontAttributes="Bold"
+                       TextColor="{StaticResource TextPrimary}" VerticalOptions="Center"/>
+            </Grid>
+
+            <!-- Profile -->
+            <Frame BackgroundColor="{StaticResource SecondaryBg}"
+                   BorderColor="{StaticResource Border}" CornerRadius="12"
+                   Padding="16" Margin="0,0,0,20">
+                <HorizontalStackLayout Spacing="14">
+                    <Frame BackgroundColor="{StaticResource PurpleAccent}"
+                           CornerRadius="28" Padding="0"
+                           WidthRequest="56" HeightRequest="56" HasShadow="False">
+                        <Label Text="{Binding Username, Converter={StaticResource InitialsConverter}}"
+                               TextColor="White" FontSize="22" FontAttributes="Bold"
+                               HorizontalOptions="Center" VerticalOptions="Center"/>
+                    </Frame>
+                    <VerticalStackLayout VerticalOptions="Center" Spacing="2">
+                        <Label Text="{Binding Username}"
+                               FontSize="16" FontAttributes="Bold"
+                               TextColor="{StaticResource TextPrimary}"/>
+                        <Label Text="Hysj account"
+                               FontSize="13" TextColor="{StaticResource TextSecondary}"/>
+                    </VerticalStackLayout>
+                </HorizontalStackLayout>
+            </Frame>
+
+            <!-- Language -->
+            <Label Text="Language" FontSize="13" FontAttributes="Bold"
+                   TextColor="{StaticResource TextSecondary}" Margin="4,0,0,10"/>
+
+            <Frame BackgroundColor="{StaticResource SecondaryBg}"
+                   BorderColor="{StaticResource Border}" CornerRadius="12"
+                   Padding="4" Margin="0,0,0,20">
+                <CollectionView ItemsSource="{Binding Languages}"
+                                SelectedItem="{Binding SelectedLanguage}"
+                                SelectionMode="Single">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="svc:LanguageOption">
+                            <Grid Padding="12,10" ColumnDefinitions="Auto,*,Auto">
+                                <Label Grid.Column="0" Text="{Binding Flag}" FontSize="22"/>
+                                <Label Grid.Column="1" Margin="12,0,0,0"
+                                       Text="{Binding NativeName}"
+                                       FontSize="14" TextColor="{StaticResource TextPrimary}"
+                                       VerticalOptions="Center"/>
+                                <Label Grid.Column="2"
+                                       Text="{Binding Name}"
+                                       FontSize="12" TextColor="{StaticResource TextSecondary}"
+                                       VerticalOptions="Center"/>
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Frame>
+
+            <!-- About -->
+            <Frame BackgroundColor="{StaticResource SecondaryBg}"
+                   BorderColor="{StaticResource Border}" CornerRadius="12"
+                   Padding="16" Margin="0,0,0,24">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="About Hysj" FontSize="14" FontAttributes="Bold"
+                           TextColor="{StaticResource TextPrimary}"/>
+                    <Label Text="Hysj uses the Signal Protocol, post-quantum cryptography, sealed sender, and onion routing — providing stronger privacy than any other messaging app."
+                           TextColor="{StaticResource TextSecondary}" FontSize="13"/>
+                    <Label Text="🛡 ratchet · ⚛ quantum · 🕵 sealed · 🧅 onion"
+                           TextColor="{StaticResource ShieldGreen}" FontSize="12"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Logout -->
+            <Button Text="Sign out"
+                    Command="{Binding LogoutCommand}"
+                    BackgroundColor="{StaticResource TertiaryBg}"
+                    TextColor="{StaticResource DangerRed}"
+                    BorderColor="{StaticResource DangerRed}"
+                    BorderWidth="1"
+                    CornerRadius="12"
+                    HeightRequest="52" FontSize="16"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

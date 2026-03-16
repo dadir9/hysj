@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Hysj.Client.ViewModels"
+             xmlns:models="clr-namespace:Hysj.Client.Models"
+             x:Class="Hysj.Client.Views.ChatPage"
+             x:DataType="vm:ChatViewModel"
+             BackgroundColor="{StaticResource PrimaryBg}"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Padding="12,52,16,12"
+              ColumnDefinitions="Auto,*,Auto" BackgroundColor="{StaticResource SecondaryBg}">
+            <Button Grid.Column="0" Text="←"
+                    Command="{Binding GoBackCommand}"
+                    BackgroundColor="Transparent"
+                    TextColor="{StaticResource PurpleAccent}"
+                    FontSize="22" Padding="4"/>
+            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                <Label Text="{Binding Conversation.PeerUsername}"
+                       FontSize="16" FontAttributes="Bold"
+                       TextColor="{StaticResource TextPrimary}"/>
+                <Label Text="{Binding SecurityLabel}"
+                       FontSize="10" TextColor="{StaticResource ShieldGreen}"/>
+            </VerticalStackLayout>
+        </Grid>
+
+        <!-- Anon badge -->
+        <Frame Grid.Row="1"
+               BackgroundColor="{StaticResource TertiaryBg}"
+               BorderColor="{StaticResource OnionPurple}"
+               CornerRadius="8" Padding="12,6"
+               Margin="16,8,16,0"
+               IsVisible="{Binding AnonBadge, Converter={StaticResource StringNotEmptyConverter}}">
+            <Label Text="{Binding AnonBadge}"
+                   TextColor="{StaticResource OnionPurple}"
+                   FontSize="12" HorizontalOptions="Center"/>
+        </Frame>
+
+        <!-- Messages -->
+        <CollectionView Grid.Row="2"
+                        x:Name="MessagesView"
+                        ItemsSource="{Binding Messages}"
+                        Margin="0,8,0,0">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Message">
+                    <Grid Padding="16,4">
+                        <!-- Outgoing -->
+                        <Frame BackgroundColor="{StaticResource PurpleAccent}"
+                               CornerRadius="16" Padding="14,10"
+                               HorizontalOptions="End" MaximumWidthRequest="280"
+                               HasShadow="False"
+                               IsVisible="{Binding IsOutgoing}">
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="{Binding Content}"
+                                       TextColor="White" FontSize="14"/>
+                                <Label Text="{Binding SentAt, StringFormat='{0:HH:mm}'}"
+                                       TextColor="#FFFFFF99" FontSize="10"
+                                       HorizontalOptions="End"/>
+                            </VerticalStackLayout>
+                        </Frame>
+
+                        <!-- Incoming -->
+                        <Grid ColumnDefinitions="36,*"
+                              ColumnSpacing="8"
+                              IsVisible="{Binding IsOutgoing, Converter={StaticResource InvertedBoolConverter}}"
+                              HorizontalOptions="Start">
+                            <Frame Grid.Column="0"
+                                   BackgroundColor="{Binding SenderAvatarColor}"
+                                   CornerRadius="18" Padding="0"
+                                   WidthRequest="36" HeightRequest="36"
+                                   HasShadow="False" VerticalOptions="End">
+                                <Label Text="{Binding SenderAlias, Converter={StaticResource InitialsConverter}}"
+                                       TextColor="White" FontSize="13" FontAttributes="Bold"
+                                       HorizontalOptions="Center" VerticalOptions="Center"/>
+                            </Frame>
+                            <Frame Grid.Column="1"
+                                   BackgroundColor="{StaticResource SecondaryBg}"
+                                   CornerRadius="16" Padding="14,10"
+                                   MaximumWidthRequest="260" HasShadow="False">
+                                <VerticalStackLayout Spacing="4">
+                                    <Label Text="{Binding SenderAlias}"
+                                           TextColor="{Binding SenderAvatarColor}"
+                                           FontSize="11" FontAttributes="Bold"/>
+                                    <Label Text="{Binding Content}"
+                                           TextColor="{StaticResource TextPrimary}" FontSize="14"/>
+                                    <Label Text="{Binding SentAt, StringFormat='{0:HH:mm}'}"
+                                           TextColor="{StaticResource TextTertiary}" FontSize="10"
+                                           HorizontalOptions="End"/>
+                                </VerticalStackLayout>
+                            </Frame>
+                        </Grid>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Input bar -->
+        <Grid Grid.Row="3" Padding="12,8,12,24"
+              ColumnDefinitions="*,Auto" ColumnSpacing="8"
+              BackgroundColor="{StaticResource SecondaryBg}">
+            <Frame Grid.Column="0"
+                   BackgroundColor="{StaticResource TertiaryBg}"
+                   BorderColor="{StaticResource Border}" CornerRadius="24"
+                   Padding="16,0" HasShadow="False">
+                <Entry Placeholder="Message"
+                       PlaceholderColor="{StaticResource TextTertiary}"
+                       TextColor="{StaticResource TextPrimary}"
+                       BackgroundColor="Transparent"
+                       Text="{Binding MessageText}"
+                       ReturnType="Send"
+                       ReturnCommand="{Binding SendCommand}"/>
+            </Frame>
+            <Button Grid.Column="1"
+                    Text="↑"
+                    Command="{Binding SendCommand}"
+                    BackgroundColor="{StaticResource PurpleAccent}"
+                    TextColor="White"
+                    CornerRadius="24"
+                    WidthRequest="48" HeightRequest="48"
+                    FontSize="20" FontAttributes="Bold"
+                    Padding="0"/>
+        </Grid>
+
+    </Grid>
+
+</ContentPage>

@@ -6,7 +6,17 @@
        Shell.FlyoutBehavior="Disabled"
        BackgroundColor="{StaticResource PrimaryBg}">
 
+    <!-- Initial page: overridden in App.xaml.cs based on auth state -->
     <ShellContent Route="LanguagePage"
-                  ContentTemplate="{DataTemplate views:LanguageSelectionPage}" />
+                  ContentTemplate="{DataTemplate views:LanguageSelectionPage}"/>
+
+    <ShellContent Route="LoginPage"
+                  ContentTemplate="{DataTemplate views:LoginPage}"/>
+
+    <ShellContent Route="RegisterPage"
+                  ContentTemplate="{DataTemplate views:RegisterPage}"/>
+
+    <ShellContent Route="ConversationListPage"
+                  ContentTemplate="{DataTemplate views:ConversationListPage}"/>
 
 </Shell>

@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Hysj.Client.ViewModels"
+             xmlns:models="clr-namespace:Hysj.Client.Models"
+             x:Class="Hysj.Client.Views.ConversationListPage"
+             x:DataType="vm:ConversationListViewModel"
+             BackgroundColor="{StaticResource PrimaryBg}"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Padding="20,52,20,16"
+              ColumnDefinitions="*,Auto,Auto">
+            <Label Grid.Column="0"
+                   Text="Messages"
+                   FontSize="24" FontAttributes="Bold"
+                   TextColor="{StaticResource TextPrimary}"
+                   VerticalOptions="Center"/>
+            <Button Grid.Column="1"
+                    Text="🔒"
+                    Command="{Binding GoToSecurityCommand}"
+                    BackgroundColor="Transparent"
+                    TextColor="{StaticResource TextSecondary}"
+                    FontSize="20" Padding="8"/>
+            <Button Grid.Column="2"
+                    Text="⚙"
+                    Command="{Binding GoToSettingsCommand}"
+                    BackgroundColor="Transparent"
+                    TextColor="{StaticResource TextSecondary}"
+                    FontSize="20" Padding="8"/>
+        </Grid>
+
+        <!-- Search bar -->
+        <Frame Grid.Row="1"
+               BackgroundColor="{StaticResource SecondaryBg}"
+               BorderColor="{StaticResource Border}" CornerRadius="12"
+               Padding="14,4" Margin="20,0,20,16">
+            <Entry Placeholder="Search"
+                   PlaceholderColor="{StaticResource TextTertiary}"
+                   TextColor="{StaticResource TextPrimary}"
+                   BackgroundColor="Transparent"
+                   Text="{Binding SearchQuery}"/>
+        </Frame>
+
+        <!-- Conversation list -->
+        <CollectionView Grid.Row="2"
+                        ItemsSource="{Binding Conversations}"
+                        Margin="0,0,0,0">
+            <CollectionView.EmptyView>
+                <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="12">
+                    <Label Text="No conversations yet"
+                           TextColor="{StaticResource TextSecondary}"
+                           FontSize="16" HorizontalOptions="Center"/>
+                    <Label Text="Start a new chat to begin"
+                           TextColor="{StaticResource TextTertiary}"
+                           FontSize="13" HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Conversation">
+                    <Grid Padding="20,0" Margin="0,0,0,1">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ConversationListViewModel}}, Path=OpenConversationCommand}"
+                                CommandParameter="{Binding .}"/>
+                        </Grid.GestureRecognizers>
+                        <Frame BackgroundColor="{StaticResource SecondaryBg}"
+                               BorderColor="Transparent" CornerRadius="12"
+                               Padding="16" HasShadow="False">
+                            <Grid ColumnDefinitions="48,*,Auto" ColumnSpacing="12">
+                                <!-- Avatar -->
+                                <Frame Grid.Column="0"
+                                       WidthRequest="48" HeightRequest="48"
+                                       CornerRadius="24"
+                                       BackgroundColor="{StaticResource PurpleAccent}"
+                                       Padding="0" HasShadow="False"
+                                       HorizontalOptions="Start" VerticalOptions="Center">
+                                    <Label Text="{Binding PeerUsername, Converter={StaticResource InitialsConverter}}"
+                                           TextColor="White" FontSize="18" FontAttributes="Bold"
+                                           HorizontalOptions="Center" VerticalOptions="Center"/>
+                                </Frame>
+                                <!-- Info -->
+                                <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <Label Grid.Column="0"
+                                               Text="{Binding PeerUsername}"
+                                               FontSize="15" FontAttributes="Bold"
+                                               TextColor="{StaticResource TextPrimary}"
+                                               LineBreakMode="TailTruncation"/>
+                                        <Label Grid.Column="1"
+                                               Text="{Binding LastMessageAt, StringFormat='{0:HH:mm}'}"
+                                               FontSize="12"
+                                               TextColor="{StaticResource TextTertiary}"/>
+                                    </Grid>
+                                    <Label Text="{Binding LastMessagePreview}"
+                                           FontSize="13"
+                                           TextColor="{StaticResource TextSecondary}"
+                                           LineBreakMode="TailTruncation"/>
+                                </VerticalStackLayout>
+                                <!-- Unread badge -->
+                                <Frame Grid.Column="2"
+                                       BackgroundColor="{StaticResource PurpleAccent}"
+                                       CornerRadius="10" Padding="6,2"
+                                       IsVisible="{Binding UnreadCount, Converter={StaticResource GreaterThanZeroConverter}}"
+                                       VerticalOptions="Center" HasShadow="False">
+                                    <Label Text="{Binding UnreadCount}"
+                                           TextColor="White" FontSize="11" FontAttributes="Bold"/>
+                                </Frame>
+                            </Grid>
+                        </Frame>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Bottom Tab Bar -->
+        <Grid Grid.Row="3" ColumnDefinitions="*,*,*"
+              BackgroundColor="{StaticResource SecondaryBg}"
+              Padding="0,8">
+            <VerticalStackLayout Grid.Column="0" HorizontalOptions="Center" Spacing="2">
+                <Label Text="💬" FontSize="22" HorizontalOptions="Center"/>
+                <Label Text="Chats" FontSize="10" TextColor="{StaticResource PurpleAccent}"
+                       HorizontalOptions="Center"/>
+            </VerticalStackLayout>
+            <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center" Spacing="2">
+                <Label Text="👥" FontSize="22" HorizontalOptions="Center"/>
+                <Label Text="Groups" FontSize="10" TextColor="{StaticResource TextTertiary}"
+                       HorizontalOptions="Center">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer
+                            Command="{Binding GoToCreateGroupCommand}"/>
+                    </Label.GestureRecognizers>
+                </Label>
+            </VerticalStackLayout>
+            <VerticalStackLayout Grid.Column="2" HorizontalOptions="Center" Spacing="2">
+                <Label Text="⚙" FontSize="22" HorizontalOptions="Center"/>
+                <Label Text="Settings" FontSize="10" TextColor="{StaticResource TextTertiary}"
+                       HorizontalOptions="Center">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding GoToSettingsCommand}"/>
+                    </Label.GestureRecognizers>
+                </Label>
+            </VerticalStackLayout>
+        </Grid>
+
+    </Grid>
+
+</ContentPage>

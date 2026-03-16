@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Hysj.Client.ViewModels"
+             x:Class="Hysj.Client.Views.LoginPage"
+             x:DataType="vm:LoginViewModel"
+             BackgroundColor="{StaticResource PrimaryBg}"
+             Shell.NavBarIsVisible="False">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="32,60,32,32" Spacing="0">
+
+            <!-- Logo -->
+            <Label Text="Hysj"
+                   FontSize="48" FontAttributes="Bold"
+                   TextColor="{StaticResource PurpleAccent}"
+                   HorizontalOptions="Center" Margin="0,0,0,8"/>
+
+            <Label Text="Encrypted. Anonymous. Gone."
+                   FontSize="13" TextColor="{StaticResource TextSecondary}"
+                   HorizontalOptions="Center" Margin="0,0,0,48"/>
+
+            <!-- Username -->
+            <Frame BackgroundColor="{StaticResource SecondaryBg}"
+                   BorderColor="{StaticResource Border}" CornerRadius="12"
+                   Padding="16,4" Margin="0,0,0,12">
+                <Entry Placeholder="Username"
+                       PlaceholderColor="{StaticResource TextTertiary}"
+                       TextColor="{StaticResource TextPrimary}"
+                       BackgroundColor="Transparent"
+                       Text="{Binding Username}"
+                       ReturnType="Next"/>
+            </Frame>
+
+            <!-- Password -->
+            <Frame BackgroundColor="{StaticResource SecondaryBg}"
+                   BorderColor="{StaticResource Border}" CornerRadius="12"
+                   Padding="16,4" Margin="0,0,0,12">
+                <Entry Placeholder="Password"
+                       PlaceholderColor="{StaticResource TextTertiary}"
+                       TextColor="{StaticResource TextPrimary}"
+                       BackgroundColor="Transparent"
+                       IsPassword="True"
+                       Text="{Binding Password}"
+                       ReturnType="Done"
+                       ReturnCommand="{Binding LoginCommand}"/>
+            </Frame>
+
+            <!-- 2FA -->
+            <Frame BackgroundColor="{StaticResource SecondaryBg}"
+                   BorderColor="{StaticResource PurpleAccent}" CornerRadius="12"
+                   Padding="16,4" Margin="0,0,0,12"
+                   IsVisible="{Binding ShowTotp}">
+                <Entry Placeholder="Authenticator code"
+                       PlaceholderColor="{StaticResource TextTertiary}"
+                       TextColor="{StaticResource TextPrimary}"
+                       BackgroundColor="Transparent"
+                       Keyboard="Numeric"
+                       Text="{Binding TotpCode}"
+                       ReturnType="Done"
+                       ReturnCommand="{Binding LoginCommand}"/>
+            </Frame>
+
+            <!-- Error -->
+            <Label Text="{Binding ErrorMessage}"
+                   TextColor="{StaticResource DangerRed}"
+                   FontSize="13" Margin="4,0,0,12"
+                   IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotEmptyConverter}}"/>
+
+            <!-- Login button -->
+            <Button Text="Sign in"
+                    Command="{Binding LoginCommand}"
+                    IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
+                    BackgroundColor="{StaticResource PurpleAccent}"
+                    TextColor="White"
+                    CornerRadius="12"
+                    HeightRequest="52"
+                    FontSize="16" FontAttributes="Bold"
+                    Margin="0,4,0,24"/>
+
+            <!-- Register link -->
+            <HorizontalStackLayout HorizontalOptions="Center" Spacing="4">
+                <Label Text="Don't have an account?"
+                       TextColor="{StaticResource TextSecondary}" FontSize="14"/>
+                <Label Text="Register"
+                       TextColor="{StaticResource PurpleAccent}" FontSize="14"
+                       FontAttributes="Bold">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding GoToRegisterCommand}"/>
+                    </Label.GestureRecognizers>
+                </Label>
+            </HorizontalStackLayout>
+
+            <!-- Security badge -->
+            <Frame BackgroundColor="{StaticResource TertiaryBg}"
+                   BorderColor="{StaticResource Border}" CornerRadius="8"
+                   Padding="12,8" Margin="0,40,0,0" HorizontalOptions="Center">
+                <Label Text="🛡 ratchet · quantum · sealed · onion"
+                       TextColor="{StaticResource ShieldGreen}"
+                       FontSize="11"/>
+            </Frame>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
