@@ -89,6 +89,44 @@ public class ChatHub(IMessageQueueService queue, HysjDbContext db) : Hub
         await Clients.User(senderId.ToString()).SendAsync("WipeConfirmed", ack.WipeId, ack.Success);
     }
 
+    public async Task SendGroupMessage(GroupMessageDto message)
+    {
+        var userId = GetUserId();
+
+        var isMember = await db.GroupMembers
+            .AnyAsync(gm => gm.GroupId == message.GroupId && gm.UserId == userId);
+        if (!isMember) return;
+
+        var group = await db.Groups.FindAsync(message.GroupId);
+        if (group is null) return;
+
+        // determine sender display name
+        var senderDisplay = group.IsAnonymous
+            ? (await db.GroupMembers.FirstAsync(gm => gm.GroupId == message.GroupId && gm.UserId == userId)).Alias
+            : Context.User!.FindFirstValue(ClaimTypes.Name) ?? userId.ToString();
+
+        // get all other members' device ids
+        var memberUserIds = await db.GroupMembers
+            .Where(gm => gm.GroupId == message.GroupId && gm.UserId != userId)
+            .Select(gm => gm.UserId)
+            .ToListAsync();
+
+        var deviceIds = await db.Devices
+            .Where(d => memberUserIds.Contains(d.UserId))
+            .Select(d => d.Id)
+            .ToListAsync();
+
+        var ttl = TimeSpan.FromSeconds(259200);
+        foreach (var deviceId in deviceIds)
+        {
+            if (_online.TryGetValue(deviceId, out var connId))
+                await Clients.Client(connId).SendAsync(
+                    "ReceiveGroupMessage", message.GroupId, message.MessageId, senderDisplay, message.EncryptedBlob);
+            else
+                await queue.EnqueueAsync(deviceId, message.MessageId, message.EncryptedBlob, ttl);
+        }
+    }
+
     private Guid GetDeviceId() =>
         Guid.Parse(Context.User!.FindFirstValue("deviceId")!);
 
