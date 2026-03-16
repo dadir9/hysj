@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Hysj.Client.ViewModels"
+             x:DataType="vm:LanguageSelectionViewModel"
+             x:Class="Hysj.Client.Views.LanguageSelectionPage"
+             BackgroundColor="{StaticResource PrimaryBg}"
+             NavigationPage.HasNavigationBar="False">
+
+    <Grid RowDefinitions="*, Auto">
+
+        <VerticalStackLayout Grid.Row="0"
+                             Padding="32,60,32,24"
+                             Spacing="0">
+
+            <!-- Logo -->
+            <Label Text="hysj"
+                   FontSize="36"
+                   FontAttributes="Bold"
+                   TextColor="{StaticResource TextPrimary}"
+                   HorizontalOptions="Start"
+                   CharacterSpacing="-1" />
+
+            <Label Text="Select your language"
+                   FontSize="14"
+                   TextColor="{StaticResource TextMuted}"
+                   Margin="0,8,0,40" />
+
+            <!-- Language list -->
+            <CollectionView ItemsSource="{Binding Languages}"
+                            SelectionMode="Single"
+                            SelectedItem="{Binding SelectedLanguage}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Padding="0,4">
+                            <Border StrokeShape="RoundRectangle 14"
+                                    BackgroundColor="{StaticResource CardBg}"
+                                    Stroke="{StaticResource BorderSubtle}"
+                                    StrokeThickness="0.5"
+                                    Padding="16,14">
+                                <Grid ColumnDefinitions="36,*,24">
+                                    <Label Grid.Column="0"
+                                           Text="{Binding Flag}"
+                                           FontSize="22"
+                                           VerticalOptions="Center" />
+                                    <VerticalStackLayout Grid.Column="1" Spacing="2"
+                                                         VerticalOptions="Center">
+                                        <Label Text="{Binding NativeName}"
+                                               FontSize="16"
+                                               FontAttributes="Bold"
+                                               TextColor="{StaticResource TextPrimary}" />
+                                        <Label Text="{Binding Name}"
+                                               FontSize="12"
+                                               TextColor="{StaticResource TextMuted}" />
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
+
+        <!-- Continue button -->
+        <Border Grid.Row="1"
+                Padding="32,16,32,40"
+                BackgroundColor="{StaticResource PrimaryBg}">
+            <Button Text="Continue →"
+                    Command="{Binding ContinueCommand}"
+                    BackgroundColor="{StaticResource Purple}"
+                    TextColor="{StaticResource TextPrimary}"
+                    FontSize="16"
+                    FontAttributes="Bold"
+                    CornerRadius="14"
+                    HeightRequest="52" />
+        </Border>
+
+    </Grid>
+</ContentPage>

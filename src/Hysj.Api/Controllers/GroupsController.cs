@@ -20,6 +20,9 @@ public class GroupsController(HysjDbContext db) : ControllerBase
         var userId = GetUserId();
 
         var alias = PickAlias([]);
+        if (alias is null)
+            return BadRequest(new { error = "Alias pool is empty." });
+
         var group = new Group
         {
             Id = Guid.NewGuid(),

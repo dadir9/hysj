@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Hysj.Api.BackgroundServices;
 using Hysj.Api.Hubs;
-using Hysj.Api.Services;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
