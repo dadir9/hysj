@@ -11,6 +11,7 @@ public class HysjDbContext(DbContextOptions<HysjDbContext> options) : DbContext(
     public DbSet<LoginAttempt> LoginAttempts => Set<LoginAttempt>();
     public DbSet<Group> Groups => Set<Group>();
     public DbSet<GroupMember> GroupMembers => Set<GroupMember>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -77,6 +78,21 @@ public class HysjDbContext(DbContextOptions<HysjDbContext> options) : DbContext(
              .HasForeignKey(gm => gm.UserId)
              .OnDelete(DeleteBehavior.Cascade);
             e.HasIndex(gm => new { gm.GroupId, gm.Alias }).IsUnique();
+        });
+
+        modelBuilder.Entity<RefreshToken>(e =>
+        {
+            e.HasKey(rt => rt.Id);
+            e.HasOne(rt => rt.User)
+             .WithMany()
+             .HasForeignKey(rt => rt.UserId)
+             .OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(rt => rt.Device)
+             .WithMany()
+             .HasForeignKey(rt => rt.DeviceId)
+             .OnDelete(DeleteBehavior.Cascade);
+            e.HasIndex(rt => rt.TokenHash).IsUnique();
+            e.HasIndex(rt => rt.ExpiresAt);
         });
     }
 }

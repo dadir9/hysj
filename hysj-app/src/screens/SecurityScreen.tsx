@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, SafeAreaView, Modal, Pressable, ActivityIndicator, Alert,
@@ -11,6 +11,21 @@ import { wipeAll, wipeConversation, wipeDevice } from '../services/api';
 type Props = { navigation: StackNavigationProp<RootStackParamList, 'Security'> };
 
 type WipeAction = 'all' | 'conversation' | 'device' | null;
+
+const WIPE_PREVIEW: Record<Exclude<WipeAction, null>, { items: string[]; warning: string }> = {
+  all: {
+    items: ['All messages on every device', 'All encryption keys & sessions', 'All local data & caches'],
+    warning: 'This is irreversible. You will be signed out everywhere.',
+  },
+  conversation: {
+    items: ['All messages in the conversation', 'Ratchet session with this contact', 'Local chat history on all devices'],
+    warning: 'The other party will still have their own copy.',
+  },
+  device: {
+    items: ['All messages on the device', 'All encryption keys on the device', 'All local data on the device'],
+    warning: 'The device will be signed out and wiped.',
+  },
+};
 
 const LAYERS = [
   { icon: '🔄', title: 'Double Ratchet',       sub: 'Forward secrecy per message',       color: '#10B981' },
@@ -25,13 +40,37 @@ export default function SecurityScreen({ navigation }: Props) {
   const [targetId, setTargetId]       = useState('');
   const [busy, setBusy]               = useState(false);
   const [error, setError]             = useState('');
+  const [countdown, setCountdown]     = useState(0);
+  const [confirmText, setConfirmText] = useState('');
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (countdown > 0) {
+      timerRef.current = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            if (timerRef.current) clearInterval(timerRef.current);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [wipeAction]);
 
   const openWipeDialog = (action: WipeAction) => {
     setWipeAction(action);
     setTotpCode('');
     setTargetId('');
     setError('');
+    setConfirmText('');
+    setCountdown(5);
   };
+
+  const canConfirm = countdown === 0 && confirmText === 'WIPE' && !busy;
 
   const executeWipe = async () => {
     if (!totpCode.trim() || totpCode.length < 6) {
@@ -183,6 +222,20 @@ export default function SecurityScreen({ navigation }: Props) {
             <Text style={styles.dialogTitle}>{wipeTitle}</Text>
             <Text style={styles.dialogDesc}>{wipeDescription}</Text>
 
+            {/* Wipe preview */}
+            {wipeAction && (
+              <View style={styles.previewBox}>
+                <Text style={styles.previewTitle}>WHAT WILL BE DELETED</Text>
+                {WIPE_PREVIEW[wipeAction].items.map((item) => (
+                  <View key={item} style={styles.previewRow}>
+                    <Text style={styles.previewBullet}>-</Text>
+                    <Text style={styles.previewItem}>{item}</Text>
+                  </View>
+                ))}
+                <Text style={styles.previewWarning}>{WIPE_PREVIEW[wipeAction].warning}</Text>
+              </View>
+            )}
+
             {(wipeAction === 'conversation' || wipeAction === 'device') && (
               <>
                 <Text style={styles.dialogLabel}>
@@ -214,6 +267,19 @@ export default function SecurityScreen({ navigation }: Props) {
               />
             </View>
 
+            <Text style={styles.dialogLabel}>TYPE "WIPE" TO CONFIRM</Text>
+            <View style={styles.dialogInputWrap}>
+              <TextInput
+                style={[styles.dialogInput, { letterSpacing: 2 }]}
+                placeholder="WIPE"
+                placeholderTextColor={colors.textMuted}
+                value={confirmText}
+                onChangeText={setConfirmText}
+                autoCapitalize="characters"
+                autoCorrect={false}
+              />
+            </View>
+
             {!!error && <Text style={styles.dialogError}>{error}</Text>}
 
             <View style={styles.dialogActions}>
@@ -224,13 +290,15 @@ export default function SecurityScreen({ navigation }: Props) {
                 <Text style={styles.dialogCancelText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.dialogConfirm, busy && { opacity: 0.7 }]}
+                style={[styles.dialogConfirm, !canConfirm && styles.dialogConfirmDisabled]}
                 onPress={executeWipe}
-                disabled={busy}
+                disabled={!canConfirm}
               >
                 {busy
                   ? <ActivityIndicator color={colors.white} size="small"/>
-                  : <Text style={styles.dialogConfirmText}>Confirm Wipe</Text>}
+                  : <Text style={styles.dialogConfirmText}>
+                      {countdown > 0 ? `Wait (${countdown}s)` : 'Confirm Wipe'}
+                    </Text>}
               </TouchableOpacity>
             </View>
 
@@ -334,5 +402,36 @@ const styles = StyleSheet.create({
     backgroundColor: colors.danger,
     alignItems: 'center', justifyContent: 'center',
   },
+  dialogConfirmDisabled: {
+    backgroundColor: colors.bgElevated,
+    opacity: 0.6,
+  },
   dialogConfirmText: { color: colors.white, fontSize: 14, fontWeight: font.weights.bold },
+
+  // Wipe preview
+  previewBox: {
+    backgroundColor: colors.dangerBg,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255,59,48,0.25)',
+    padding: spacing.md,
+    marginBottom: spacing.md,
+  },
+  previewTitle: {
+    fontSize: font.sizes.xs, fontWeight: font.weights.bold,
+    color: colors.danger, letterSpacing: 1.5, marginBottom: spacing.sm,
+  },
+  previewRow: {
+    flexDirection: 'row', marginBottom: 4,
+  },
+  previewBullet: {
+    color: colors.danger, fontSize: font.sizes.sm, marginRight: spacing.sm, lineHeight: 20,
+  },
+  previewItem: {
+    color: colors.textSecondary, fontSize: font.sizes.sm, flex: 1, lineHeight: 20,
+  },
+  previewWarning: {
+    color: colors.warning, fontSize: font.sizes.xs, marginTop: spacing.sm,
+    fontWeight: font.weights.semibold,
+  },
 });

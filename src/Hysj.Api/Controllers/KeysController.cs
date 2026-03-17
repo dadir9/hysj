@@ -32,6 +32,7 @@ public class KeysController(HysjDbContext db) : ControllerBase
         {
             DeviceId = device.Id,
             IdentityPublicKey = device.User.IdentityPublicKey,
+            IdentityDhPublicKey = device.User.IdentityDhPublicKey,
             device.SignedPreKey,
             device.SignedPreKeySig,
             OneTimePreKey = preKey.PublicKey,

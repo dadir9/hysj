@@ -8,6 +8,7 @@ public class User
     public string PasswordHash { get; set; } = string.Empty;
     public byte[] Salt { get; set; } = [];
     public byte[] IdentityPublicKey { get; set; } = [];
+    public byte[] IdentityDhPublicKey { get; set; } = [];
     public byte[] TotpSecret { get; set; } = [];
     public bool Has2FAEnabled { get; set; } = false;
     public DateTimeOffset CreatedAt { get; set; }

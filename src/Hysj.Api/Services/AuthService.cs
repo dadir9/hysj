@@ -37,6 +37,7 @@ public class AuthService(HysjDbContext db, IConfiguration config) : IAuthService
             PasswordHash = hash,
             Salt = salt,
             IdentityPublicKey = request.IdentityPublicKey,
+            IdentityDhPublicKey = request.IdentityDhPublicKey ?? [],
             TotpSecret = EncryptTotpSecret(totpSecret),
             CreatedAt = DateTimeOffset.UtcNow,
             LastSeenAt = DateTimeOffset.UtcNow
@@ -99,10 +100,11 @@ public class AuthService(HysjDbContext db, IConfiguration config) : IAuthService
                 ?? throw new UnauthorizedAccessException("No device registered.");
 
             var token = GenerateJwt(user, device);
+            var refreshToken = await CreateRefreshTokenAsync(user.Id, device.Id);
             var expiryMinutes = config.GetValue("Jwt:ExpiryMinutes", 60);
             success = true;
 
-            return new LoginResponseDto(token, user.Id, device.Id, DateTimeOffset.UtcNow.AddMinutes(expiryMinutes));
+            return new LoginResponseDto(token, refreshToken, user.Id, device.Id, DateTimeOffset.UtcNow.AddMinutes(expiryMinutes));
         }
         finally
         {
@@ -166,7 +168,7 @@ public class AuthService(HysjDbContext db, IConfiguration config) : IAuthService
         using var argon2 = new Konscious.Security.Cryptography.Argon2id(Encoding.UTF8.GetBytes(password))
         {
             Salt = salt,
-            DegreeOfParallelism = 2,
+            DegreeOfParallelism = 4,
             MemorySize = 65536,
             Iterations = 3
         };
@@ -246,6 +248,60 @@ public class AuthService(HysjDbContext db, IConfiguration config) : IAuthService
     {
         var secret = Encoding.UTF8.GetBytes(config["Jwt:Secret"]!);
         return SHA256.HashData(secret); // 32 bytes = AES-256
+    }
+
+    public async Task<RefreshResponseDto> RefreshTokenAsync(string refreshTokenValue)
+    {
+        var tokenHash = HashRefreshToken(refreshTokenValue);
+        var storedToken = await db.RefreshTokens
+            .Include(rt => rt.User)
+            .ThenInclude(u => u.Devices)
+            .Include(rt => rt.Device)
+            .FirstOrDefaultAsync(rt => rt.TokenHash == tokenHash && !rt.IsRevoked);
+
+        if (storedToken is null || storedToken.ExpiresAt < DateTimeOffset.UtcNow)
+            throw new UnauthorizedAccessException("Invalid or expired refresh token.");
+
+        // Revoke the old token (rotation)
+        storedToken.IsRevoked = true;
+
+        var user = storedToken.User;
+        var device = storedToken.Device;
+        var newJwt = GenerateJwt(user, device);
+        var newRefreshToken = await CreateRefreshTokenAsync(user.Id, device.Id);
+        var expiryMinutes = config.GetValue("Jwt:ExpiryMinutes", 60);
+
+        await db.SaveChangesAsync();
+
+        return new RefreshResponseDto(newJwt, newRefreshToken, DateTimeOffset.UtcNow.AddMinutes(expiryMinutes));
+    }
+
+    private async Task<string> CreateRefreshTokenAsync(Guid userId, Guid deviceId)
+    {
+        var tokenValue = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+        var refreshDays = config.GetValue("Jwt:RefreshTokenDays", 30);
+
+        var refreshToken = new RefreshToken
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            DeviceId = deviceId,
+            TokenHash = HashRefreshToken(tokenValue),
+            ExpiresAt = DateTimeOffset.UtcNow.AddDays(refreshDays),
+            CreatedAt = DateTimeOffset.UtcNow,
+            IsRevoked = false
+        };
+
+        db.RefreshTokens.Add(refreshToken);
+        await db.SaveChangesAsync();
+
+        return tokenValue;
+    }
+
+    private static string HashRefreshToken(string token)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(token));
+        return Convert.ToBase64String(bytes);
     }
 
     private string GenerateJwt(User user, Device device)

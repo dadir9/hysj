@@ -29,9 +29,11 @@ export interface Message {
 
 export interface AuthSession {
   token: string;
+  refreshToken: string;
   userId: string;
   deviceId: string;
   username: string;
+  expiresAt: string;
 }
 
 export type RootStackParamList = {

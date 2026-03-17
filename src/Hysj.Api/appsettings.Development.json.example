@@ -1,0 +1,28 @@
+{
+  "ConnectionStrings": {
+    "Postgres": "Host=localhost;Port=5432;Database=hysj;Username=postgres;Password=YOUR_DB_PASSWORD_HERE;SSL Mode=Require;Trust Server Certificate=true;Pooling=false;Command Timeout=60",
+    "Redis": "localhost:6379"
+  },
+  "Jwt": {
+    "Secret": "REPLACE_WITH_SECURE_RANDOM_SECRET_MINIMUM_64_BYTES_USE_openssl_rand_base64_64"
+  },
+  "RelayNodes": [
+    {
+      "Address": "https://relay1.hysj.local",
+      "PublicKey": ""
+    },
+    {
+      "Address": "https://relay2.hysj.local",
+      "PublicKey": ""
+    },
+    {
+      "Address": "https://relay3.hysj.local",
+      "PublicKey": ""
+    }
+  ],
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information"
+    }
+  }
+}

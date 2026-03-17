@@ -1,25 +1,25 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { secureSetItem, secureGetItem, secureMultiRemove } from './secureStorage';
 import { AuthSession } from '../types';
 
 const TOKEN_KEY = 'token';
 const USER_KEY = 'user';
 
 export const saveSession = async (session: AuthSession) => {
-  await AsyncStorage.setItem(TOKEN_KEY, session.token);
-  await AsyncStorage.setItem('deviceId', session.deviceId);
-  await AsyncStorage.setItem(USER_KEY, JSON.stringify(session));
+  await secureSetItem(TOKEN_KEY, session.token);
+  await secureSetItem('deviceId', session.deviceId);
+  await secureSetItem(USER_KEY, JSON.stringify(session));
 };
 
 export const getDeviceId = async (): Promise<string | null> =>
-  AsyncStorage.getItem('deviceId');
+  secureGetItem('deviceId');
 
 export const getSession = async (): Promise<AuthSession | null> => {
-  const raw = await AsyncStorage.getItem(USER_KEY);
+  const raw = await secureGetItem(USER_KEY);
   return raw ? JSON.parse(raw) : null;
 };
 
 export const clearSession = async () => {
-  await AsyncStorage.multiRemove([TOKEN_KEY, USER_KEY, 'deviceId']);
+  await secureMultiRemove([TOKEN_KEY, USER_KEY, 'deviceId']);
 };
 
 export const getInitials = (name: string) => {

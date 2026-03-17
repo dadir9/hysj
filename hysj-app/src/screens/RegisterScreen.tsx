@@ -108,6 +108,7 @@ export default function RegisterScreen({ navigation }: Props) {
         phoneNumber: fullNumber,
         password,
         identityPublicKey: bundle.identityPublicKey,
+        identityDhPublicKey: bundle.identityDhPublicKey,
         deviceName: 'Mobile',
         signedPreKey: bundle.signedPreKey,
         signedPreKeySig: bundle.signedPreKeySig,
@@ -116,12 +117,27 @@ export default function RegisterScreen({ navigation }: Props) {
       });
       navigation.replace('Login');
     } catch (e: any) {
-      if (e.response?.status === 409) {
-        setError('Phone number already registered');
-      } else if (e.response?.status === 400) {
-        setError('Invalid key bundle. Please restart and try again.');
+      if (e.response) {
+        const status = e.response.status;
+        if (status === 409) {
+          setError('Phone number already registered');
+        } else if (status === 400) {
+          setError('Invalid key bundle. Please restart and try again.');
+        } else if (status === 429) {
+          const retryAfter = e.response.headers?.['retry-after'];
+          const mins = retryAfter ? Math.ceil(Number(retryAfter) / 60) : 15;
+          setError(`Too many attempts. Please try again in ${mins} minutes`);
+        } else if (status >= 500) {
+          setError('Server error. Please try again later');
+        } else {
+          setError('Something went wrong. Please try again');
+        }
+      } else if (e.code === 'ECONNABORTED') {
+        setError('Connection timed out. Check your internet');
+      } else if (!e.response && e.request) {
+        setError('No internet connection');
       } else {
-        setError('Connection error. Check your network and try again.');
+        setError('Something went wrong. Please try again');
       }
     } finally {
       setBusy(false);

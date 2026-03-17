@@ -1,6 +1,6 @@
 import * as SignalR from '@microsoft/signalr';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { HUB_URL } from './config';
+import { secureGetItem, secureSetItem, secureRemoveItem } from './secureStorage';
 import {
   ratchetEncrypt,
   ratchetDecrypt,
@@ -20,7 +20,7 @@ export const getHub = () => _connection;
 export const startHub = async (): Promise<SignalR.HubConnection> => {
   if (_connection?.state === SignalR.HubConnectionState.Connected) return _connection;
 
-  const token = await AsyncStorage.getItem('token');
+  const token = await secureGetItem('token');
 
   _connection = new SignalR.HubConnectionBuilder()
     .withUrl(HUB_URL, { accessTokenFactory: () => token ?? '' })
@@ -57,26 +57,25 @@ export const acknowledgeDelivery = async (
 const RATCHET_KEY_PREFIX = 'ratchet:';
 
 export async function loadRatchetState(conversationId: string): Promise<RatchetState | null> {
-  const json = await AsyncStorage.getItem(`${RATCHET_KEY_PREFIX}${conversationId}`);
+  const json = await secureGetItem(`${RATCHET_KEY_PREFIX}${conversationId}`);
   if (!json) return null;
   return deserializeState(json);
 }
 
 export async function saveRatchetState(conversationId: string, state: RatchetState): Promise<void> {
-  await AsyncStorage.setItem(`${RATCHET_KEY_PREFIX}${conversationId}`, serializeState(state));
+  await secureSetItem(`${RATCHET_KEY_PREFIX}${conversationId}`, serializeState(state));
 }
 
 export async function deleteRatchetState(conversationId: string): Promise<void> {
-  await AsyncStorage.removeItem(`${RATCHET_KEY_PREFIX}${conversationId}`);
+  await secureRemoveItem(`${RATCHET_KEY_PREFIX}${conversationId}`);
 }
 
 // ── Wire format: JSON envelope with base64-encoded fields ──
+// IMPORTANT: Sender identity (su/sn) is NEVER included in the wire format.
+// It is embedded inside the ratchet-encrypted payload so the server cannot
+// read who sent the message (Sealed Sender principle).
 
 interface WireMessage {
-  /** sender user id — needed so receiver knows who sent it */
-  su: string;
-  /** sender username */
-  sn: string;
   /** header: sender DH public key */
   dp: string;
   /** header: message index */
@@ -91,22 +90,28 @@ interface WireMessage {
     ek: string;
     /** Kyber ciphertext (base64) */
     kc: string;
-    /** Alice's identity public key (base64) */
+    /** Alice's X25519 identity DH public key (base64) — used for X3DH DH ops */
     ik: string;
     /** One-time pre-key used (base64) */
     ok: string;
   };
 }
 
+/** Plaintext envelope placed inside the ratchet-encrypted ciphertext */
+interface InnerPayload {
+  /** sender user id */
+  su: string;
+  /** sender username */
+  sn: string;
+  /** message text */
+  t: string;
+}
+
 function encryptedToWire(
-  senderUserId: string,
-  senderUsername: string,
   msg: EncryptedMessage,
-  handshake?: { ephemeralPublicKey: string; kyberCiphertext: string; identityPublicKey: string; oneTimePreKeyUsed?: string },
+  handshake?: { ephemeralPublicKey: string; kyberCiphertext: string; identityDhPublicKey: string; oneTimePreKeyUsed?: string },
 ): string {
   const wire: WireMessage = {
-    su: senderUserId,
-    sn: senderUsername,
     dp: toBase64(msg.header.dhPublic),
     mi: msg.header.messageIndex,
     pc: msg.header.previousChainLength,
@@ -116,7 +121,7 @@ function encryptedToWire(
     wire.x3dh = {
       ek: handshake.ephemeralPublicKey,
       kc: handshake.kyberCiphertext,
-      ik: handshake.identityPublicKey,
+      ik: handshake.identityDhPublicKey,
       ok: handshake.oneTimePreKeyUsed ?? '',
     };
   }
@@ -124,10 +129,8 @@ function encryptedToWire(
 }
 
 function wireToEncrypted(blob: string): {
-  senderUserId: string;
-  senderUsername: string;
   encrypted: EncryptedMessage;
-  x3dh?: { ephemeralPublicKey: string; kyberCiphertext: string; identityPublicKey: string; oneTimePreKeyUsed: string };
+  x3dh?: { ephemeralPublicKey: string; kyberCiphertext: string; identityDhPublicKey: string; oneTimePreKeyUsed: string };
 } | null {
   try {
     const wire: WireMessage = JSON.parse(atob(blob));
@@ -136,16 +139,17 @@ function wireToEncrypted(blob: string): {
       messageIndex: wire.mi,
       previousChainLength: wire.pc,
     };
-    const result: ReturnType<typeof wireToEncrypted> = {
-      senderUserId: wire.su,
-      senderUsername: wire.sn,
+    const result: {
+      encrypted: EncryptedMessage;
+      x3dh?: { ephemeralPublicKey: string; kyberCiphertext: string; identityDhPublicKey: string; oneTimePreKeyUsed: string };
+    } = {
       encrypted: { ciphertext: fromBase64(wire.ct), header },
     };
     if (wire.x3dh) {
       result.x3dh = {
         ephemeralPublicKey: wire.x3dh.ek,
         kyberCiphertext: wire.x3dh.kc,
-        identityPublicKey: wire.x3dh.ik,
+        identityDhPublicKey: wire.x3dh.ik,
         oneTimePreKeyUsed: wire.x3dh.ok,
       };
     }
@@ -174,7 +178,9 @@ export const sendMessage = async (
   }
 
   const messageId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-  const plaintext = encodeUtf8(text);
+  // Embed sender identity INSIDE the encrypted payload so the server never sees it
+  const innerPayload: InnerPayload = { su: senderUserId, sn: senderUsername, t: text };
+  const plaintext = encodeUtf8(JSON.stringify(innerPayload));
   const encrypted = ratchetEncrypt(ratchetState, plaintext);
 
   // Persist updated state immediately after encryption
@@ -184,7 +190,7 @@ export const sendMessage = async (
   // Lazy import to avoid circular dependency (sessionManager imports from chatHub)
   const { consumePendingHandshake } = await import('./sessionManager');
   const handshake = await consumePendingHandshake(conversationId);
-  const blob = encryptedToWire(senderUserId, senderUsername, encrypted, handshake ?? undefined);
+  const blob = encryptedToWire(encrypted, handshake ?? undefined);
   await _connection.invoke('SendMessage', {
     MessageId: messageId,
     RecipientDeviceId: recipientDeviceId,
@@ -208,14 +214,16 @@ export const decryptReceived = async (
   if (!parsed) return null;
 
   try {
-    const plaintext = ratchetDecrypt(ratchetState, parsed.encrypted);
+    const plainBytes = ratchetDecrypt(ratchetState, parsed.encrypted);
     // Persist updated state immediately after decryption
     await saveRatchetState(conversationId, ratchetState);
 
+    // Sender identity is embedded inside the encrypted payload
+    const inner: InnerPayload = JSON.parse(decodeUtf8(plainBytes));
     return {
-      senderUserId: parsed.senderUserId,
-      senderUsername: parsed.senderUsername,
-      text: decodeUtf8(plaintext),
+      senderUserId: inner.su,
+      senderUsername: inner.sn,
+      text: inner.t,
     };
   } catch {
     return null;
@@ -229,28 +237,11 @@ export const decryptReceived = async (
 export const extractX3DHHandshake = (blob: string): {
   ephemeralPublicKey: string;
   kyberCiphertext: string;
-  identityPublicKey: string;
+  identityDhPublicKey: string;
   oneTimePreKeyUsed: string;
 } | null => {
   const parsed = wireToEncrypted(blob);
   return parsed?.x3dh ?? null;
-};
-
-/**
- * Extract sender info from a blob without decrypting.
- * Works for both ratchet wire format and legacy format.
- */
-export const extractSender = (blob: string): { senderUserId: string; senderUsername: string } | null => {
-  try {
-    const parsed = JSON.parse(atob(blob));
-    // Ratchet wire format uses short keys
-    if (parsed.su && parsed.sn) return { senderUserId: parsed.su, senderUsername: parsed.sn };
-    // Legacy format
-    if (parsed.senderUserId && parsed.senderUsername) return parsed;
-    return null;
-  } catch {
-    return null;
-  }
 };
 
 /**

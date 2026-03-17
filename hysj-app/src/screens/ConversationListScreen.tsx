@@ -12,7 +12,7 @@ import { RootStackParamList, Conversation } from '../types';
 import { colors, font, spacing, radius } from '../constants/theme';
 import { getSession, getInitials, getAvatarColor, clearSession } from '../services/auth';
 import { getConversations, upsertConversation, deleteConversation } from '../services/localStore';
-import { startHub, stopHub, decryptReceived, decodeLegacyBlob, extractSender, loadRatchetState, acknowledgeDelivery } from '../services/chatHub';
+import { startHub, stopHub, decryptReceived, decodeLegacyBlob, loadRatchetState, acknowledgeDelivery } from '../services/chatHub';
 import { getUserStatusBatch } from '../services/api';
 
 type Props = { navigation: StackNavigationProp<RootStackParamList, 'ConversationList'> };
@@ -65,32 +65,42 @@ export default function ConversationListScreen({ navigation }: Props) {
 
           acknowledgeDelivery(messageId, s.deviceId).catch(() => {});
 
-          const sender = extractSender(blob);
-          if (!sender) return;
-
           const convs = await getConversations();
-          const existing = convs.find(c => c.peerUserId === sender.senderUserId);
-          const convId = existing?.id ?? sender.senderUserId;
-          const peerDeviceId = existing?.peerDeviceId ?? '';
 
-          let previewText = '';
-          const ratchet = await loadRatchetState(convId);
-          if (ratchet) {
-            const decrypted = await decryptReceived(blob, convId, ratchet);
-            if (decrypted) previewText = decrypted.text;
+          // Sender identity is ONLY available inside the encrypted payload (Sealed Sender).
+          // Try ratchet decryption against all known conversations to identify the sender.
+          let decoded: { senderUserId: string; senderUsername: string; text: string } | null = null;
+          let matchedConvId: string | null = null;
+
+          for (const conv of convs) {
+            const ratchet = await loadRatchetState(conv.id);
+            if (!ratchet) continue;
+            const result = await decryptReceived(blob, conv.id, ratchet);
+            if (result) {
+              decoded = result;
+              matchedConvId = conv.id;
+              break;
+            }
           }
-          if (!previewText) {
+
+          // Fall back to legacy format (unencrypted blobs from before ratchet)
+          if (!decoded) {
             const legacy = decodeLegacyBlob(blob);
-            if (legacy) previewText = legacy.text;
+            if (legacy) decoded = legacy;
           }
-          if (!previewText) previewText = '[encrypted message]';
+
+          if (!decoded) return; // Cannot identify sender — discard
+
+          const existing = convs.find(c => c.peerUserId === decoded!.senderUserId);
+          const convId = matchedConvId ?? existing?.id ?? decoded.senderUserId;
+          const peerDeviceId = existing?.peerDeviceId ?? '';
 
           await upsertConversation({
             id: convId,
-            peerUserId: sender.senderUserId,
-            peerUsername: sender.senderUsername,
+            peerUserId: decoded.senderUserId,
+            peerUsername: decoded.senderUsername,
             peerDeviceId,
-            lastMessagePreview: previewText,
+            lastMessagePreview: decoded.text,
             lastMessageAt: new Date().toISOString(),
             unreadCount: (existing?.unreadCount ?? 0) + 1,
           });

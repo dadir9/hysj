@@ -11,6 +11,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getHub } from './chatHub';
 import { wipeAllKeys } from './keyManager';
+import { secureGetItem, secureSetItem, secureRemoveItem, destroyMasterKey } from './secureStorage';
 
 export type WipeType = 'All' | 'Conversation' | 'Device';
 
@@ -44,7 +45,7 @@ export function registerWipeListener(): void {
 
     // Acknowledge wipe to server (matches ChatHub.AcknowledgeWipe)
     try {
-      const deviceId = await AsyncStorage.getItem('deviceId');
+      const deviceId = await secureGetItem('deviceId');
       await hub.invoke('AcknowledgeWipe', {
         WipeId: command.wipeId,
         DeviceId: deviceId,
@@ -81,6 +82,9 @@ async function wipeEverything(): Promise<void> {
   // Wipe all crypto keys
   await wipeAllKeys();
 
+  // Destroy the master encryption key — makes all encrypted data unrecoverable
+  await destroyMasterKey();
+
   // Get all AsyncStorage keys and remove everything
   const allKeys = await AsyncStorage.getAllKeys();
   if (allKeys.length > 0) {
@@ -91,20 +95,20 @@ async function wipeEverything(): Promise<void> {
 /** Delete a single conversation's messages and ratchet state. */
 async function wipeConversation(conversationId: string): Promise<void> {
   // Remove ratchet state
-  await AsyncStorage.removeItem(`ratchet:${conversationId}`);
+  await secureRemoveItem(`ratchet:${conversationId}`);
 
   // Remove X3DH pending handshake data
-  await AsyncStorage.removeItem(`x3dh:pending:${conversationId}`);
+  await secureRemoveItem(`x3dh:pending:${conversationId}`);
 
   // Remove messages
-  await AsyncStorage.removeItem(`messages:${conversationId}`);
+  await secureRemoveItem(`messages:${conversationId}`);
 
   // Remove conversation from list
-  const raw = await AsyncStorage.getItem('conversations');
+  const raw = await secureGetItem('conversations');
   if (raw) {
     const convs = JSON.parse(raw);
     const filtered = convs.filter((c: { id: string }) => c.id !== conversationId);
-    await AsyncStorage.setItem('conversations', JSON.stringify(filtered));
+    await secureSetItem('conversations', JSON.stringify(filtered));
   }
 }
 

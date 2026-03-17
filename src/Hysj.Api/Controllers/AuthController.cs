@@ -90,4 +90,18 @@ public class AuthController(IAuthService authService, ICertificateService certif
             return Unauthorized(new { error = "Invalid credentials or 2FA code." });
         }
     }
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequestDto request)
+    {
+        try
+        {
+            var result = await authService.RefreshTokenAsync(request.RefreshToken);
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new { error = "Invalid or expired refresh token." });
+        }
+    }
 }

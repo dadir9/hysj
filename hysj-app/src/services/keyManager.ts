@@ -8,9 +8,9 @@
  *   - One-time pre-keys (X25519, consumed on use)
  *   - Kyber key pair (ML-KEM-768, for post-quantum hybrid X3DH)
  *
- * Keys are stored in AsyncStorage (should migrate to SecureStore in production).
+ * Keys are encrypted at rest via secureStorage (XChaCha20-Poly1305).
  */
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { secureSetItem, secureGetItem, secureRemoveItem, secureGetAllKeys, secureMultiRemove } from './secureStorage';
 import {
   generateKeyPair,
   generateSigningKeyPair,
@@ -42,48 +42,48 @@ const PREKEY_REPLENISH_THRESHOLD = 5;
 // ── Ed25519 identity key pair (for signatures) ────────
 
 export async function getOrCreateEd25519KeyPair(): Promise<SigningKeyPair> {
-  const existing = await AsyncStorage.getItem(ED25519_SECRET);
+  const existing = await secureGetItem(ED25519_SECRET);
   if (existing) {
-    const pub = await AsyncStorage.getItem(ED25519_PUBLIC);
+    const pub = await secureGetItem(ED25519_PUBLIC);
     return {
       secretKey: fromBase64(existing),
       publicKey: fromBase64(pub!),
     };
   }
   const kp = generateSigningKeyPair();
-  await AsyncStorage.setItem(ED25519_SECRET, toBase64(kp.secretKey));
-  await AsyncStorage.setItem(ED25519_PUBLIC, toBase64(kp.publicKey));
+  await secureSetItem(ED25519_SECRET, toBase64(kp.secretKey));
+  await secureSetItem(ED25519_PUBLIC, toBase64(kp.publicKey));
   return kp;
 }
 
 // ── X25519 identity key pair (for DH exchange) ────────
 
 export async function getOrCreateIdentityKeyPair(): Promise<KeyPair> {
-  const existing = await AsyncStorage.getItem(IDENTITY_SECRET);
+  const existing = await secureGetItem(IDENTITY_SECRET);
   if (existing) {
-    const pub = await AsyncStorage.getItem(IDENTITY_PUBLIC);
+    const pub = await secureGetItem(IDENTITY_PUBLIC);
     return {
       secretKey: fromBase64(existing),
       publicKey: fromBase64(pub!),
     };
   }
   const kp = generateKeyPair();
-  await AsyncStorage.setItem(IDENTITY_SECRET, toBase64(kp.secretKey));
-  await AsyncStorage.setItem(IDENTITY_PUBLIC, toBase64(kp.publicKey));
+  await secureSetItem(IDENTITY_SECRET, toBase64(kp.secretKey));
+  await secureSetItem(IDENTITY_PUBLIC, toBase64(kp.publicKey));
   return kp;
 }
 
 export async function getIdentityPublicKey(): Promise<Uint8Array | null> {
-  const pub = await AsyncStorage.getItem(IDENTITY_PUBLIC);
+  const pub = await secureGetItem(IDENTITY_PUBLIC);
   return pub ? fromBase64(pub) : null;
 }
 
 // ── Signed pre-key ─────────────────────────────────────
 
 export async function getOrCreateSignedPreKey(): Promise<KeyPair> {
-  const existing = await AsyncStorage.getItem(SPK_SECRET);
+  const existing = await secureGetItem(SPK_SECRET);
   if (existing) {
-    const pub = await AsyncStorage.getItem(SPK_PUBLIC);
+    const pub = await secureGetItem(SPK_PUBLIC);
     return {
       secretKey: fromBase64(existing),
       publicKey: fromBase64(pub!),
@@ -94,25 +94,25 @@ export async function getOrCreateSignedPreKey(): Promise<KeyPair> {
 
 export async function rotateSignedPreKey(): Promise<KeyPair> {
   const kp = generateKeyPair();
-  await AsyncStorage.setItem(SPK_SECRET, toBase64(kp.secretKey));
-  await AsyncStorage.setItem(SPK_PUBLIC, toBase64(kp.publicKey));
+  await secureSetItem(SPK_SECRET, toBase64(kp.secretKey));
+  await secureSetItem(SPK_PUBLIC, toBase64(kp.publicKey));
   return kp;
 }
 
 // ── Kyber key pair (ML-KEM-768) ─────────────────────────
 
 export async function getOrCreateKyberKeyPair(): Promise<KyberKeyPair> {
-  const existing = await AsyncStorage.getItem(KYBER_SECRET);
+  const existing = await secureGetItem(KYBER_SECRET);
   if (existing) {
-    const pub = await AsyncStorage.getItem(KYBER_PUBLIC);
+    const pub = await secureGetItem(KYBER_PUBLIC);
     return {
       secretKey: fromBase64(existing),
       publicKey: fromBase64(pub!),
     };
   }
   const kp = await kyberGenerateKeyPair();
-  await AsyncStorage.setItem(KYBER_SECRET, toBase64(kp.secretKey));
-  await AsyncStorage.setItem(KYBER_PUBLIC, toBase64(kp.publicKey));
+  await secureSetItem(KYBER_SECRET, toBase64(kp.secretKey));
+  await secureSetItem(KYBER_PUBLIC, toBase64(kp.publicKey));
   return kp;
 }
 
@@ -120,32 +120,32 @@ export async function getOrCreateKyberKeyPair(): Promise<KyberKeyPair> {
 
 /** Generate a batch of one-time pre-keys and store secrets locally. */
 export async function generateOneTimePreKeys(count: number = PREKEY_BATCH_SIZE): Promise<Uint8Array[]> {
-  const rawIndex = await AsyncStorage.getItem(OTP_INDEX);
+  const rawIndex = await secureGetItem(OTP_INDEX);
   let startIndex = rawIndex ? parseInt(rawIndex, 10) : 0;
   const publicKeys: Uint8Array[] = [];
 
   for (let i = 0; i < count; i++) {
     const kp = generateKeyPair();
     const idx = startIndex + i;
-    await AsyncStorage.setItem(`${OTP_PREFIX}${idx}:secret`, toBase64(kp.secretKey));
-    await AsyncStorage.setItem(`${OTP_PREFIX}${idx}:public`, toBase64(kp.publicKey));
+    await secureSetItem(`${OTP_PREFIX}${idx}:secret`, toBase64(kp.secretKey));
+    await secureSetItem(`${OTP_PREFIX}${idx}:public`, toBase64(kp.publicKey));
     publicKeys.push(kp.publicKey);
   }
-  await AsyncStorage.setItem(OTP_INDEX, String(startIndex + count));
+  await secureSetItem(OTP_INDEX, String(startIndex + count));
   return publicKeys;
 }
 
 /** Look up a one-time pre-key secret by its public key. */
 export async function consumeOneTimePreKey(publicKeyB64: string): Promise<Uint8Array | null> {
-  const rawIndex = await AsyncStorage.getItem(OTP_INDEX);
+  const rawIndex = await secureGetItem(OTP_INDEX);
   const total = rawIndex ? parseInt(rawIndex, 10) : 0;
   for (let i = 0; i < total; i++) {
-    const pub = await AsyncStorage.getItem(`${OTP_PREFIX}${i}:public`);
+    const pub = await secureGetItem(`${OTP_PREFIX}${i}:public`);
     if (pub === publicKeyB64) {
-      const secret = await AsyncStorage.getItem(`${OTP_PREFIX}${i}:secret`);
+      const secret = await secureGetItem(`${OTP_PREFIX}${i}:secret`);
       // Mark as consumed
-      await AsyncStorage.removeItem(`${OTP_PREFIX}${i}:secret`);
-      await AsyncStorage.removeItem(`${OTP_PREFIX}${i}:public`);
+      await secureRemoveItem(`${OTP_PREFIX}${i}:secret`);
+      await secureRemoveItem(`${OTP_PREFIX}${i}:public`);
       return secret ? fromBase64(secret) : null;
     }
   }
@@ -167,6 +167,7 @@ export async function consumeOneTimePreKey(publicKeyB64: string): Promise<Uint8A
  */
 export async function generateRegistrationBundle(): Promise<{
   identityPublicKey: string;
+  identityDhPublicKey: string;
   signedPreKey: string;
   signedPreKeySig: string;
   oneTimePreKeys: string[];
@@ -175,8 +176,8 @@ export async function generateRegistrationBundle(): Promise<{
   // Ed25519 identity key pair (for signatures — sent to backend)
   const ed25519 = await getOrCreateEd25519KeyPair();
 
-  // X25519 identity key pair (for DH — used locally in X3DH)
-  await getOrCreateIdentityKeyPair();
+  // X25519 identity key pair (for DH — sent to backend + used locally in X3DH)
+  const identityDh = await getOrCreateIdentityKeyPair();
 
   const spk = await getOrCreateSignedPreKey();
   const kyber = await getOrCreateKyberKeyPair();
@@ -187,6 +188,7 @@ export async function generateRegistrationBundle(): Promise<{
 
   return {
     identityPublicKey: toBase64(ed25519.publicKey),
+    identityDhPublicKey: toBase64(identityDh.publicKey),
     signedPreKey: toBase64(spk.publicKey),
     signedPreKeySig: toBase64(spkSignature),
     oneTimePreKeys: otpKeys.map(k => toBase64(k)),
@@ -217,9 +219,9 @@ export async function replenishPreKeysIfNeeded(deviceId: string): Promise<void> 
 
 /** Delete all locally stored keys. Called during remote wipe. */
 export async function wipeAllKeys(): Promise<void> {
-  const allKeys = await AsyncStorage.getAllKeys();
-  const keyManagerKeys = allKeys.filter(k => k.startsWith('keys:'));
+  const allKeys = await secureGetAllKeys();
+  const keyManagerKeys = [...allKeys].filter(k => k.startsWith('keys:'));
   if (keyManagerKeys.length > 0) {
-    await AsyncStorage.multiRemove(keyManagerKeys);
+    await secureMultiRemove(keyManagerKeys);
   }
 }

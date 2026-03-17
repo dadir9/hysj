@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View, Text, FlatList, TextInput, TouchableOpacity,
   StyleSheet, SafeAreaView, KeyboardAvoidingView, Platform, ActivityIndicator,
+  Animated,
 } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
@@ -9,7 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList, Message } from '../types';
 import { colors, font, spacing, radius } from '../constants/theme';
 import { getInitials, getAvatarColor, getSession } from '../services/auth';
-import { startHub, sendMessage, decryptReceived, decodeLegacyBlob, loadRatchetState, acknowledgeDelivery, extractX3DHHandshake } from '../services/chatHub';
+import { startHub, getHub, sendMessage, decryptReceived, decodeLegacyBlob, loadRatchetState, acknowledgeDelivery, extractX3DHHandshake } from '../services/chatHub';
 import { getMessages, appendMessage, upsertConversation, markRead } from '../services/localStore';
 import { registerWipeListener, onWipeExecuted } from '../services/wipeService';
 import { replenishPreKeysIfNeeded } from '../services/keyManager';
@@ -31,10 +32,16 @@ export default function ChatScreen({ navigation, route }: Props) {
   const [sessionReady, setSessionReady] = useState(false);
   const [peerOnline, setPeerOnline] = useState<boolean | null>(null);
   const [peerLastSeen, setPeerLastSeen] = useState<string | null>(null);
+  const [peerTyping, setPeerTyping] = useState(false);
   const listRef = useRef<FlatList>(null);
   const myUserIdRef = useRef('');
   const myUsernameRef = useRef('');
   const ratchetRef = useRef<RatchetState | null>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTypingSentRef = useRef(0);
+  const dot1 = useRef(new Animated.Value(0)).current;
+  const dot2 = useRef(new Animated.Value(0)).current;
+  const dot3 = useRef(new Animated.Value(0)).current;
 
   const formatTime = (iso: string) => {
     const d = new Date(iso);
@@ -66,6 +73,35 @@ export default function ChatScreen({ navigation, route }: Props) {
     if (hubError) return colors.danger;
     return colors.textSecondary;
   };
+
+  // Typing dot animation
+  useEffect(() => {
+    if (!peerTyping) return;
+    const animate = (dot: Animated.Value, delay: number) =>
+      Animated.loop(
+        Animated.sequence([
+          Animated.delay(delay),
+          Animated.timing(dot, { toValue: 1, duration: 300, useNativeDriver: true }),
+          Animated.timing(dot, { toValue: 0, duration: 300, useNativeDriver: true }),
+        ]),
+      );
+    const a1 = animate(dot1, 0);
+    const a2 = animate(dot2, 150);
+    const a3 = animate(dot3, 300);
+    a1.start(); a2.start(); a3.start();
+    return () => { a1.stop(); a2.stop(); a3.stop(); dot1.setValue(0); dot2.setValue(0); dot3.setValue(0); };
+  }, [peerTyping]);
+
+  const handleTextChange = useCallback((value: string) => {
+    setText(value);
+    const now = Date.now();
+    if (now - lastTypingSentRef.current < 3000) return;
+    lastTypingSentRef.current = now;
+    const hub = getHub();
+    if (hub) {
+      hub.invoke('SendTypingIndicator', conversation.peerDeviceId, true).catch(() => {});
+    }
+  }, [conversation.peerDeviceId]);
 
   const reload = async () => {
     const msgs = await getMessages(conversation.id);
@@ -135,8 +171,20 @@ export default function ChatScreen({ navigation, route }: Props) {
           ));
         });
 
-        hub.on('ReceiveMessage', async (messageId: string, blob: string) => {
+        hub.on('UserTyping', (userId: string, isTyping: boolean) => {
+          if (!mounted || userId !== conversation.peerUserId) return;
+          setPeerTyping(isTyping);
+          if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+          if (isTyping) {
+            typingTimeoutRef.current = setTimeout(() => {
+              if (mounted) setPeerTyping(false);
+            }, 3000);
+          }
+        });
+
+        hub.on('ReceiveMessage', async (msg: { messageId: string; encryptedBlob: string }) => {
           if (!mounted) return;
+          const { messageId, encryptedBlob: blob } = msg;
 
           // Acknowledge delivery so server deletes from Redis
           acknowledgeDelivery(messageId, s.deviceId).catch(() => {});
@@ -165,7 +213,7 @@ export default function ChatScreen({ navigation, route }: Props) {
 
           if (!decoded || decoded.senderUserId !== conversation.peerUserId) return;
 
-          const msg: Message = {
+          const incoming: Message = {
             id: messageId,
             conversationId: conversation.id,
             content: decoded.text,
@@ -173,15 +221,15 @@ export default function ChatScreen({ navigation, route }: Props) {
             senderAlias: decoded.senderUsername,
             sentAt: new Date().toISOString(),
           };
-          await appendMessage(conversation.id, msg);
+          await appendMessage(conversation.id, incoming);
           await upsertConversation({
             ...conversation,
             lastMessagePreview: decoded.text,
-            lastMessageAt: msg.sentAt,
+            lastMessageAt: incoming.sentAt,
             unreadCount: 0,
           });
           if (mounted) {
-            setMessages(prev => [...prev, msg]);
+            setMessages(prev => [...prev, incoming]);
             setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 100);
           }
         });
@@ -277,8 +325,33 @@ export default function ChatScreen({ navigation, route }: Props) {
     }
   };
 
-  const renderItem = ({ item }: { item: Message }) => (
+  const formatDateSeparator = (iso: string): string => {
+    const d = new Date(iso);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const msgDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const diffDays = Math.round((today.getTime() - msgDay.getTime()) / 86400000);
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  };
+
+  const shouldShowDateSeparator = (index: number): boolean => {
+    if (index === 0) return true;
+    const curr = new Date(messages[index].sentAt);
+    const prev = new Date(messages[index - 1].sentAt);
+    return curr.toDateString() !== prev.toDateString();
+  };
+
+  const renderItem = ({ item, index }: { item: Message; index: number }) => (
     <View>
+      {shouldShowDateSeparator(index) && (
+        <View style={styles.dateSeparator}>
+          <View style={styles.dateLine} />
+          <Text style={styles.dateText}>{formatDateSeparator(item.sentAt)}</Text>
+          <View style={styles.dateLine} />
+        </View>
+      )}
       {item.isOutgoing ? (
         <View style={styles.rowOut}>
           <View style={[styles.bubbleOut, item.sendFailed && styles.bubbleOutFailed]}>

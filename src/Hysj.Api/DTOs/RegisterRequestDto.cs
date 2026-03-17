@@ -9,5 +9,6 @@ public record RegisterRequestDto(
     byte[] SignedPreKey,
     byte[] SignedPreKeySig,
     byte[][] OneTimePreKeys,
-    byte[]? KyberPublicKey = null
+    byte[]? KyberPublicKey = null,
+    byte[]? IdentityDhPublicKey = null
 );

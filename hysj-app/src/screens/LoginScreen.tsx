@@ -101,7 +101,26 @@ export default function LoginScreen({ navigation }: Props) {
       });
       navigation.replace('ConversationList');
     } catch (e: any) {
-      setError(e.response?.status === 401 ? 'Invalid credentials' : 'Connection error');
+      if (e.response) {
+        const status = e.response.status;
+        if (status === 401) {
+          setError('Invalid phone number or password');
+        } else if (status === 429) {
+          const retryAfter = e.response.headers?.['retry-after'];
+          const mins = retryAfter ? Math.ceil(Number(retryAfter) / 60) : 15;
+          setError(`Too many attempts. Please try again in ${mins} minutes`);
+        } else if (status >= 500) {
+          setError('Server error. Please try again later');
+        } else {
+          setError('Something went wrong. Please try again');
+        }
+      } else if (e.code === 'ECONNABORTED') {
+        setError('Connection timed out. Check your internet');
+      } else if (!e.response && e.request) {
+        setError('No internet connection');
+      } else {
+        setError('Something went wrong. Please try again');
+      }
     } finally {
       setBusy(false);
     }
@@ -141,6 +160,8 @@ export default function LoginScreen({ navigation }: Props) {
               style={styles.countryBtn}
               onPress={openModal}
               activeOpacity={0.7}
+              accessibilityLabel={`Select country, currently ${country.name} +${country.dial}`}
+              accessibilityRole="button"
             >
               <Text style={styles.flag}>{country.flag}</Text>
               <Text style={styles.dialCode}>+{country.dial}</Text>
@@ -155,6 +176,7 @@ export default function LoginScreen({ navigation }: Props) {
               onChangeText={setPhone}
               keyboardType="phone-pad"
               returnKeyType="next"
+              accessibilityLabel="Phone number"
             />
           </View>
 
@@ -168,11 +190,12 @@ export default function LoginScreen({ navigation }: Props) {
             secureTextEntry
             returnKeyType="done"
             onSubmitEditing={handleLogin}
+            accessibilityLabel="Password"
           />
 
           {/* Error */}
           {!!error && (
-            <View style={styles.errorRow}>
+            <View style={styles.errorRow} accessible={true} accessibilityRole="alert" accessibilityLabel={error}>
               <Ionicons name="alert-circle" size={16} color={colors.danger} />
               <Text style={styles.errorText}>{error}</Text>
             </View>
@@ -184,6 +207,9 @@ export default function LoginScreen({ navigation }: Props) {
             onPress={handleLogin}
             disabled={busy}
             activeOpacity={0.8}
+            accessibilityLabel={busy ? 'Signing in' : 'Sign in'}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: busy }}
           >
             {busy
               ? <ActivityIndicator color={colors.white} />

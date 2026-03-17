@@ -19,8 +19,19 @@ export default function NewChatScreen({ navigation }: Props) {
   const [error, setError]   = useState('');
   const [busy, setBusy]     = useState(false);
 
+  const validateUsername = (input: string): string | null => {
+    const trimmed = input.trim();
+    if (!trimmed) return 'Please enter a username';
+    if (trimmed.length < 2) return 'Username must be at least 2 characters';
+    if (trimmed.length > 50) return 'Username must be 50 characters or less';
+    if (!/^[a-zA-Z0-9._-]+$/.test(trimmed))
+      return 'Username can only contain letters, numbers, dots, hyphens, and underscores';
+    return null;
+  };
+
   const handleSearch = async () => {
-    if (!query.trim()) return;
+    const validationError = validateUsername(query);
+    if (validationError) { setError(validationError); return; }
     setBusy(true); setError(''); setResult(null);
     try {
       const res = await lookupUser(query.trim());
@@ -78,6 +89,7 @@ export default function NewChatScreen({ navigation }: Props) {
               value={query}
               onChangeText={setQuery}
               autoCapitalize="none"
+              maxLength={50}
               returnKeyType="search"
               onSubmitEditing={handleSearch}
             />

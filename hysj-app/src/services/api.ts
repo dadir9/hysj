@@ -1,6 +1,6 @@
-import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios, { AxiosError } from 'axios';
 import { BASE_URL as BASE } from './config';
+import { getSession, saveSession } from './auth';
 
 const BASE_URL = `${BASE}/api`;
 
@@ -11,10 +11,67 @@ const api = axios.create({
 
 // Attach JWT automatically
 api.interceptors.request.use(async (config) => {
-  const token = await AsyncStorage.getItem('token');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+  const session = await getSession();
+  if (session?.token) config.headers.Authorization = `Bearer ${session.token}`;
   return config;
 });
+
+// Token refresh on 401
+let isRefreshing = false;
+let failedQueue: { resolve: (v: unknown) => void; reject: (e: unknown) => void }[] = [];
+
+const processQueue = (error: unknown) => {
+  failedQueue.forEach(p => (error ? p.reject(error) : p.resolve(undefined)));
+  failedQueue = [];
+};
+
+api.interceptors.response.use(
+  response => response,
+  async (error: AxiosError) => {
+    const originalRequest = error.config as any;
+
+    if (error.response?.status !== 401 || originalRequest._retry || originalRequest.url?.includes('/auth/')) {
+      return Promise.reject(error);
+    }
+
+    if (isRefreshing) {
+      return new Promise((resolve, reject) => {
+        failedQueue.push({ resolve, reject });
+      }).then(() => api(originalRequest));
+    }
+
+    originalRequest._retry = true;
+    isRefreshing = true;
+
+    try {
+      const session = await getSession();
+      if (!session?.refreshToken) {
+        processQueue(error);
+        return Promise.reject(error);
+      }
+
+      const { data } = await axios.post(`${BASE_URL}/auth/refresh`, {
+        refreshToken: session.refreshToken,
+      });
+
+      await saveSession({
+        ...session,
+        token: data.token,
+        refreshToken: data.refreshToken,
+        expiresAt: data.expiresAt,
+      });
+
+      processQueue(null);
+      originalRequest.headers.Authorization = `Bearer ${data.token}`;
+      return api(originalRequest);
+    } catch (refreshError) {
+      processQueue(refreshError);
+      return Promise.reject(refreshError);
+    } finally {
+      isRefreshing = false;
+    }
+  }
+);
 
 // ── Auth ──────────────────────────────────────────────
 export const register = (data: {
@@ -22,6 +79,7 @@ export const register = (data: {
   phoneNumber: string;
   password: string;
   identityPublicKey: string;
+  identityDhPublicKey?: string;
   deviceName: string;
   signedPreKey: string;
   signedPreKeySig: string;

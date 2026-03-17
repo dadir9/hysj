@@ -1,9 +1,9 @@
 namespace Hysj.Api.DTOs;
 
-public record LoginResponseDto(
+public record RefreshTokenRequestDto(string RefreshToken);
+
+public record RefreshResponseDto(
     string Token,
     string RefreshToken,
-    Guid UserId,
-    Guid DeviceId,
     DateTimeOffset ExpiresAt
 );

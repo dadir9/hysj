@@ -12,6 +12,7 @@ import {
   generateKeyPair,
   fromBase64,
   toBase64,
+  verify,
   type RatchetState,
 } from '../crypto';
 import { getPreKeyBundle } from './api';
@@ -40,13 +41,23 @@ export async function establishOutgoingSession(
   const res = await getPreKeyBundle(peerDeviceId);
   const bundle = res.data;
 
+  // Verify SignedPreKey signature using peer's Ed25519 identity key
+  const peerIdentitySigningKey = fromBase64(bundle.identityPublicKey);
+  const peerSignedPreKey = fromBase64(bundle.signedPreKey);
+  const peerSignedPreKeySig = fromBase64(bundle.signedPreKeySig);
+  if (!verify(peerSignedPreKey, peerSignedPreKeySig, peerIdentitySigningKey)) {
+    throw new Error('SignedPreKey signature verification failed — possible MITM attack');
+  }
+
+  // Use X25519 DH identity keys for X3DH (not Ed25519 signing keys)
   const identity = await getOrCreateIdentityKeyPair();
+  const peerIdentityDhKey = fromBase64(bundle.identityDhPublicKey);
 
   // X3DH handshake (hybrid with ML-KEM-768)
   const { sharedSecret, ephemeralPublicKey, kyberCiphertext } = await x3dhInitiate(
     identity.secretKey,
-    fromBase64(bundle.identityPublicKey),
-    fromBase64(bundle.signedPreKey),
+    peerIdentityDhKey,
+    peerSignedPreKey,
     fromBase64(bundle.oneTimePreKey),
     fromBase64(bundle.kyberPublicKey),
   );
@@ -57,14 +68,15 @@ export async function establishOutgoingSession(
   // Persist
   await saveRatchetState(conversationId, state);
 
-  // Store handshake data so the first message includes it for the responder
-  const { default: AsyncStorage } = await import('@react-native-async-storage/async-storage');
-  await AsyncStorage.setItem(
+  // Store handshake data so the first message includes it for the responder.
+  // identityDhPublicKey = sender's X25519 DH key (for X3DH DH operations)
+  const { secureSetItem } = await import('./secureStorage');
+  await secureSetItem(
     `x3dh:pending:${conversationId}`,
     JSON.stringify({
       ephemeralPublicKey: toBase64(ephemeralPublicKey),
       kyberCiphertext: toBase64(kyberCiphertext),
-      identityPublicKey: toBase64(identity.publicKey),
+      identityDhPublicKey: toBase64(identity.publicKey),
       oneTimePreKeyUsed: bundle.oneTimePreKey,
     }),
   );
@@ -82,7 +94,7 @@ export async function establishIncomingSession(
   handshakeData: {
     ephemeralPublicKey: string;
     kyberCiphertext: string;
-    identityPublicKey: string;
+    identityDhPublicKey: string;
     oneTimePreKeyUsed: string;
   },
 ): Promise<RatchetState> {
@@ -97,12 +109,13 @@ export async function establishIncomingSession(
   }
 
   // X3DH responder side (hybrid with ML-KEM-768)
+  // Uses X25519 DH identity keys (not Ed25519 signing keys)
   const sharedSecret = await x3dhRespond(
     identity.secretKey,
     spk.secretKey,
     otpSecret,
     kyber.secretKey,
-    fromBase64(handshakeData.identityPublicKey),
+    fromBase64(handshakeData.identityDhPublicKey),
     fromBase64(handshakeData.ephemeralPublicKey),
     fromBase64(handshakeData.kyberCiphertext),
   );
@@ -125,13 +138,13 @@ export async function consumePendingHandshake(
 ): Promise<{
   ephemeralPublicKey: string;
   kyberCiphertext: string;
-  identityPublicKey: string;
+  identityDhPublicKey: string;
   oneTimePreKeyUsed?: string;
 } | null> {
-  const { default: AsyncStorage } = await import('@react-native-async-storage/async-storage');
+  const { secureGetItem, secureRemoveItem } = await import('./secureStorage');
   const key = `x3dh:pending:${conversationId}`;
-  const raw = await AsyncStorage.getItem(key);
+  const raw = await secureGetItem(key);
   if (!raw) return null;
-  await AsyncStorage.removeItem(key);
+  await secureRemoveItem(key);
   return JSON.parse(raw);
 }
