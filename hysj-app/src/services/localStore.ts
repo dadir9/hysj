@@ -27,6 +27,13 @@ export const appendMessage = async (convId: string, msg: Message): Promise<void>
   await AsyncStorage.setItem(`messages:${convId}`, JSON.stringify(msgs));
 };
 
+export const deleteConversation = async (convId: string): Promise<void> => {
+  const convs = await getConversations();
+  const filtered = convs.filter(c => c.id !== convId);
+  await AsyncStorage.setItem(CONV_KEY, JSON.stringify(filtered));
+  await AsyncStorage.removeItem(`messages:${convId}`);
+};
+
 export const markRead = async (convId: string): Promise<void> => {
   const convs = await getConversations();
   const conv = convs.find(c => c.id === convId);

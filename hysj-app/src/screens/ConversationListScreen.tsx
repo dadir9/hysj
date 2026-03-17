@@ -1,16 +1,17 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity,
   StyleSheet, SafeAreaView, ScrollView, Modal,
-  TextInput, Pressable, Image,
+  TextInput, Pressable, Image, Animated as RNAnimated, Alert,
 } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList, Conversation } from '../types';
 import { colors, font, spacing, radius } from '../constants/theme';
 import { getSession, getInitials, getAvatarColor, clearSession } from '../services/auth';
-import { getConversations, upsertConversation } from '../services/localStore';
+import { getConversations, upsertConversation, deleteConversation } from '../services/localStore';
 import { startHub, stopHub, decryptReceived, decodeLegacyBlob, extractSender, loadRatchetState, acknowledgeDelivery } from '../services/chatHub';
 import { getUserStatusBatch } from '../services/api';
 
@@ -122,33 +123,119 @@ export default function ConversationListScreen({ navigation }: Props) {
     ? conversations.filter(c => c.peerUsername.toLowerCase().includes(searchQuery.toLowerCase()))
     : conversations;
 
+  const openSwipeableRef = useRef<Swipeable | null>(null);
+
+  const handleDelete = (conv: Conversation) => {
+    Alert.alert(
+      'Delete conversation',
+      `Delete chat with ${conv.peerUsername}? This cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete', style: 'destructive',
+          onPress: async () => {
+            await deleteConversation(conv.id);
+            reload();
+          },
+        },
+      ],
+    );
+  };
+
+  const handleArchive = (conv: Conversation) => {
+    Alert.alert('Archived', `Chat with ${conv.peerUsername} archived.`);
+    openSwipeableRef.current?.close();
+  };
+
+  const renderRightActions = (
+    progress: RNAnimated.AnimatedInterpolation<number>,
+    _dragX: RNAnimated.AnimatedInterpolation<number>,
+    conv: Conversation,
+  ) => {
+    const translateMore = progress.interpolate({
+      inputRange: [0, 1],
+      outputRange: [192, 0],
+    });
+    const translateArchive = progress.interpolate({
+      inputRange: [0, 1],
+      outputRange: [128, 0],
+    });
+    const translateDelete = progress.interpolate({
+      inputRange: [0, 1],
+      outputRange: [64, 0],
+    });
+
+    return (
+      <View style={styles.swipeActionsRow}>
+        <RNAnimated.View style={{ transform: [{ translateX: translateMore }] }}>
+          <TouchableOpacity
+            style={[styles.swipeAction, styles.swipeMore]}
+            onPress={() => openSwipeableRef.current?.close()}
+          >
+            <Ionicons name="ellipsis-horizontal" size={22} color={colors.white} />
+            <Text style={styles.swipeActionText}>More</Text>
+          </TouchableOpacity>
+        </RNAnimated.View>
+        <RNAnimated.View style={{ transform: [{ translateX: translateArchive }] }}>
+          <TouchableOpacity
+            style={[styles.swipeAction, styles.swipeArchive]}
+            onPress={() => handleArchive(conv)}
+          >
+            <Ionicons name="archive" size={22} color={colors.white} />
+            <Text style={styles.swipeActionText}>Archive</Text>
+          </TouchableOpacity>
+        </RNAnimated.View>
+        <RNAnimated.View style={{ transform: [{ translateX: translateDelete }] }}>
+          <TouchableOpacity
+            style={[styles.swipeAction, styles.swipeDelete]}
+            onPress={() => handleDelete(conv)}
+          >
+            <Ionicons name="trash" size={22} color={colors.white} />
+            <Text style={styles.swipeActionText}>Delete</Text>
+          </TouchableOpacity>
+        </RNAnimated.View>
+      </View>
+    );
+  };
+
   const renderConversation = ({ item }: { item: Conversation }) => (
-    <TouchableOpacity
-      style={styles.convRow}
-      onPress={() => navigation.navigate('Chat', { conversation: item })}
-      activeOpacity={0.6}
+    <Swipeable
+      ref={(ref) => { if (ref) openSwipeableRef.current = ref; }}
+      renderRightActions={(progress, dragX) => renderRightActions(progress, dragX, item)}
+      overshootRight={false}
+      friction={2}
+      rightThreshold={40}
+      onSwipeableWillOpen={() => {
+        openSwipeableRef.current?.close();
+      }}
     >
-      <View style={styles.avatarWrap}>
-        <View style={[styles.avatar, { backgroundColor: getAvatarColor(item.peerUsername) }]}>
-          <Text style={styles.avatarText}>{getInitials(item.peerUsername)}</Text>
-        </View>
-        {item.isOnline && <View style={styles.onlineDot}/>}
-      </View>
-      <View style={styles.convInfo}>
-        <Text style={styles.convName} numberOfLines={1}>{item.peerUsername}</Text>
-        <Text style={styles.convPreview} numberOfLines={1}>
-          {item.lastMessagePreview || 'No messages yet'}
-        </Text>
-      </View>
-      <View style={styles.convMeta}>
-        <Text style={styles.convTime}>{formatTime(item.lastMessageAt)}</Text>
-        {item.unreadCount > 0 && (
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>{item.unreadCount}</Text>
+      <TouchableOpacity
+        style={styles.convRow}
+        onPress={() => navigation.navigate('Chat', { conversation: item })}
+        activeOpacity={0.6}
+      >
+        <View style={styles.avatarWrap}>
+          <View style={[styles.avatar, { backgroundColor: getAvatarColor(item.peerUsername) }]}>
+            <Text style={styles.avatarText}>{getInitials(item.peerUsername)}</Text>
           </View>
-        )}
-      </View>
-    </TouchableOpacity>
+          {item.isOnline && <View style={styles.onlineDot}/>}
+        </View>
+        <View style={styles.convInfo}>
+          <Text style={styles.convName} numberOfLines={1}>{item.peerUsername}</Text>
+          <Text style={styles.convPreview} numberOfLines={1}>
+            {item.lastMessagePreview || 'No messages yet'}
+          </Text>
+        </View>
+        <View style={styles.convMeta}>
+          <Text style={styles.convTime}>{formatTime(item.lastMessageAt)}</Text>
+          {item.unreadCount > 0 && (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>{item.unreadCount}</Text>
+            </View>
+          )}
+        </View>
+      </TouchableOpacity>
+    </Swipeable>
   );
 
   return (
@@ -448,6 +535,7 @@ const styles = StyleSheet.create({
   convRow: {
     flexDirection: 'row', alignItems: 'center',
     paddingVertical: 14, paddingHorizontal: 6,
+    backgroundColor: colors.bg,
   },
   avatarWrap: { position: 'relative', marginRight: 14 },
   avatar: {
@@ -475,6 +563,16 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', paddingHorizontal: 6,
   },
   badgeText: { color: colors.white, fontSize: 11, fontWeight: font.weights.bold },
+
+  // Swipe actions
+  swipeActionsRow: { flexDirection: 'row' },
+  swipeAction: {
+    width: 64, justifyContent: 'center', alignItems: 'center', gap: 4,
+  },
+  swipeMore: { backgroundColor: '#6B6B80' },
+  swipeArchive: { backgroundColor: '#8E8E93' },
+  swipeDelete: { backgroundColor: colors.danger },
+  swipeActionText: { color: colors.white, fontSize: 10, fontWeight: font.weights.medium },
 
   // Floating menu pill
   menuPill: {
