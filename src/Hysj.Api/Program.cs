@@ -125,28 +125,20 @@ using (var scope = app.Services.CreateScope())
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     try
     {
-        db.Database.Migrate();
-        logger.LogInformation("Database migration completed successfully.");
-    }
-    catch (Exception ex) when (app.Environment.IsDevelopment())
-    {
-        logger.LogWarning(ex, "PostgreSQL migration failed — falling back to SQLite for local dev.");
-
-        // Re-register with SQLite and retry
-        var sqliteOptions = new DbContextOptionsBuilder<HysjDbContext>()
-            .UseSqlite("Data Source=hysj_dev.db")
-            .Options;
-        using var sqliteDb = new HysjDbContext(sqliteOptions);
-        sqliteDb.Database.EnsureCreated();
-        logger.LogInformation("SQLite fallback database created at hysj_dev.db");
-
-        // Replace the DbContext registration for the rest of the app lifetime
-        builder.Services.AddDbContext<HysjDbContext>(options =>
-            options.UseSqlite("Data Source=hysj_dev.db"));
+        if (useSqlite)
+        {
+            db.Database.EnsureCreated();
+            logger.LogInformation("SQLite development database ready (hysj_dev.db).");
+        }
+        else
+        {
+            db.Database.Migrate();
+            logger.LogInformation("PostgreSQL database migration completed.");
+        }
     }
     catch (Exception ex)
     {
-        logger.LogWarning(ex, "Database migration failed — continuing startup (migrations may already be applied)");
+        logger.LogWarning(ex, "Database setup failed — continuing startup.");
     }
 }
 
