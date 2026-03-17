@@ -85,6 +85,17 @@ interface WireMessage {
   pc: number;
   /** ciphertext */
   ct: string;
+  /** X3DH handshake data (present only on the first message of a session) */
+  x3dh?: {
+    /** Alice's ephemeral public key (base64) */
+    ek: string;
+    /** Kyber ciphertext (base64) */
+    kc: string;
+    /** Alice's identity public key (base64) */
+    ik: string;
+    /** One-time pre-key used (base64) */
+    ok: string;
+  };
 }
 
 function encryptedToWire(

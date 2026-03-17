@@ -85,6 +85,9 @@ export default function ChatScreen({ navigation, route }: Props) {
         hub.on('ReceiveMessage', async (messageId: string, blob: string) => {
           if (!mounted) return;
 
+          // Acknowledge delivery so server deletes from Redis
+          acknowledgeDelivery(messageId, s.deviceId).catch(() => {});
+
           // Try ratchet decryption first, fall back to legacy
           let decoded: { senderUserId: string; senderUsername: string; text: string } | null = null;
 
