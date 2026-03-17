@@ -24,8 +24,8 @@ info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
 info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
       Executing OkObjectResult, writing value of type '<>f__AnonymousType0`1[[System.Byte[], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
 info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
-      Executed action Hysj.Api.Controllers.AuthController.GetServerPublicKey (Hysj.Api) in 39.7705ms
+      Executed action Hysj.Api.Controllers.AuthController.GetServerPublicKey (Hysj.Api) in 38.4947ms
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
       Executed endpoint 'Hysj.Api.Controllers.AuthController.GetServerPublicKey (Hysj.Api)'
 info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
-      Request finished HTTP/1.1 GET http://localhost:5076/api/auth/server-public-key - 200 - application/json;+charset=utf-8 158.4135ms
+      Request finished HTTP/1.1 GET http://localhost:5076/api/auth/server-public-key - 200 - application/json;+charset=utf-8 151.3433ms
