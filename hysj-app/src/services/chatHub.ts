@@ -12,6 +12,7 @@ import {
   fromBase64,
 } from '../crypto';
 import type { RatchetState, EncryptedMessage, MessageHeader } from '../crypto';
+import { consumePendingHandshake } from './sessionManager';
 
 let _connection: SignalR.HubConnection | null = null;
 
@@ -102,6 +103,7 @@ function encryptedToWire(
   senderUserId: string,
   senderUsername: string,
   msg: EncryptedMessage,
+  handshake?: { ephemeralPublicKey: string; kyberCiphertext: string; identityPublicKey: string; oneTimePreKeyUsed?: string },
 ): string {
   const wire: WireMessage = {
     su: senderUserId,
@@ -111,6 +113,14 @@ function encryptedToWire(
     pc: msg.header.previousChainLength,
     ct: toBase64(msg.ciphertext),
   };
+  if (handshake) {
+    wire.x3dh = {
+      ek: handshake.ephemeralPublicKey,
+      kc: handshake.kyberCiphertext,
+      ik: handshake.identityPublicKey,
+      ok: handshake.oneTimePreKeyUsed ?? '',
+    };
+  }
   return btoa(JSON.stringify(wire));
 }
 
@@ -118,6 +128,7 @@ function wireToEncrypted(blob: string): {
   senderUserId: string;
   senderUsername: string;
   encrypted: EncryptedMessage;
+  x3dh?: { ephemeralPublicKey: string; kyberCiphertext: string; identityPublicKey: string; oneTimePreKeyUsed: string };
 } | null {
   try {
     const wire: WireMessage = JSON.parse(atob(blob));
@@ -126,11 +137,20 @@ function wireToEncrypted(blob: string): {
       messageIndex: wire.mi,
       previousChainLength: wire.pc,
     };
-    return {
+    const result: ReturnType<typeof wireToEncrypted> = {
       senderUserId: wire.su,
       senderUsername: wire.sn,
       encrypted: { ciphertext: fromBase64(wire.ct), header },
     };
+    if (wire.x3dh) {
+      result.x3dh = {
+        ephemeralPublicKey: wire.x3dh.ek,
+        kyberCiphertext: wire.x3dh.kc,
+        identityPublicKey: wire.x3dh.ik,
+        oneTimePreKeyUsed: wire.x3dh.ok,
+      };
+    }
+    return result;
   } catch {
     return null;
   }
@@ -161,7 +181,9 @@ export const sendMessage = async (
   // Persist updated state immediately after encryption
   await saveRatchetState(conversationId, ratchetState);
 
-  const blob = encryptedToWire(senderUserId, senderUsername, encrypted);
+  // Include X3DH handshake data in the first message so the responder can establish the session
+  const handshake = await consumePendingHandshake(conversationId);
+  const blob = encryptedToWire(senderUserId, senderUsername, encrypted, handshake ?? undefined);
   await _connection.invoke('SendMessage', {
     MessageId: messageId,
     RecipientDeviceId: recipientDeviceId,
@@ -197,6 +219,20 @@ export const decryptReceived = async (
   } catch {
     return null;
   }
+};
+
+/**
+ * Extract X3DH handshake data from a received blob (if present).
+ * Used by the responder (Bob) to establish an incoming session from the first message.
+ */
+export const extractX3DHHandshake = (blob: string): {
+  ephemeralPublicKey: string;
+  kyberCiphertext: string;
+  identityPublicKey: string;
+  oneTimePreKeyUsed: string;
+} | null => {
+  const parsed = wireToEncrypted(blob);
+  return parsed?.x3dh ?? null;
 };
 
 /**

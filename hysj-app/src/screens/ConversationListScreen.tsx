@@ -10,7 +10,7 @@ import { RootStackParamList, Conversation } from '../types';
 import { colors, font, spacing, radius } from '../constants/theme';
 import { getSession, getInitials, getAvatarColor, clearSession } from '../services/auth';
 import { getConversations, upsertConversation } from '../services/localStore';
-import { startHub, stopHub, decryptReceived, decodeLegacyBlob, extractSender, loadRatchetState } from '../services/chatHub';
+import { startHub, stopHub, decryptReceived, decodeLegacyBlob, extractSender, loadRatchetState, acknowledgeDelivery } from '../services/chatHub';
 
 type Props = { navigation: StackNavigationProp<RootStackParamList, 'ConversationList'> };
 
@@ -41,6 +41,9 @@ export default function ConversationListScreen({ navigation }: Props) {
 
         hub.on('ReceiveMessage', async (messageId: string, blob: string) => {
           if (!mounted) return;
+
+          // Acknowledge delivery so server deletes from Redis
+          acknowledgeDelivery(messageId, s.deviceId).catch(() => {});
 
           // Extract sender info from envelope (works for both ratchet and legacy)
           const sender = extractSender(blob);
