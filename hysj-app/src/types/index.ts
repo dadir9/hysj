@@ -24,6 +24,7 @@ export interface Message {
   senderAvatarColor?: string;
   sentAt: string;
   sendFailed?: boolean;
+  deliveryStatus?: 'sent' | 'delivered' | 'read';
 }
 
 export interface AuthSession {
