@@ -45,19 +45,25 @@ export default function ChatScreen({ navigation, route }: Props) {
     const then = new Date(iso).getTime();
     const diffMs = now - then;
     const diffMin = Math.floor(diffMs / 60000);
-    if (diffMin < 1) return 'active just now';
-    if (diffMin < 60) return `active ${diffMin}m ago`;
+    if (diffMin < 1) return 'Active just now';
+    if (diffMin < 60) return `Active ${diffMin}m ago`;
     const diffHrs = Math.floor(diffMin / 60);
-    if (diffHrs < 24) return `active ${diffHrs}h ago`;
+    if (diffHrs < 24) return `Active ${diffHrs}h ago`;
     const diffDays = Math.floor(diffHrs / 24);
-    return `active ${diffDays}d ago`;
+    return `Active ${diffDays}d ago`;
   };
 
   const getStatusText = (): string => {
-    if (hubError) return 'offline mode';
-    if (peerOnline === true) return 'online';
+    if (hubError) return 'Offline mode';
+    if (peerOnline === true) return 'Online';
     if (peerLastSeen) return formatLastSeen(peerLastSeen);
-    return 'end-to-end encrypted';
+    return 'End-to-end encrypted';
+  };
+
+  const getStatusColor = (): string => {
+    if (peerOnline === true) return colors.online;
+    if (hubError) return colors.danger;
+    return colors.textSecondary;
   };
 
   const reload = async () => {
@@ -189,6 +195,7 @@ export default function ChatScreen({ navigation, route }: Props) {
     setMessages(prev => [...prev, msg]);
     setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 100);
 
+    let failed = false;
     try {
       // Establish session on-demand if not yet ready
       if (!ratchetRef.current && conversation.peerDeviceId) {
@@ -206,9 +213,16 @@ export default function ChatScreen({ navigation, route }: Props) {
           conversation.id,
           ratchetRef.current,
         );
+      } else {
+        failed = true;
       }
     } catch {
-      // message queued or hub offline — still saved locally
+      failed = true;
+    }
+
+    if (failed) {
+      msg.sendFailed = true;
+      setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, sendFailed: true } : m));
     }
 
     await appendMessage(conversation.id, msg);
@@ -218,6 +232,33 @@ export default function ChatScreen({ navigation, route }: Props) {
       lastMessageAt: msg.sentAt,
     });
     setSending(false);
+  };
+
+  const retry = async (failedMsg: Message) => {
+    // Clear failed status optimistically
+    setMessages(prev => prev.map(m => m.id === failedMsg.id ? { ...m, sendFailed: false } : m));
+    try {
+      if (!ratchetRef.current && conversation.peerDeviceId) {
+        ratchetRef.current = await establishOutgoingSession(
+          conversation.id,
+          conversation.peerDeviceId,
+        );
+      }
+      if (ratchetRef.current) {
+        await sendMessage(
+          conversation.peerDeviceId,
+          myUserIdRef.current,
+          myUsernameRef.current,
+          failedMsg.content,
+          conversation.id,
+          ratchetRef.current,
+        );
+      } else {
+        throw new Error('No session');
+      }
+    } catch {
+      setMessages(prev => prev.map(m => m.id === failedMsg.id ? { ...m, sendFailed: true } : m));
+    }
   };
 
   const renderItem = ({ item }: { item: Message }) => (
@@ -234,7 +275,7 @@ export default function ChatScreen({ navigation, route }: Props) {
           <View style={[styles.inAvatar, { backgroundColor: getAvatarColor(conversation.peerUsername) }]}>
             <Text style={styles.inAvatarText}>{getInitials(conversation.peerUsername)}</Text>
           </View>
-          <View>
+          <View style={styles.inBubbleWrap}>
             <View style={styles.bubbleIn}>
               <Text style={styles.bubbleInText}>{item.content}</Text>
             </View>
@@ -254,18 +295,24 @@ export default function ChatScreen({ navigation, route }: Props) {
       >
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text style={styles.back}>←</Text>
+          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+            <Text style={styles.backIcon}>{'<'}</Text>
           </TouchableOpacity>
-          <View style={[styles.headerAvatar, { backgroundColor: getAvatarColor(conversation.peerUsername) }]}>
-            <Text style={styles.headerAvatarText}>{getInitials(conversation.peerUsername)}</Text>
+          <View style={styles.headerAvatarWrap}>
+            <View style={[styles.headerAvatar, { backgroundColor: getAvatarColor(conversation.peerUsername) }]}>
+              <Text style={styles.headerAvatarText}>{getInitials(conversation.peerUsername)}</Text>
+            </View>
+            {peerOnline && <View style={styles.headerOnlineDot} />}
           </View>
           <View style={styles.headerInfo}>
             <Text style={styles.headerName}>{conversation.peerUsername}</Text>
-            <Text style={[styles.headerStatus, peerOnline === true && styles.headerOnline]}>
+            <Text style={[styles.headerStatus, { color: getStatusColor() }]}>
               {getStatusText()}
             </Text>
           </View>
+          <TouchableOpacity style={styles.headerMenuBtn}>
+            <Text style={styles.headerMenuIcon}>{'\u2026'}</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Messages */}
@@ -278,8 +325,11 @@ export default function ChatScreen({ navigation, route }: Props) {
           onLayout={() => listRef.current?.scrollToEnd({ animated: false })}
           ListEmptyComponent={
             <View style={styles.emptyChat}>
+              <View style={styles.emptyChatCircle}>
+                <Text style={styles.emptyChatLock}>{'\u{1F512}'}</Text>
+              </View>
               <Text style={styles.emptyChatText}>No messages yet</Text>
-              <Text style={styles.emptyChatHint}>Say hello</Text>
+              <Text style={styles.emptyChatHint}>Messages are end-to-end encrypted</Text>
             </View>
           }
         />
@@ -289,7 +339,7 @@ export default function ChatScreen({ navigation, route }: Props) {
           <View style={styles.inputWrap}>
             <TextInput
               style={styles.input}
-              placeholder="Message..."
+              placeholder="Type a message..."
               placeholderTextColor={colors.textMuted}
               value={text}
               onChangeText={setText}
@@ -298,10 +348,14 @@ export default function ChatScreen({ navigation, route }: Props) {
               multiline
             />
           </View>
-          <TouchableOpacity style={styles.sendBtn} onPress={send} disabled={sending}>
+          <TouchableOpacity
+            style={[styles.sendBtn, text.trim() ? styles.sendBtnActive : null]}
+            onPress={send}
+            disabled={sending}
+          >
             {sending
-              ? <ActivityIndicator color={colors.black} size="small" />
-              : <Text style={styles.sendIcon}>↑</Text>}
+              ? <ActivityIndicator color={colors.white} size="small" />
+              : <Text style={styles.sendIcon}>{'\u27A4'}</Text>}
           </TouchableOpacity>
         </View>
 
@@ -311,63 +365,95 @@ export default function ChatScreen({ navigation, route }: Props) {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bgSurface },
+  root: { flex: 1, backgroundColor: colors.bg },
 
+  // Header
   header: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: colors.bgCard,
-    paddingHorizontal: 14, paddingVertical: 12,
+    backgroundColor: colors.bgSurface,
+    paddingHorizontal: 12, paddingVertical: 14,
     borderBottomWidth: 1, borderBottomColor: colors.border,
     gap: 10,
   },
-  back: { fontSize: 24, color: colors.white, paddingRight: 4 },
+  backBtn: {
+    width: 36, height: 36, borderRadius: 18,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  backIcon: { fontSize: 20, color: colors.textPrimary, fontWeight: font.weights.bold },
+  headerAvatarWrap: { position: 'relative' },
   headerAvatar: {
-    width: 40, height: 40, borderRadius: 20,
+    width: 42, height: 42, borderRadius: 21,
     alignItems: 'center', justifyContent: 'center',
   },
   headerAvatarText: { color: colors.white, fontSize: 15, fontWeight: font.weights.bold },
+  headerOnlineDot: {
+    position: 'absolute', bottom: 0, right: 0,
+    width: 12, height: 12, borderRadius: 6,
+    backgroundColor: colors.online,
+    borderWidth: 2, borderColor: colors.bgSurface,
+  },
   headerInfo: { flex: 1 },
-  headerName: { fontSize: 16, fontWeight: font.weights.bold, color: colors.textPrimary },
-  headerStatus: { fontSize: 11, color: colors.shield },
-  headerOnline: { color: colors.online },
+  headerName: {
+    fontSize: font.sizes.md, fontWeight: font.weights.bold,
+    color: colors.textPrimary,
+  },
+  headerStatus: { fontSize: 12, marginTop: 1 },
+  headerMenuBtn: {
+    width: 36, height: 36, borderRadius: 18,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  headerMenuIcon: { fontSize: 20, color: colors.textSecondary, fontWeight: font.weights.bold },
 
-  listContent: { paddingVertical: 10, paddingHorizontal: 12, flexGrow: 1 },
+  // Message list
+  listContent: { paddingVertical: 12, paddingHorizontal: 14, flexGrow: 1 },
 
   emptyChat: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 80 },
-  emptyChatText: { fontSize: 15, color: colors.textSecondary },
-  emptyChatHint: { fontSize: 13, color: colors.textMuted, marginTop: 6 },
+  emptyChatCircle: {
+    width: 64, height: 64, borderRadius: 32,
+    backgroundColor: colors.bgSurface,
+    alignItems: 'center', justifyContent: 'center', marginBottom: 14,
+  },
+  emptyChatLock: { fontSize: 24 },
+  emptyChatText: {
+    fontSize: font.sizes.md, fontWeight: font.weights.semibold,
+    color: colors.textPrimary,
+  },
+  emptyChatHint: { fontSize: font.sizes.sm, color: colors.textSecondary, marginTop: 4 },
 
-  // Outgoing — dark bubble, timestamps below
-  rowOut: { alignItems: 'flex-end', marginVertical: 3 },
+  // Outgoing bubble — purple, right-aligned
+  rowOut: { alignItems: 'flex-end', marginVertical: 4 },
   bubbleOut: {
     backgroundColor: colors.bubbleOut,
     borderTopLeftRadius: 20, borderTopRightRadius: 20,
-    borderBottomLeftRadius: 20, borderBottomRightRadius: 4,
-    padding: 12, maxWidth: '75%',
+    borderBottomLeftRadius: 20, borderBottomRightRadius: 6,
+    paddingHorizontal: 16, paddingVertical: 10,
+    maxWidth: '78%',
   },
-  bubbleOutText: { color: colors.bubbleOutText, fontSize: 14, lineHeight: 20 },
-  timeOut: { color: colors.textMuted, fontSize: 10, marginTop: 4, marginRight: 4 },
+  bubbleOutText: { color: colors.bubbleOutText, fontSize: 15, lineHeight: 21 },
+  timeOut: { color: colors.textMuted, fontSize: 10, marginTop: 4, marginRight: 6 },
 
-  // Incoming — white bubble, timestamps below
-  rowIn: { flexDirection: 'row', alignItems: 'flex-end', marginVertical: 3 },
+  // Incoming bubble — dark card, left-aligned with avatar
+  rowIn: { flexDirection: 'row', alignItems: 'flex-end', marginVertical: 4 },
   inAvatar: {
-    width: 30, height: 30, borderRadius: 15,
+    width: 32, height: 32, borderRadius: 16,
     alignItems: 'center', justifyContent: 'center', marginRight: 8,
   },
-  inAvatarText: { color: colors.white, fontSize: 11, fontWeight: font.weights.bold },
+  inAvatarText: { color: colors.white, fontSize: 12, fontWeight: font.weights.bold },
+  inBubbleWrap: { maxWidth: '78%' },
   bubbleIn: {
     backgroundColor: colors.bubbleIn,
     borderTopLeftRadius: 20, borderTopRightRadius: 20,
-    borderBottomLeftRadius: 4, borderBottomRightRadius: 20,
-    padding: 12, maxWidth: 260,
+    borderBottomLeftRadius: 6, borderBottomRightRadius: 20,
+    paddingHorizontal: 16, paddingVertical: 10,
   },
-  bubbleInText: { color: colors.bubbleInText, fontSize: 14, lineHeight: 20 },
-  timeIn: { color: colors.textMuted, fontSize: 10, marginTop: 4, marginLeft: 4 },
+  bubbleInText: { color: colors.bubbleInText, fontSize: 15, lineHeight: 21 },
+  timeIn: { color: colors.textMuted, fontSize: 10, marginTop: 4, marginLeft: 6 },
 
+  // Input bar
   inputBar: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: colors.bgCard,
-    paddingHorizontal: 14, paddingVertical: 10,
+    flexDirection: 'row', alignItems: 'flex-end',
+    backgroundColor: colors.bgSurface,
+    paddingHorizontal: 12, paddingVertical: 10,
     paddingBottom: 28,
     borderTopWidth: 1, borderTopColor: colors.border,
     gap: 10,
@@ -379,11 +465,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18, paddingVertical: 10, minHeight: 48,
     justifyContent: 'center',
   },
-  input: { color: colors.textPrimary, fontSize: 14, maxHeight: 100 },
+  input: { color: colors.textPrimary, fontSize: 15, maxHeight: 100 },
   sendBtn: {
     width: 48, height: 48, borderRadius: 24,
-    backgroundColor: colors.white,
+    backgroundColor: colors.bgElevated,
     alignItems: 'center', justifyContent: 'center',
   },
-  sendIcon: { color: colors.black, fontSize: 22, fontWeight: font.weights.bold },
+  sendBtnActive: {
+    backgroundColor: colors.purple,
+  },
+  sendIcon: { color: colors.white, fontSize: 20, fontWeight: font.weights.bold },
 });

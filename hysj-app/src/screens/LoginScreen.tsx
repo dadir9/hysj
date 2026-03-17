@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, KeyboardAvoidingView, Platform,
-  ScrollView, ActivityIndicator, Modal, FlatList,
+  ScrollView, ActivityIndicator, Modal, FlatList, Image,
 } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
@@ -106,7 +106,7 @@ export default function LoginScreen({ navigation }: Props) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <Text style={styles.logo}>hysj</Text>
+        <Image source={require('../../assets/logo.png')} style={styles.logoImage} resizeMode="contain" />
         <Text style={styles.title}>Welcome</Text>
         <Text style={styles.subtitle}>Your privacy, redefined</Text>
 
@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
     paddingTop: 140,
     paddingBottom: spacing.xxl,
   },
-  logo: { fontSize: 48, fontWeight: font.weights.bold, color: colors.white, letterSpacing: -1, marginBottom: spacing.xxl },
+  logoImage: { width: 80, height: 80, marginBottom: spacing.xxl },
   title: { fontSize: font.sizes.hero, fontWeight: font.weights.bold, color: colors.white, marginBottom: 10 },
   subtitle: { fontSize: font.sizes.md, color: colors.textSecondary, marginBottom: 60 },
   welcomeActions: { width: '100%', gap: 12 },

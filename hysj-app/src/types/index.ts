@@ -23,6 +23,7 @@ export interface Message {
   senderAlias?: string;
   senderAvatarColor?: string;
   sentAt: string;
+  sendFailed?: boolean;
 }
 
 export interface AuthSession {

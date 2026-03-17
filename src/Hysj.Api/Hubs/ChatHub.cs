@@ -75,6 +75,24 @@ public class ChatHub(IMessageQueueService queue, HysjDbContext db) : Hub
         await Clients.Caller.SendAsync("DeliveryAcknowledged", ack.MessageId);
     }
 
+    public async Task SendTypingIndicator(Guid recipientDeviceId, bool isTyping)
+    {
+        if (_online.TryGetValue(recipientDeviceId, out var connId))
+        {
+            var userId = GetUserId();
+            await Clients.Client(connId).SendAsync("UserTyping", userId, isTyping);
+        }
+    }
+
+    public async Task MarkMessageRead(Guid senderDeviceId, string messageId)
+    {
+        if (_online.TryGetValue(senderDeviceId, out var connId))
+        {
+            var readBy = GetUserId();
+            await Clients.Client(connId).SendAsync("MessageRead", messageId, readBy);
+        }
+    }
+
     public async Task SendWipeCommand(string wipeId, Guid targetDeviceId, string wipeType, Guid? conversationPartnerId = null)
     {
         if (_online.TryGetValue(targetDeviceId, out var connId))
