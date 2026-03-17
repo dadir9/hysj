@@ -86,3 +86,544 @@ Unhandled exception. System.IO.IOException: Failed to bind to address http://127
    at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.RunAsync(IHost host, CancellationToken token)
    at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Run(IHost host)
    at Program.<Main>$(String[] args) in C:\Users\abdik\hysj\src\Hysj.Api\Program.cs:line 165
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 OPTIONS http://localhost:5076/api/devices - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 OPTIONS http://localhost:5076/api/devices - 204 - - 1.9451ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5076/api/devices - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'Hysj.Api.Controllers.DevicesController.GetMyDevices (Hysj.Api)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "GetMyDevices", controller = "Devices"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetMyDevices() on controller Hysj.Api.Controllers.DevicesController (Hysj.Api).
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "d"."Id", "d"."DeviceName", "d"."IsOnline", "d"."LastActiveAt", "d"."RegisteredAt"
+      FROM "Devices" AS "d"
+      WHERE "d"."UserId" = @__userId_0
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+      Executing OkObjectResult, writing value of type 'System.Collections.Generic.List`1[[<>f__AnonymousType3`5[[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.DateTimeOffset, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.DateTimeOffset, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Hysj.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action Hysj.Api.Controllers.DevicesController.GetMyDevices (Hysj.Api) in 4.207ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'Hysj.Api.Controllers.DevicesController.GetMyDevices (Hysj.Api)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5076/api/devices - 200 - application/json;+charset=utf-8 5.8411ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://localhost:5076/api/auth/login - application/json 71
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'Hysj.Api.Controllers.AuthController.Login (Hysj.Api)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "Login", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Login(Hysj.Api.DTOs.LoginRequestDto) on controller Hysj.Api.Controllers.AuthController (Hysj.Api).
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__request_PhoneNumber_0='?' (Size = 11)], CommandType='Text', CommandTimeout='30']
+      SELECT "t"."Id", "t"."CreatedAt", "t"."Has2FAEnabled", "t"."IdentityPublicKey", "t"."LastSeenAt", "t"."PasswordHash", "t"."PhoneNumber", "t"."Salt", "t"."TotpSecret", "t"."Username", "d"."Id", "d"."DeviceName", "d"."IsOnline", "d"."KyberPublicKey", "d"."LastActiveAt", "d"."PushToken", "d"."RegisteredAt", "d"."SignedPreKey", "d"."SignedPreKeySig", "d"."UserId"
+      FROM (
+          SELECT "u"."Id", "u"."CreatedAt", "u"."Has2FAEnabled", "u"."IdentityPublicKey", "u"."LastSeenAt", "u"."PasswordHash", "u"."PhoneNumber", "u"."Salt", "u"."TotpSecret", "u"."Username"
+          FROM "Users" AS "u"
+          WHERE "u"."PhoneNumber" = @__request_PhoneNumber_0
+          LIMIT 1
+      ) AS "t"
+      LEFT JOIN "Devices" AS "d" ON "t"."Id" = "d"."UserId"
+      ORDER BY "t"."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (Size = 3), @p1='?' (DbType = Boolean), @p2='?' (DbType = DateTimeOffset), @p3='?' (Size = 10), @p4='?' (Size = 11)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "LoginAttempts" ("IpAddress", "Success", "Timestamp", "UserAgent", "Username")
+      VALUES (@p0, @p1, @p2, @p3, @p4)
+      RETURNING "Id";
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+      Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType2`1[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action Hysj.Api.Controllers.AuthController.Login (Hysj.Api) in 6.2929ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'Hysj.Api.Controllers.AuthController.Login (Hysj.Api)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://localhost:5076/api/auth/login - 401 - application/json;+charset=utf-8 7.3200ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 OPTIONS http://localhost:5076/api/auth/login - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 OPTIONS http://localhost:5076/api/auth/login - 204 - - 0.7976ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://localhost:5076/api/auth/login - application/json 73
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'Hysj.Api.Controllers.AuthController.Login (Hysj.Api)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "Login", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Login(Hysj.Api.DTOs.LoginRequestDto) on controller Hysj.Api.Controllers.AuthController (Hysj.Api).
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__request_PhoneNumber_0='?' (Size = 11)], CommandType='Text', CommandTimeout='30']
+      SELECT "t"."Id", "t"."CreatedAt", "t"."Has2FAEnabled", "t"."IdentityPublicKey", "t"."LastSeenAt", "t"."PasswordHash", "t"."PhoneNumber", "t"."Salt", "t"."TotpSecret", "t"."Username", "d"."Id", "d"."DeviceName", "d"."IsOnline", "d"."KyberPublicKey", "d"."LastActiveAt", "d"."PushToken", "d"."RegisteredAt", "d"."SignedPreKey", "d"."SignedPreKeySig", "d"."UserId"
+      FROM (
+          SELECT "u"."Id", "u"."CreatedAt", "u"."Has2FAEnabled", "u"."IdentityPublicKey", "u"."LastSeenAt", "u"."PasswordHash", "u"."PhoneNumber", "u"."Salt", "u"."TotpSecret", "u"."Username"
+          FROM "Users" AS "u"
+          WHERE "u"."PhoneNumber" = @__request_PhoneNumber_0
+          LIMIT 1
+      ) AS "t"
+      LEFT JOIN "Devices" AS "d" ON "t"."Id" = "d"."UserId"
+      ORDER BY "t"."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (Size = 3), @p1='?' (DbType = Boolean), @p2='?' (DbType = DateTimeOffset), @p3='?' (Size = 135), @p4='?' (Size = 11)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "LoginAttempts" ("IpAddress", "Success", "Timestamp", "UserAgent", "Username")
+      VALUES (@p0, @p1, @p2, @p3, @p4)
+      RETURNING "Id";
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p1='?' (DbType = Guid), @p0='?' (DbType = DateTimeOffset)], CommandType='Text', CommandTimeout='30']
+      UPDATE "Users" SET "LastSeenAt" = @p0
+      WHERE "Id" = @p1
+      RETURNING 1;
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+      Executing OkObjectResult, writing value of type 'Hysj.Api.DTOs.LoginResponseDto'.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action Hysj.Api.Controllers.AuthController.Login (Hysj.Api) in 507.7048ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'Hysj.Api.Controllers.AuthController.Login (Hysj.Api)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://localhost:5076/api/auth/login - 200 - application/json;+charset=utf-8 508.7579ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 OPTIONS http://localhost:5076/chathub/negotiate?negotiateVersion=1 - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 OPTIONS http://localhost:5076/chathub/negotiate?negotiateVersion=1 - 204 - - 0.8396ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://localhost:5076/chathub/negotiate?negotiateVersion=1 - - 0
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint '/chathub/negotiate'
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint '/chathub/negotiate'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://localhost:5076/chathub/negotiate?negotiateVersion=1 - 200 316 application/json 1.9414ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5076/chathub?id=UAZAElji91gt2vactzGVHQ&access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMWI1ZjJkOC01NjUwLTRlMjUtYjRkYS0yZGVjZWJjYTM5MzYiLCJkZXZpY2VJZCI6IjUyOGYxZDBkLWRhNjMtNDRkNS1hOWY0LWUwMjRmYjM4NWQ3NSIsInVuaXF1ZV9uYW1lIjoiKzQ3NDA3NjAyMzEiLCJqdGkiOiI0YTJjM2MxMi1kOGRjLTRlMmMtYmI2OC00MTUyNDgxMzI0OWMiLCJleHAiOjE3NzM3MTMyNjMsImlzcyI6Ikh5c2oiLCJhdWQiOiJIeXNqQXBwIn0.XZZVvGLtWDrmvpY7EAya2zfCoi01R3t13cMkAaV4Y8w - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint '/chathub'
+fail: Microsoft.AspNetCore.SignalR.HubConnectionHandler[1]
+      Error when dispatching 'OnConnectedAsync' on hub.
+      System.InvalidOperationException: The LINQ expression 'DbSet<Device>()
+          .Where(d => d.Id == __deviceId_0)
+          .ExecuteUpdate(s => s.SetProperty<bool>(
+              propertyExpression: d => d.IsOnline, 
+              valueExpression: True).SetProperty<DateTimeOffset>(
+              propertyExpression: d => d.LastActiveAt, 
+              valueExpression: DateTimeOffset.UtcNow))' could not be translated. Additional information: The following lambda argument to 'SetProperty' does not represent a valid value: 'DateTimeOffset.UtcNow'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+         at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+         at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+         at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+         at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+         at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+         at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+         at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass12_0`1.<ExecuteAsync>b__0()
+         at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+         at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.RelationalQueryableExtensions.ExecuteUpdateAsync[TSource](IQueryable`1 source, Expression`1 setPropertyCalls, CancellationToken cancellationToken)
+         at Hysj.Api.Hubs.ChatHub.OnConnectedAsync() in C:\Users\abdik\hysj\src\Hysj.Api\Hubs\ChatHub.cs:line 23
+         at Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher`1.OnConnectedAsync(HubConnectionContext connection)
+         at Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher`1.OnConnectedAsync(HubConnectionContext connection)
+         at Microsoft.AspNetCore.SignalR.HubConnectionHandler`1.RunHubAsync(HubConnectionContext connection)
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint '/chathub'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5076/chathub?id=UAZAElji91gt2vactzGVHQ&access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMWI1ZjJkOC01NjUwLTRlMjUtYjRkYS0yZGVjZWJjYTM5MzYiLCJkZXZpY2VJZCI6IjUyOGYxZDBkLWRhNjMtNDRkNS1hOWY0LWUwMjRmYjM4NWQ3NSIsInVuaXF1ZV9uYW1lIjoiKzQ3NDA3NjAyMzEiLCJqdGkiOiI0YTJjM2MxMi1kOGRjLTRlMmMtYmI2OC00MTUyNDgxMzI0OWMiLCJleHAiOjE3NzM3MTMyNjMsImlzcyI6Ikh5c2oiLCJhdWQiOiJIeXNqQXBwIn0.XZZVvGLtWDrmvpY7EAya2zfCoi01R3t13cMkAaV4Y8w - 101 - - 28.3874ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 OPTIONS http://localhost:5076/api/groups - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 OPTIONS http://localhost:5076/api/groups - 204 - - 4.4908ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://localhost:5076/api/groups - application/json 55
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'Hysj.Api.Controllers.GroupsController.CreateGroup (Hysj.Api)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "CreateGroup", controller = "Groups"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] CreateGroup(Hysj.Api.DTOs.CreateGroupDto) on controller Hysj.Api.Controllers.GroupsController (Hysj.Api).
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = DateTimeOffset), @p2='?' (DbType = Guid), @p3='?' (DbType = Boolean), @p4='?' (DbType = Boolean), @p5='?' (Size = 3)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Groups" ("Id", "CreatedAt", "CreatedByUserId", "IsAnonymous", "MembersCanAdd", "Name")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?' (Size = 4), @p3='?' (DbType = DateTimeOffset)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "GroupMembers" ("GroupId", "UserId", "Alias", "JoinedAt")
+      VALUES (@p0, @p1, @p2, @p3);
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+      Executing OkObjectResult, writing value of type '<>f__AnonymousType5`4[[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action Hysj.Api.Controllers.GroupsController.CreateGroup (Hysj.Api) in 97.1334ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'Hysj.Api.Controllers.GroupsController.CreateGroup (Hysj.Api)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://localhost:5076/api/groups - 200 - application/json;+charset=utf-8 117.8713ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 OPTIONS http://localhost:5076/api/auth/login - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 OPTIONS http://localhost:5076/api/auth/login - 204 - - 0.7956ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://localhost:5076/api/auth/login - application/json 73
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'Hysj.Api.Controllers.AuthController.Login (Hysj.Api)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "Login", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Login(Hysj.Api.DTOs.LoginRequestDto) on controller Hysj.Api.Controllers.AuthController (Hysj.Api).
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__request_PhoneNumber_0='?' (Size = 11)], CommandType='Text', CommandTimeout='30']
+      SELECT "t"."Id", "t"."CreatedAt", "t"."Has2FAEnabled", "t"."IdentityPublicKey", "t"."LastSeenAt", "t"."PasswordHash", "t"."PhoneNumber", "t"."Salt", "t"."TotpSecret", "t"."Username", "d"."Id", "d"."DeviceName", "d"."IsOnline", "d"."KyberPublicKey", "d"."LastActiveAt", "d"."PushToken", "d"."RegisteredAt", "d"."SignedPreKey", "d"."SignedPreKeySig", "d"."UserId"
+      FROM (
+          SELECT "u"."Id", "u"."CreatedAt", "u"."Has2FAEnabled", "u"."IdentityPublicKey", "u"."LastSeenAt", "u"."PasswordHash", "u"."PhoneNumber", "u"."Salt", "u"."TotpSecret", "u"."Username"
+          FROM "Users" AS "u"
+          WHERE "u"."PhoneNumber" = @__request_PhoneNumber_0
+          LIMIT 1
+      ) AS "t"
+      LEFT JOIN "Devices" AS "d" ON "t"."Id" = "d"."UserId"
+      ORDER BY "t"."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (Size = 3), @p1='?' (DbType = Boolean), @p2='?' (DbType = DateTimeOffset), @p3='?' (Size = 117), @p4='?' (Size = 11)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "LoginAttempts" ("IpAddress", "Success", "Timestamp", "UserAgent", "Username")
+      VALUES (@p0, @p1, @p2, @p3, @p4)
+      RETURNING "Id";
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p1='?' (DbType = Guid), @p0='?' (DbType = DateTimeOffset)], CommandType='Text', CommandTimeout='30']
+      UPDATE "Users" SET "LastSeenAt" = @p0
+      WHERE "Id" = @p1
+      RETURNING 1;
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+      Executing OkObjectResult, writing value of type 'Hysj.Api.DTOs.LoginResponseDto'.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action Hysj.Api.Controllers.AuthController.Login (Hysj.Api) in 526.9795ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'Hysj.Api.Controllers.AuthController.Login (Hysj.Api)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://localhost:5076/api/auth/login - 200 - application/json;+charset=utf-8 528.6614ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 OPTIONS http://localhost:5076/chathub/negotiate?negotiateVersion=1 - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 OPTIONS http://localhost:5076/chathub/negotiate?negotiateVersion=1 - 204 - - 0.4721ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://localhost:5076/chathub/negotiate?negotiateVersion=1 - - 0
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint '/chathub/negotiate'
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint '/chathub/negotiate'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://localhost:5076/chathub/negotiate?negotiateVersion=1 - 200 316 application/json 1.6442ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5076/chathub?id=iFCcVXF9zHIcFXKE0IQO-w&access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMWI1ZjJkOC01NjUwLTRlMjUtYjRkYS0yZGVjZWJjYTM5MzYiLCJkZXZpY2VJZCI6IjUyOGYxZDBkLWRhNjMtNDRkNS1hOWY0LWUwMjRmYjM4NWQ3NSIsInVuaXF1ZV9uYW1lIjoiKzQ3NDA3NjAyMzEiLCJqdGkiOiI3ZTkzZjc2Ny1hOGQyLTRhNDktYWM2Yy1hNDc1MmMyNmUxNDEiLCJleHAiOjE3NzM3MTMzMjMsImlzcyI6Ikh5c2oiLCJhdWQiOiJIeXNqQXBwIn0.5Lt36AkpQjSQXmcqERGb4vg7RMg5k-aEoFZNl0o4Qmo - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint '/chathub'
+fail: Microsoft.AspNetCore.SignalR.HubConnectionHandler[1]
+      Error when dispatching 'OnConnectedAsync' on hub.
+      System.InvalidOperationException: The LINQ expression 'DbSet<Device>()
+          .Where(d => d.Id == __deviceId_0)
+          .ExecuteUpdate(s => s.SetProperty<bool>(
+              propertyExpression: d => d.IsOnline, 
+              valueExpression: True).SetProperty<DateTimeOffset>(
+              propertyExpression: d => d.LastActiveAt, 
+              valueExpression: DateTimeOffset.UtcNow))' could not be translated. Additional information: The following lambda argument to 'SetProperty' does not represent a valid value: 'DateTimeOffset.UtcNow'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+         at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+         at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+         at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+         at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+         at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+         at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+         at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass12_0`1.<ExecuteAsync>b__0()
+         at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+         at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.RelationalQueryableExtensions.ExecuteUpdateAsync[TSource](IQueryable`1 source, Expression`1 setPropertyCalls, CancellationToken cancellationToken)
+         at Hysj.Api.Hubs.ChatHub.OnConnectedAsync() in C:\Users\abdik\hysj\src\Hysj.Api\Hubs\ChatHub.cs:line 23
+         at Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher`1.OnConnectedAsync(HubConnectionContext connection)
+         at Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher`1.OnConnectedAsync(HubConnectionContext connection)
+         at Microsoft.AspNetCore.SignalR.HubConnectionHandler`1.RunHubAsync(HubConnectionContext connection)
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint '/chathub'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5076/chathub?id=iFCcVXF9zHIcFXKE0IQO-w&access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMWI1ZjJkOC01NjUwLTRlMjUtYjRkYS0yZGVjZWJjYTM5MzYiLCJkZXZpY2VJZCI6IjUyOGYxZDBkLWRhNjMtNDRkNS1hOWY0LWUwMjRmYjM4NWQ3NSIsInVuaXF1ZV9uYW1lIjoiKzQ3NDA3NjAyMzEiLCJqdGkiOiI3ZTkzZjc2Ny1hOGQyLTRhNDktYWM2Yy1hNDc1MmMyNmUxNDEiLCJleHAiOjE3NzM3MTMzMjMsImlzcyI6Ikh5c2oiLCJhdWQiOiJIeXNqQXBwIn0.5Lt36AkpQjSQXmcqERGb4vg7RMg5k-aEoFZNl0o4Qmo - 101 - - 54.3344ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 OPTIONS http://localhost:5076/api/groups - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 OPTIONS http://localhost:5076/api/groups - 204 - - 1.0851ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://localhost:5076/api/groups - application/json 53
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'Hysj.Api.Controllers.GroupsController.CreateGroup (Hysj.Api)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "CreateGroup", controller = "Groups"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] CreateGroup(Hysj.Api.DTOs.CreateGroupDto) on controller Hysj.Api.Controllers.GroupsController (Hysj.Api).
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = DateTimeOffset), @p2='?' (DbType = Guid), @p3='?' (DbType = Boolean), @p4='?' (DbType = Boolean), @p5='?' (Size = 2)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Groups" ("Id", "CreatedAt", "CreatedByUserId", "IsAnonymous", "MembersCanAdd", "Name")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?' (Size = 6), @p3='?' (DbType = DateTimeOffset)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "GroupMembers" ("GroupId", "UserId", "Alias", "JoinedAt")
+      VALUES (@p0, @p1, @p2, @p3);
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+      Executing OkObjectResult, writing value of type '<>f__AnonymousType5`4[[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action Hysj.Api.Controllers.GroupsController.CreateGroup (Hysj.Api) in 16.5547ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'Hysj.Api.Controllers.GroupsController.CreateGroup (Hysj.Api)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://localhost:5076/api/groups - 200 - application/json;+charset=utf-8 18.0698ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 OPTIONS http://localhost:5076/api/devices - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 OPTIONS http://localhost:5076/api/devices - 204 - - 0.5914ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5076/api/devices - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'Hysj.Api.Controllers.DevicesController.GetMyDevices (Hysj.Api)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "GetMyDevices", controller = "Devices"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetMyDevices() on controller Hysj.Api.Controllers.DevicesController (Hysj.Api).
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "d"."Id", "d"."DeviceName", "d"."IsOnline", "d"."LastActiveAt", "d"."RegisteredAt"
+      FROM "Devices" AS "d"
+      WHERE "d"."UserId" = @__userId_0
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+      Executing OkObjectResult, writing value of type 'System.Collections.Generic.List`1[[<>f__AnonymousType3`5[[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.DateTimeOffset, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.DateTimeOffset, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Hysj.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action Hysj.Api.Controllers.DevicesController.GetMyDevices (Hysj.Api) in 5.5421ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'Hysj.Api.Controllers.DevicesController.GetMyDevices (Hysj.Api)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5076/api/devices - 200 - application/json;+charset=utf-8 8.9385ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 OPTIONS http://localhost:5076/api/devices - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 OPTIONS http://localhost:5076/api/devices - 204 - - 0.4707ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5076/api/devices - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'Hysj.Api.Controllers.DevicesController.GetMyDevices (Hysj.Api)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "GetMyDevices", controller = "Devices"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetMyDevices() on controller Hysj.Api.Controllers.DevicesController (Hysj.Api).
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "d"."Id", "d"."DeviceName", "d"."IsOnline", "d"."LastActiveAt", "d"."RegisteredAt"
+      FROM "Devices" AS "d"
+      WHERE "d"."UserId" = @__userId_0
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+      Executing OkObjectResult, writing value of type 'System.Collections.Generic.List`1[[<>f__AnonymousType3`5[[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.DateTimeOffset, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.DateTimeOffset, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Hysj.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action Hysj.Api.Controllers.DevicesController.GetMyDevices (Hysj.Api) in 3.5755ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'Hysj.Api.Controllers.DevicesController.GetMyDevices (Hysj.Api)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5076/api/devices - 200 - application/json;+charset=utf-8 5.1201ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://localhost:5076/api/auth/register - application/json 350
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'Hysj.Api.Controllers.AuthController.Register (Hysj.Api)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "Register", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Register(Hysj.Api.DTOs.RegisterRequestDto) on controller Hysj.Api.Controllers.AuthController (Hysj.Api).
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+      Executing BadRequestObjectResult, writing value of type 'Microsoft.AspNetCore.Mvc.ValidationProblemDetails'.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action Hysj.Api.Controllers.AuthController.Register (Hysj.Api) in 34.8955ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'Hysj.Api.Controllers.AuthController.Register (Hysj.Api)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://localhost:5076/api/auth/register - 400 - application/problem+json;+charset=utf-8 35.5962ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://localhost:5076/api/auth/register - application/json 348
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'Hysj.Api.Controllers.AuthController.Register (Hysj.Api)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "Register", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Register(Hysj.Api.DTOs.RegisterRequestDto) on controller Hysj.Api.Controllers.AuthController (Hysj.Api).
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+      Executing BadRequestObjectResult, writing value of type 'Microsoft.AspNetCore.Mvc.ValidationProblemDetails'.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action Hysj.Api.Controllers.AuthController.Register (Hysj.Api) in 3.7582ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'Hysj.Api.Controllers.AuthController.Register (Hysj.Api)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://localhost:5076/api/auth/register - 400 - application/problem+json;+charset=utf-8 4.3504ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 OPTIONS http://localhost:5076/api/devices - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 OPTIONS http://localhost:5076/api/devices - 204 - - 0.3403ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5076/api/devices - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler[1]
+      Failed to validate the token.
+      Microsoft.IdentityModel.Tokens.SecurityTokenExpiredException: IDX10223: Lifetime validation failed. The token is expired. ValidTo (UTC): '17.03.2026 02:08:43', Current time (UTC): '17.03.2026 02:17:55'.
+         at Microsoft.IdentityModel.Tokens.Validators.ValidateLifetime(Nullable`1 notBefore, Nullable`1 expires, SecurityToken securityToken, TokenValidationParameters validationParameters)
+         at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateTokenPayloadAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+         at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateJWSAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+info: Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler[7]
+      Bearer was not authenticated. Failure message: IDX10223: Lifetime validation failed. The token is expired. ValidTo (UTC): '17.03.2026 02:08:43', Current time (UTC): '17.03.2026 02:17:55'.
+info: Microsoft.AspNetCore.Authorization.DefaultAuthorizationService[2]
+      Authorization failed. These requirements were not met:
+      DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+info: Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler[12]
+      AuthenticationScheme: Bearer was challenged.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5076/api/devices - 401 0 - 21.8411ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 OPTIONS http://localhost:5076/api/auth/login - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 OPTIONS http://localhost:5076/api/auth/login - 204 - - 1.0686ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://localhost:5076/api/auth/login - application/json 73
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler[1]
+      Failed to validate the token.
+      Microsoft.IdentityModel.Tokens.SecurityTokenExpiredException: IDX10223: Lifetime validation failed. The token is expired. ValidTo (UTC): '17.03.2026 02:08:43', Current time (UTC): '17.03.2026 02:19:29'.
+         at Microsoft.IdentityModel.Tokens.Validators.ValidateLifetime(Nullable`1 notBefore, Nullable`1 expires, SecurityToken securityToken, TokenValidationParameters validationParameters)
+         at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateTokenPayloadAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+         at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateJWSAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+info: Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler[7]
+      Bearer was not authenticated. Failure message: IDX10223: Lifetime validation failed. The token is expired. ValidTo (UTC): '17.03.2026 02:08:43', Current time (UTC): '17.03.2026 02:19:29'.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'Hysj.Api.Controllers.AuthController.Login (Hysj.Api)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "Login", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Login(Hysj.Api.DTOs.LoginRequestDto) on controller Hysj.Api.Controllers.AuthController (Hysj.Api).
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__request_PhoneNumber_0='?' (Size = 11)], CommandType='Text', CommandTimeout='30']
+      SELECT "t"."Id", "t"."CreatedAt", "t"."Has2FAEnabled", "t"."IdentityPublicKey", "t"."LastSeenAt", "t"."PasswordHash", "t"."PhoneNumber", "t"."Salt", "t"."TotpSecret", "t"."Username", "d"."Id", "d"."DeviceName", "d"."IsOnline", "d"."KyberPublicKey", "d"."LastActiveAt", "d"."PushToken", "d"."RegisteredAt", "d"."SignedPreKey", "d"."SignedPreKeySig", "d"."UserId"
+      FROM (
+          SELECT "u"."Id", "u"."CreatedAt", "u"."Has2FAEnabled", "u"."IdentityPublicKey", "u"."LastSeenAt", "u"."PasswordHash", "u"."PhoneNumber", "u"."Salt", "u"."TotpSecret", "u"."Username"
+          FROM "Users" AS "u"
+          WHERE "u"."PhoneNumber" = @__request_PhoneNumber_0
+          LIMIT 1
+      ) AS "t"
+      LEFT JOIN "Devices" AS "d" ON "t"."Id" = "d"."UserId"
+      ORDER BY "t"."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (Size = 3), @p1='?' (DbType = Boolean), @p2='?' (DbType = DateTimeOffset), @p3='?' (Size = 135), @p4='?' (Size = 11)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "LoginAttempts" ("IpAddress", "Success", "Timestamp", "UserAgent", "Username")
+      VALUES (@p0, @p1, @p2, @p3, @p4)
+      RETURNING "Id";
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p1='?' (DbType = Guid), @p0='?' (DbType = DateTimeOffset)], CommandType='Text', CommandTimeout='30']
+      UPDATE "Users" SET "LastSeenAt" = @p0
+      WHERE "Id" = @p1
+      RETURNING 1;
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+      Executing OkObjectResult, writing value of type 'Hysj.Api.DTOs.LoginResponseDto'.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action Hysj.Api.Controllers.AuthController.Login (Hysj.Api) in 524.3258ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'Hysj.Api.Controllers.AuthController.Login (Hysj.Api)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://localhost:5076/api/auth/login - 200 - application/json;+charset=utf-8 526.7274ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 OPTIONS http://localhost:5076/chathub/negotiate?negotiateVersion=1 - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 OPTIONS http://localhost:5076/chathub/negotiate?negotiateVersion=1 - 204 - - 0.3940ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://localhost:5076/chathub/negotiate?negotiateVersion=1 - - 0
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint '/chathub/negotiate'
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint '/chathub/negotiate'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://localhost:5076/chathub/negotiate?negotiateVersion=1 - 200 316 application/json 1.1835ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5076/chathub?id=Bo3hRhFmRd079bZ5hgofjQ&access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMWI1ZjJkOC01NjUwLTRlMjUtYjRkYS0yZGVjZWJjYTM5MzYiLCJkZXZpY2VJZCI6IjUyOGYxZDBkLWRhNjMtNDRkNS1hOWY0LWUwMjRmYjM4NWQ3NSIsInVuaXF1ZV9uYW1lIjoiKzQ3NDA3NjAyMzEiLCJqdGkiOiJkZjUwNDdjYi03Y2I0LTQ5ZDMtOGM4My04OGE3MjMxMDJjOGMiLCJleHAiOjE3NzM3MTc1NzAsImlzcyI6Ikh5c2oiLCJhdWQiOiJIeXNqQXBwIn0.jAnaH3VjM1EXg9aNXrHWsAp7knl_TuzMqnDOk5v3kYc - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint '/chathub'
+fail: Microsoft.AspNetCore.SignalR.HubConnectionHandler[1]
+      Error when dispatching 'OnConnectedAsync' on hub.
+      System.InvalidOperationException: The LINQ expression 'DbSet<Device>()
+          .Where(d => d.Id == __deviceId_0)
+          .ExecuteUpdate(s => s.SetProperty<bool>(
+              propertyExpression: d => d.IsOnline, 
+              valueExpression: True).SetProperty<DateTimeOffset>(
+              propertyExpression: d => d.LastActiveAt, 
+              valueExpression: DateTimeOffset.UtcNow))' could not be translated. Additional information: The following lambda argument to 'SetProperty' does not represent a valid value: 'DateTimeOffset.UtcNow'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+         at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.VisitMethodCall(MethodCallExpression methodCallExpression)
+         at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+         at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+         at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+         at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+         at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+         at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass12_0`1.<ExecuteAsync>b__0()
+         at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+         at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.RelationalQueryableExtensions.ExecuteUpdateAsync[TSource](IQueryable`1 source, Expression`1 setPropertyCalls, CancellationToken cancellationToken)
+         at Hysj.Api.Hubs.ChatHub.OnConnectedAsync() in C:\Users\abdik\hysj\src\Hysj.Api\Hubs\ChatHub.cs:line 23
+         at Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher`1.OnConnectedAsync(HubConnectionContext connection)
+         at Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher`1.OnConnectedAsync(HubConnectionContext connection)
+         at Microsoft.AspNetCore.SignalR.HubConnectionHandler`1.RunHubAsync(HubConnectionContext connection)
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint '/chathub'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5076/chathub?id=Bo3hRhFmRd079bZ5hgofjQ&access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMWI1ZjJkOC01NjUwLTRlMjUtYjRkYS0yZGVjZWJjYTM5MzYiLCJkZXZpY2VJZCI6IjUyOGYxZDBkLWRhNjMtNDRkNS1hOWY0LWUwMjRmYjM4NWQ3NSIsInVuaXF1ZV9uYW1lIjoiKzQ3NDA3NjAyMzEiLCJqdGkiOiJkZjUwNDdjYi03Y2I0LTQ5ZDMtOGM4My04OGE3MjMxMDJjOGMiLCJleHAiOjE3NzM3MTc1NzAsImlzcyI6Ikh5c2oiLCJhdWQiOiJIeXNqQXBwIn0.jAnaH3VjM1EXg9aNXrHWsAp7knl_TuzMqnDOk5v3kYc - 101 - - 44.8670ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 OPTIONS http://localhost:5076/api/groups - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 OPTIONS http://localhost:5076/api/groups - 204 - - 2.3165ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://localhost:5076/api/groups - application/json 55
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'Hysj.Api.Controllers.GroupsController.CreateGroup (Hysj.Api)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "CreateGroup", controller = "Groups"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] CreateGroup(Hysj.Api.DTOs.CreateGroupDto) on controller Hysj.Api.Controllers.GroupsController (Hysj.Api).
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = DateTimeOffset), @p2='?' (DbType = Guid), @p3='?' (DbType = Boolean), @p4='?' (DbType = Boolean), @p5='?' (Size = 3)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Groups" ("Id", "CreatedAt", "CreatedByUserId", "IsAnonymous", "MembersCanAdd", "Name")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?' (Size = 7), @p3='?' (DbType = DateTimeOffset)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "GroupMembers" ("GroupId", "UserId", "Alias", "JoinedAt")
+      VALUES (@p0, @p1, @p2, @p3);
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+      Executing OkObjectResult, writing value of type '<>f__AnonymousType5`4[[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action Hysj.Api.Controllers.GroupsController.CreateGroup (Hysj.Api) in 14.7241ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'Hysj.Api.Controllers.GroupsController.CreateGroup (Hysj.Api)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://localhost:5076/api/groups - 200 - application/json;+charset=utf-8 16.5722ms
