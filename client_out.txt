@@ -1,0 +1,3 @@
+Starting project at C:\Users\abdik\hysj\hysj-app
+Starting Metro Bundler
+
