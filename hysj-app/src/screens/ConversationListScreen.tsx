@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity,
   StyleSheet, SafeAreaView, ScrollView, Modal,
-  TextInput, Animated, Pressable,
+  TextInput, Pressable,
 } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useFocusEffect } from '@react-navigation/native';
@@ -25,7 +25,6 @@ export default function ConversationListScreen({ navigation }: Props) {
   const reload = async () => {
     const convs = await getConversations();
     setConversations([...convs]);
-    // Fetch online status for each peer (best-effort, in parallel)
     refreshOnlineStatus(convs);
   };
 
@@ -64,10 +63,8 @@ export default function ConversationListScreen({ navigation }: Props) {
         hub.on('ReceiveMessage', async (messageId: string, blob: string) => {
           if (!mounted) return;
 
-          // Acknowledge delivery so server deletes from Redis
           acknowledgeDelivery(messageId, s.deviceId).catch(() => {});
 
-          // Extract sender info from envelope (works for both ratchet and legacy)
           const sender = extractSender(blob);
           if (!sender) return;
 
@@ -76,19 +73,16 @@ export default function ConversationListScreen({ navigation }: Props) {
           const convId = existing?.id ?? sender.senderUserId;
           const peerDeviceId = existing?.peerDeviceId ?? '';
 
-          // Try ratchet decryption if we have state for this conversation
           let previewText = '';
           const ratchet = await loadRatchetState(convId);
           if (ratchet) {
             const decrypted = await decryptReceived(blob, convId, ratchet);
             if (decrypted) previewText = decrypted.text;
           }
-          // Fall back to legacy decode
           if (!previewText) {
             const legacy = decodeLegacyBlob(blob);
             if (legacy) previewText = legacy.text;
           }
-          // If both fail, show encrypted indicator
           if (!previewText) previewText = '[encrypted message]';
 
           await upsertConversation({
@@ -114,25 +108,69 @@ export default function ConversationListScreen({ navigation }: Props) {
 
   const formatTime = (iso: string) => {
     const d = new Date(iso);
-    return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+    const now = new Date();
+    const isToday = d.toDateString() === now.toDateString();
+    if (isToday) {
+      return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+    }
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
+    return `${d.getDate()}/${d.getMonth() + 1}`;
   };
 
   const filteredConversations = searchQuery.trim()
     ? conversations.filter(c => c.peerUsername.toLowerCase().includes(searchQuery.toLowerCase()))
     : conversations;
 
+  const renderConversation = ({ item }: { item: Conversation }) => (
+    <TouchableOpacity
+      style={styles.convRow}
+      onPress={() => navigation.navigate('Chat', { conversation: item })}
+      activeOpacity={0.6}
+    >
+      <View style={styles.avatarWrap}>
+        <View style={[styles.avatar, { backgroundColor: getAvatarColor(item.peerUsername) }]}>
+          <Text style={styles.avatarText}>{getInitials(item.peerUsername)}</Text>
+        </View>
+        {item.isOnline && <View style={styles.onlineDot}/>}
+      </View>
+      <View style={styles.convInfo}>
+        <Text style={styles.convName} numberOfLines={1}>{item.peerUsername}</Text>
+        <Text style={styles.convPreview} numberOfLines={1}>
+          {item.lastMessagePreview || 'No messages yet'}
+        </Text>
+      </View>
+      <View style={styles.convMeta}>
+        <Text style={styles.convTime}>{formatTime(item.lastMessageAt)}</Text>
+        {item.unreadCount > 0 && (
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>{item.unreadCount}</Text>
+          </View>
+        )}
+      </View>
+    </TouchableOpacity>
+  );
+
   return (
     <SafeAreaView style={styles.root}>
 
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.logo}>hysj</Text>
+        <View>
+          <Text style={styles.headerTitle}>Messages</Text>
+          <Text style={styles.headerSubtitle}>
+            {conversations.length > 0
+              ? `${conversations.length} conversation${conversations.length !== 1 ? 's' : ''}`
+              : 'No conversations yet'}
+          </Text>
+        </View>
         <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Security')}>
-            <Text style={styles.iconBtnText}>🔒</Text>
+          <TouchableOpacity style={styles.headerIconBtn} onPress={() => navigation.navigate('Security')}>
+            <Text style={styles.headerIconText}>{'<shield>'}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Settings')}>
-            <Text style={styles.iconBtnText}>⚙</Text>
+          <TouchableOpacity style={styles.headerIconBtn} onPress={() => navigation.navigate('Settings')}>
+            <Text style={styles.headerIconText}>{'<gear>'}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -141,6 +179,13 @@ export default function ConversationListScreen({ navigation }: Props) {
       {conversations.length > 0 && (
         <ScrollView horizontal showsHorizontalScrollIndicator={false}
                     style={styles.storiesStrip} contentContainerStyle={styles.storiesContent}>
+          {/* Add new story / new chat */}
+          <TouchableOpacity style={styles.storyItem} onPress={() => navigation.navigate('NewChat')}>
+            <View style={styles.storyAddRing}>
+              <Text style={styles.storyAddIcon}>+</Text>
+            </View>
+            <Text style={styles.storyName}>New</Text>
+          </TouchableOpacity>
           {conversations.map(c => (
             <TouchableOpacity key={c.id} style={styles.storyItem}
                               onPress={() => navigation.navigate('Chat', { conversation: c })}>
@@ -148,6 +193,7 @@ export default function ConversationListScreen({ navigation }: Props) {
                 <View style={[styles.storyAvatar, { backgroundColor: getAvatarColor(c.peerUsername) }]}>
                   <Text style={styles.storyInitials}>{getInitials(c.peerUsername)}</Text>
                 </View>
+                {c.isOnline && <View style={styles.storyOnlineDot}/>}
               </View>
               <Text style={styles.storyName} numberOfLines={1}>
                 {c.peerUsername.split(' ')[0]}
@@ -160,48 +206,29 @@ export default function ConversationListScreen({ navigation }: Props) {
       {/* Section label */}
       <View style={styles.sectionRow}>
         <Text style={styles.sectionLabel}>All chats</Text>
-        <Text style={styles.sectionCount}>{conversations.length}</Text>
+        {conversations.length > 0 && (
+          <View style={styles.sectionBadge}>
+            <Text style={styles.sectionBadgeText}>{conversations.length}</Text>
+          </View>
+        )}
       </View>
 
       {/* Conversation list */}
       {conversations.length === 0 ? (
         <View style={styles.empty}>
-          <Text style={styles.emptyText}>No conversations yet</Text>
-          <Text style={styles.emptyHint}>Tap + to start a new chat</Text>
+          <View style={styles.emptyIconCircle}>
+            <Text style={styles.emptyIcon}>{'<msg>'}</Text>
+          </View>
+          <Text style={styles.emptyTitle}>No conversations yet</Text>
+          <Text style={styles.emptyHint}>Start a new chat to begin messaging</Text>
         </View>
       ) : (
         <FlatList
-          data={conversations}
+          data={filteredConversations}
           keyExtractor={i => i.id}
           contentContainerStyle={styles.listContent}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.convCard}
-              onPress={() => navigation.navigate('Chat', { conversation: item })}
-              activeOpacity={0.7}
-            >
-              <View style={styles.avatarWrap}>
-                <View style={[styles.avatar, { backgroundColor: getAvatarColor(item.peerUsername) }]}>
-                  <Text style={styles.avatarText}>{getInitials(item.peerUsername)}</Text>
-                </View>
-                {item.isOnline && <View style={styles.onlineDot}/>}
-              </View>
-              <View style={styles.convInfo}>
-                <View style={styles.convRow}>
-                  <Text style={styles.convName} numberOfLines={1}>{item.peerUsername}</Text>
-                  <Text style={styles.convTime}>{formatTime(item.lastMessageAt)}</Text>
-                </View>
-                <View style={styles.convRow}>
-                  <Text style={styles.convPreview} numberOfLines={1}>{item.lastMessagePreview || 'No messages yet'}</Text>
-                  {item.unreadCount > 0 && (
-                    <View style={styles.badge}>
-                      <Text style={styles.badgeText}>{item.unreadCount}</Text>
-                    </View>
-                  )}
-                </View>
-              </View>
-            </TouchableOpacity>
-          )}
+          renderItem={renderConversation}
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
         />
       )}
 
@@ -220,8 +247,12 @@ export default function ConversationListScreen({ navigation }: Props) {
         <Pressable style={styles.overlay} onPress={() => setMenuOpen(false)}>
           <View style={styles.sheet} onStartShouldSetResponder={() => true}>
 
+            {/* Handle bar */}
+            <View style={styles.sheetHandle} />
+
             {/* Search bar */}
             <View style={styles.sheetSearch}>
+              <Text style={styles.sheetSearchIcon}>{'<search>'}</Text>
               <TextInput
                 style={styles.sheetInput}
                 placeholder="Search conversations..."
@@ -235,22 +266,30 @@ export default function ConversationListScreen({ navigation }: Props) {
             <View style={styles.sheetGrid}>
               <TouchableOpacity style={styles.sheetGridItem}
                                 onPress={() => { setMenuOpen(false); navigation.navigate('NewChat'); }}>
-                <Text style={styles.sheetGridIcon}>💬</Text>
+                <View style={[styles.sheetGridIconCircle, { backgroundColor: 'rgba(124,58,237,0.15)' }]}>
+                  <Text style={[styles.sheetGridIcon, { color: colors.purple }]}>{'<chat>'}</Text>
+                </View>
                 <Text style={styles.sheetGridLabel}>New Chat</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.sheetGridItem}
                                 onPress={() => { setMenuOpen(false); navigation.navigate('CreateGroup'); }}>
-                <Text style={styles.sheetGridIcon}>👥</Text>
+                <View style={[styles.sheetGridIconCircle, { backgroundColor: 'rgba(16,185,129,0.15)' }]}>
+                  <Text style={[styles.sheetGridIcon, { color: colors.shield }]}>{'<group>'}</Text>
+                </View>
                 <Text style={styles.sheetGridLabel}>New Group</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.sheetGridItem}
                                 onPress={() => { setMenuOpen(false); navigation.navigate('Settings'); }}>
-                <Text style={styles.sheetGridIcon}>⚙</Text>
+                <View style={[styles.sheetGridIconCircle, { backgroundColor: 'rgba(139,143,163,0.15)' }]}>
+                  <Text style={[styles.sheetGridIcon, { color: colors.textSecondary }]}>{'<gear>'}</Text>
+                </View>
                 <Text style={styles.sheetGridLabel}>Settings</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.sheetGridItem}
                                 onPress={() => { setMenuOpen(false); navigation.navigate('Security'); }}>
-                <Text style={styles.sheetGridIcon}>🛡</Text>
+                <View style={[styles.sheetGridIconCircle, { backgroundColor: 'rgba(52,199,89,0.15)' }]}>
+                  <Text style={[styles.sheetGridIcon, { color: colors.online }]}>{'<shield>'}</Text>
+                </View>
                 <Text style={styles.sheetGridLabel}>Security</Text>
               </TouchableOpacity>
             </View>
@@ -294,68 +333,119 @@ export default function ConversationListScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bgSurface },
+  root: { flex: 1, backgroundColor: colors.bg },
 
+  // Header
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end',
-    paddingHorizontal: 22, paddingTop: 16, paddingBottom: 12,
+    paddingHorizontal: 22, paddingTop: 18, paddingBottom: 14,
   },
-  logo: { fontSize: 38, fontWeight: font.weights.bold, color: colors.white, letterSpacing: -0.5 },
-  headerRight: { flexDirection: 'row', gap: 4 },
-  iconBtn: { padding: 8 },
-  iconBtnText: { fontSize: 19, color: colors.textSecondary },
-
-  // Stories strip
-  storiesStrip: { paddingLeft: 16, marginBottom: 4 },
-  storiesContent: { paddingRight: 16, gap: 16, paddingBottom: 12 },
-  storyItem: { alignItems: 'center', width: 68 },
-  storyRing: {
-    width: 68, height: 68, borderRadius: 34,
-    borderWidth: 2, borderColor: colors.purple,
-    alignItems: 'center', justifyContent: 'center', marginBottom: 6,
+  headerTitle: {
+    fontSize: font.sizes.hero, fontWeight: font.weights.bold,
+    color: colors.textPrimary, letterSpacing: -0.5,
   },
-  storyAvatar: {
-    width: 60, height: 60, borderRadius: 30,
+  headerSubtitle: {
+    fontSize: font.sizes.sm, color: colors.textSecondary, marginTop: 2,
+  },
+  headerRight: { flexDirection: 'row', gap: 6 },
+  headerIconBtn: {
+    width: 40, height: 40, borderRadius: 20,
+    backgroundColor: colors.bgSurface,
     alignItems: 'center', justifyContent: 'center',
   },
-  storyInitials: { color: colors.white, fontSize: 20, fontWeight: font.weights.bold },
+  headerIconText: { fontSize: 12, color: colors.textSecondary },
+
+  // Stories strip
+  storiesStrip: { paddingLeft: 18, marginBottom: 8 },
+  storiesContent: { paddingRight: 18, gap: 14, paddingBottom: 14 },
+  storyItem: { alignItems: 'center', width: 64 },
+  storyAddRing: {
+    width: 60, height: 60, borderRadius: 30,
+    borderWidth: 2, borderColor: colors.textMuted, borderStyle: 'dashed',
+    alignItems: 'center', justifyContent: 'center', marginBottom: 6,
+  },
+  storyAddIcon: { fontSize: 24, color: colors.textMuted },
+  storyRing: {
+    width: 60, height: 60, borderRadius: 30,
+    borderWidth: 2, borderColor: colors.purple,
+    alignItems: 'center', justifyContent: 'center', marginBottom: 6,
+    position: 'relative',
+  },
+  storyAvatar: {
+    width: 52, height: 52, borderRadius: 26,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  storyInitials: { color: colors.white, fontSize: 18, fontWeight: font.weights.bold },
+  storyOnlineDot: {
+    position: 'absolute', bottom: 0, right: 0,
+    width: 14, height: 14, borderRadius: 7,
+    backgroundColor: colors.online,
+    borderWidth: 2, borderColor: colors.bg,
+  },
   storyName: { color: colors.textSecondary, fontSize: 11, textAlign: 'center' },
 
+  // Section label
   sectionRow: {
     flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 22, paddingVertical: 10,
+    paddingHorizontal: 22, paddingVertical: 10, gap: 8,
   },
-  sectionLabel: { fontSize: 16, fontWeight: font.weights.bold, color: colors.textPrimary, flex: 1 },
-  sectionCount: { fontSize: 13, color: colors.textSecondary },
+  sectionLabel: {
+    fontSize: font.sizes.lg, fontWeight: font.weights.bold,
+    color: colors.textPrimary,
+  },
+  sectionBadge: {
+    backgroundColor: colors.purple, borderRadius: 10,
+    minWidth: 20, height: 20, paddingHorizontal: 6,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  sectionBadgeText: {
+    color: colors.white, fontSize: 11, fontWeight: font.weights.bold,
+  },
 
-  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingBottom: 80 },
-  emptyText: { fontSize: 16, color: colors.textSecondary, fontWeight: font.weights.bold },
-  emptyHint: { fontSize: 13, color: colors.textMuted, marginTop: 6 },
+  // Empty state
+  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingBottom: 100 },
+  emptyIconCircle: {
+    width: 72, height: 72, borderRadius: 36,
+    backgroundColor: colors.bgSurface,
+    alignItems: 'center', justifyContent: 'center', marginBottom: 16,
+  },
+  emptyIcon: { fontSize: 14, color: colors.textMuted },
+  emptyTitle: {
+    fontSize: font.sizes.lg, fontWeight: font.weights.bold,
+    color: colors.textPrimary, marginBottom: 6,
+  },
+  emptyHint: { fontSize: font.sizes.sm, color: colors.textSecondary },
 
-  listContent: { paddingBottom: 100 },
-  convCard: {
+  // Conversation list
+  listContent: { paddingBottom: 100, paddingHorizontal: 16 },
+  separator: {
+    height: 1, backgroundColor: colors.border,
+    marginLeft: 76,
+  },
+  convRow: {
     flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingVertical: 12,
-    backgroundColor: colors.bgCard, borderRadius: radius.lg,
-    marginHorizontal: 12, marginBottom: 6,
+    paddingVertical: 14, paddingHorizontal: 6,
   },
-  avatarWrap: { position: 'relative', marginRight: 12 },
+  avatarWrap: { position: 'relative', marginRight: 14 },
   avatar: {
     width: 52, height: 52, borderRadius: 26,
     alignItems: 'center', justifyContent: 'center',
   },
   avatarText: { color: colors.white, fontSize: 19, fontWeight: font.weights.bold },
   onlineDot: {
-    position: 'absolute', bottom: 2, right: 2,
-    width: 10, height: 10, borderRadius: 5,
+    position: 'absolute', bottom: 1, right: 1,
+    width: 14, height: 14, borderRadius: 7,
     backgroundColor: colors.online,
-    borderWidth: 2, borderColor: colors.bgCard,
+    borderWidth: 2.5, borderColor: colors.bg,
   },
-  convInfo: { flex: 1 },
-  convRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  convName: { fontSize: 15, fontWeight: font.weights.bold, color: colors.textPrimary, flex: 1 },
+  convInfo: { flex: 1, marginRight: 10 },
+  convName: {
+    fontSize: font.sizes.md, fontWeight: font.weights.semibold,
+    color: colors.textPrimary, marginBottom: 3,
+  },
+  convPreview: { fontSize: font.sizes.sm, color: colors.textSecondary },
+  convMeta: { alignItems: 'flex-end', gap: 6 },
   convTime: { fontSize: 11, color: colors.textSecondary },
-  convPreview: { fontSize: 13, color: colors.textSecondary, flex: 1 },
   badge: {
     backgroundColor: colors.purple, borderRadius: 11,
     minWidth: 22, height: 22,
@@ -366,10 +456,10 @@ const styles = StyleSheet.create({
   // Floating menu pill
   menuPill: {
     position: 'absolute', bottom: 32, alignSelf: 'center',
-    backgroundColor: colors.bgInput, borderRadius: 22,
+    backgroundColor: colors.bgElevated, borderRadius: 22,
     paddingHorizontal: 28, paddingVertical: 12,
     shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3, shadowRadius: 8, elevation: 8,
+    shadowOpacity: 0.35, shadowRadius: 10, elevation: 10,
   },
   menuPillText: { color: colors.white, fontSize: 15, fontWeight: font.weights.semibold },
 
@@ -391,25 +481,36 @@ const styles = StyleSheet.create({
   },
   sheet: {
     backgroundColor: colors.bgCard,
-    borderTopLeftRadius: 20, borderTopRightRadius: 20,
-    paddingTop: 16, paddingBottom: 40, paddingHorizontal: 20,
+    borderTopLeftRadius: 24, borderTopRightRadius: 24,
+    paddingTop: 10, paddingBottom: 40, paddingHorizontal: 20,
     maxHeight: '70%',
   },
+  sheetHandle: {
+    width: 40, height: 4, borderRadius: 2,
+    backgroundColor: colors.textMuted,
+    alignSelf: 'center', marginBottom: 18,
+  },
   sheetSearch: {
+    flexDirection: 'row', alignItems: 'center',
     backgroundColor: colors.bgInput, borderRadius: radius.pill,
     borderWidth: 1, borderColor: colors.border,
-    height: 48, justifyContent: 'center', paddingHorizontal: 18,
+    height: 48, paddingHorizontal: 16, gap: 10,
     marginBottom: 20,
   },
-  sheetInput: { color: colors.textPrimary, fontSize: 15 },
+  sheetSearchIcon: { fontSize: 12, color: colors.textMuted },
+  sheetInput: { flex: 1, color: colors.textPrimary, fontSize: 15 },
   sheetGrid: {
     flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 20,
   },
   sheetGridItem: {
     width: '47%', backgroundColor: colors.bgInput,
-    borderRadius: radius.lg, padding: 16, alignItems: 'center', gap: 8,
+    borderRadius: radius.xl, padding: 16, alignItems: 'center', gap: 10,
   },
-  sheetGridIcon: { fontSize: 24 },
+  sheetGridIconCircle: {
+    width: 44, height: 44, borderRadius: 22,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  sheetGridIcon: { fontSize: 12 },
   sheetGridLabel: { color: colors.textPrimary, fontSize: 13, fontWeight: font.weights.semibold },
   sheetResults: { marginBottom: 16 },
   sheetResultItem: {

@@ -28,6 +28,8 @@ export default function ChatScreen({ navigation, route }: Props) {
   const [sending, setSending]   = useState(false);
   const [hubError, setHubError] = useState(false);
   const [sessionReady, setSessionReady] = useState(false);
+  const [peerOnline, setPeerOnline] = useState<boolean | null>(null);
+  const [peerLastSeen, setPeerLastSeen] = useState<string | null>(null);
   const listRef = useRef<FlatList>(null);
   const myUserIdRef = useRef('');
   const myUsernameRef = useRef('');
@@ -36,6 +38,26 @@ export default function ChatScreen({ navigation, route }: Props) {
   const formatTime = (iso: string) => {
     const d = new Date(iso);
     return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+  };
+
+  const formatLastSeen = (iso: string): string => {
+    const now = Date.now();
+    const then = new Date(iso).getTime();
+    const diffMs = now - then;
+    const diffMin = Math.floor(diffMs / 60000);
+    if (diffMin < 1) return 'active just now';
+    if (diffMin < 60) return `active ${diffMin}m ago`;
+    const diffHrs = Math.floor(diffMin / 60);
+    if (diffHrs < 24) return `active ${diffHrs}h ago`;
+    const diffDays = Math.floor(diffHrs / 24);
+    return `active ${diffDays}d ago`;
+  };
+
+  const getStatusText = (): string => {
+    if (hubError) return 'offline mode';
+    if (peerOnline === true) return 'online';
+    if (peerLastSeen) return formatLastSeen(peerLastSeen);
+    return 'end-to-end encrypted';
   };
 
   const reload = async () => {
@@ -67,6 +89,15 @@ export default function ChatScreen({ navigation, route }: Props) {
 
       await reload();
       await markRead(conversation.id);
+
+      // Fetch peer online status
+      getUserStatus(conversation.peerUserId)
+        .then(res => {
+          if (!mounted) return;
+          setPeerOnline(res.data.isOnline);
+          setPeerLastSeen(res.data.lastSeenAt);
+        })
+        .catch(() => {});
 
       // Replenish pre-keys if running low
       replenishPreKeysIfNeeded(s.deviceId).catch(() => {});
@@ -231,8 +262,8 @@ export default function ChatScreen({ navigation, route }: Props) {
           </View>
           <View style={styles.headerInfo}>
             <Text style={styles.headerName}>{conversation.peerUsername}</Text>
-            <Text style={styles.headerStatus}>
-              {hubError ? 'offline mode' : 'end-to-end encrypted'}
+            <Text style={[styles.headerStatus, peerOnline === true && styles.headerOnline]}>
+              {getStatusText()}
             </Text>
           </View>
         </View>
@@ -298,6 +329,7 @@ const styles = StyleSheet.create({
   headerInfo: { flex: 1 },
   headerName: { fontSize: 16, fontWeight: font.weights.bold, color: colors.textPrimary },
   headerStatus: { fontSize: 11, color: colors.shield },
+  headerOnline: { color: colors.online },
 
   listContent: { paddingVertical: 10, paddingHorizontal: 12, flexGrow: 1 },
 
