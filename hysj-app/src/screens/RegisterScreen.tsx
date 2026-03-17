@@ -5,6 +5,7 @@ import {
   ScrollView, ActivityIndicator, Modal, FlatList, Image,
 } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList } from '../types';
 import { colors, font, spacing, radius } from '../constants/theme';
 import { register } from '../services/api';
@@ -13,55 +14,55 @@ import { generateRegistrationBundle } from '../services/keyManager';
 type Props = { navigation: StackNavigationProp<RootStackParamList, 'Register'> };
 
 const COUNTRIES = [
-  { code: 'NO', flag: '🇳🇴', name: 'Norway', dial: '47' },
-  { code: 'US', flag: '🇺🇸', name: 'United States', dial: '1' },
-  { code: 'GB', flag: '🇬🇧', name: 'United Kingdom', dial: '44' },
-  { code: 'SE', flag: '🇸🇪', name: 'Sweden', dial: '46' },
-  { code: 'DK', flag: '🇩🇰', name: 'Denmark', dial: '45' },
-  { code: 'FI', flag: '🇫🇮', name: 'Finland', dial: '358' },
-  { code: 'DE', flag: '🇩🇪', name: 'Germany', dial: '49' },
-  { code: 'FR', flag: '🇫🇷', name: 'France', dial: '33' },
-  { code: 'ES', flag: '🇪🇸', name: 'Spain', dial: '34' },
-  { code: 'IT', flag: '🇮🇹', name: 'Italy', dial: '39' },
-  { code: 'NL', flag: '🇳🇱', name: 'Netherlands', dial: '31' },
-  { code: 'PL', flag: '🇵🇱', name: 'Poland', dial: '48' },
-  { code: 'RU', flag: '🇷🇺', name: 'Russia', dial: '7' },
-  { code: 'TR', flag: '🇹🇷', name: 'Turkey', dial: '90' },
-  { code: 'IN', flag: '🇮🇳', name: 'India', dial: '91' },
-  { code: 'CN', flag: '🇨🇳', name: 'China', dial: '86' },
-  { code: 'JP', flag: '🇯🇵', name: 'Japan', dial: '81' },
-  { code: 'KR', flag: '🇰🇷', name: 'South Korea', dial: '82' },
-  { code: 'BR', flag: '🇧🇷', name: 'Brazil', dial: '55' },
-  { code: 'MX', flag: '🇲🇽', name: 'Mexico', dial: '52' },
-  { code: 'AU', flag: '🇦🇺', name: 'Australia', dial: '61' },
-  { code: 'CA', flag: '🇨🇦', name: 'Canada', dial: '1' },
-  { code: 'CH', flag: '🇨🇭', name: 'Switzerland', dial: '41' },
-  { code: 'AT', flag: '🇦🇹', name: 'Austria', dial: '43' },
-  { code: 'BE', flag: '🇧🇪', name: 'Belgium', dial: '32' },
-  { code: 'PT', flag: '🇵🇹', name: 'Portugal', dial: '351' },
-  { code: 'GR', flag: '🇬🇷', name: 'Greece', dial: '30' },
-  { code: 'PK', flag: '🇵🇰', name: 'Pakistan', dial: '92' },
-  { code: 'NG', flag: '🇳🇬', name: 'Nigeria', dial: '234' },
-  { code: 'ZA', flag: '🇿🇦', name: 'South Africa', dial: '27' },
-  { code: 'EG', flag: '🇪🇬', name: 'Egypt', dial: '20' },
-  { code: 'SA', flag: '🇸🇦', name: 'Saudi Arabia', dial: '966' },
-  { code: 'AE', flag: '🇦🇪', name: 'UAE', dial: '971' },
-  { code: 'IL', flag: '🇮🇱', name: 'Israel', dial: '972' },
-  { code: 'UA', flag: '🇺🇦', name: 'Ukraine', dial: '380' },
-  { code: 'AR', flag: '🇦🇷', name: 'Argentina', dial: '54' },
-  { code: 'CO', flag: '🇨🇴', name: 'Colombia', dial: '57' },
-  { code: 'CL', flag: '🇨🇱', name: 'Chile', dial: '56' },
-  { code: 'PH', flag: '🇵🇭', name: 'Philippines', dial: '63' },
-  { code: 'ID', flag: '🇮🇩', name: 'Indonesia', dial: '62' },
-  { code: 'MY', flag: '🇲🇾', name: 'Malaysia', dial: '60' },
-  { code: 'SG', flag: '🇸🇬', name: 'Singapore', dial: '65' },
-  { code: 'TH', flag: '🇹🇭', name: 'Thailand', dial: '66' },
-  { code: 'VN', flag: '🇻🇳', name: 'Vietnam', dial: '84' },
-  { code: 'NZ', flag: '🇳🇿', name: 'New Zealand', dial: '64' },
-  { code: 'IE', flag: '🇮🇪', name: 'Ireland', dial: '353' },
-  { code: 'CZ', flag: '🇨🇿', name: 'Czech Republic', dial: '420' },
-  { code: 'HU', flag: '🇭🇺', name: 'Hungary', dial: '36' },
-  { code: 'RO', flag: '🇷🇴', name: 'Romania', dial: '40' },
+  { code: 'NO', flag: '\u{1F1F3}\u{1F1F4}', name: 'Norway', dial: '47' },
+  { code: 'US', flag: '\u{1F1FA}\u{1F1F8}', name: 'United States', dial: '1' },
+  { code: 'GB', flag: '\u{1F1EC}\u{1F1E7}', name: 'United Kingdom', dial: '44' },
+  { code: 'SE', flag: '\u{1F1F8}\u{1F1EA}', name: 'Sweden', dial: '46' },
+  { code: 'DK', flag: '\u{1F1E9}\u{1F1F0}', name: 'Denmark', dial: '45' },
+  { code: 'FI', flag: '\u{1F1EB}\u{1F1EE}', name: 'Finland', dial: '358' },
+  { code: 'DE', flag: '\u{1F1E9}\u{1F1EA}', name: 'Germany', dial: '49' },
+  { code: 'FR', flag: '\u{1F1EB}\u{1F1F7}', name: 'France', dial: '33' },
+  { code: 'ES', flag: '\u{1F1EA}\u{1F1F8}', name: 'Spain', dial: '34' },
+  { code: 'IT', flag: '\u{1F1EE}\u{1F1F9}', name: 'Italy', dial: '39' },
+  { code: 'NL', flag: '\u{1F1F3}\u{1F1F1}', name: 'Netherlands', dial: '31' },
+  { code: 'PL', flag: '\u{1F1F5}\u{1F1F1}', name: 'Poland', dial: '48' },
+  { code: 'RU', flag: '\u{1F1F7}\u{1F1FA}', name: 'Russia', dial: '7' },
+  { code: 'TR', flag: '\u{1F1F9}\u{1F1F7}', name: 'Turkey', dial: '90' },
+  { code: 'IN', flag: '\u{1F1EE}\u{1F1F3}', name: 'India', dial: '91' },
+  { code: 'CN', flag: '\u{1F1E8}\u{1F1F3}', name: 'China', dial: '86' },
+  { code: 'JP', flag: '\u{1F1EF}\u{1F1F5}', name: 'Japan', dial: '81' },
+  { code: 'KR', flag: '\u{1F1F0}\u{1F1F7}', name: 'South Korea', dial: '82' },
+  { code: 'BR', flag: '\u{1F1E7}\u{1F1F7}', name: 'Brazil', dial: '55' },
+  { code: 'MX', flag: '\u{1F1F2}\u{1F1FD}', name: 'Mexico', dial: '52' },
+  { code: 'AU', flag: '\u{1F1E6}\u{1F1FA}', name: 'Australia', dial: '61' },
+  { code: 'CA', flag: '\u{1F1E8}\u{1F1E6}', name: 'Canada', dial: '1' },
+  { code: 'CH', flag: '\u{1F1E8}\u{1F1ED}', name: 'Switzerland', dial: '41' },
+  { code: 'AT', flag: '\u{1F1E6}\u{1F1F9}', name: 'Austria', dial: '43' },
+  { code: 'BE', flag: '\u{1F1E7}\u{1F1EA}', name: 'Belgium', dial: '32' },
+  { code: 'PT', flag: '\u{1F1F5}\u{1F1F9}', name: 'Portugal', dial: '351' },
+  { code: 'GR', flag: '\u{1F1EC}\u{1F1F7}', name: 'Greece', dial: '30' },
+  { code: 'PK', flag: '\u{1F1F5}\u{1F1F0}', name: 'Pakistan', dial: '92' },
+  { code: 'NG', flag: '\u{1F1F3}\u{1F1EC}', name: 'Nigeria', dial: '234' },
+  { code: 'ZA', flag: '\u{1F1FF}\u{1F1E6}', name: 'South Africa', dial: '27' },
+  { code: 'EG', flag: '\u{1F1EA}\u{1F1EC}', name: 'Egypt', dial: '20' },
+  { code: 'SA', flag: '\u{1F1F8}\u{1F1E6}', name: 'Saudi Arabia', dial: '966' },
+  { code: 'AE', flag: '\u{1F1E6}\u{1F1EA}', name: 'UAE', dial: '971' },
+  { code: 'IL', flag: '\u{1F1EE}\u{1F1F1}', name: 'Israel', dial: '972' },
+  { code: 'UA', flag: '\u{1F1FA}\u{1F1E6}', name: 'Ukraine', dial: '380' },
+  { code: 'AR', flag: '\u{1F1E6}\u{1F1F7}', name: 'Argentina', dial: '54' },
+  { code: 'CO', flag: '\u{1F1E8}\u{1F1F4}', name: 'Colombia', dial: '57' },
+  { code: 'CL', flag: '\u{1F1E8}\u{1F1F1}', name: 'Chile', dial: '56' },
+  { code: 'PH', flag: '\u{1F1F5}\u{1F1ED}', name: 'Philippines', dial: '63' },
+  { code: 'ID', flag: '\u{1F1EE}\u{1F1E9}', name: 'Indonesia', dial: '62' },
+  { code: 'MY', flag: '\u{1F1F2}\u{1F1FE}', name: 'Malaysia', dial: '60' },
+  { code: 'SG', flag: '\u{1F1F8}\u{1F1EC}', name: 'Singapore', dial: '65' },
+  { code: 'TH', flag: '\u{1F1F9}\u{1F1ED}', name: 'Thailand', dial: '66' },
+  { code: 'VN', flag: '\u{1F1FB}\u{1F1F3}', name: 'Vietnam', dial: '84' },
+  { code: 'NZ', flag: '\u{1F1F3}\u{1F1FF}', name: 'New Zealand', dial: '64' },
+  { code: 'IE', flag: '\u{1F1EE}\u{1F1EA}', name: 'Ireland', dial: '353' },
+  { code: 'CZ', flag: '\u{1F1E8}\u{1F1FF}', name: 'Czech Republic', dial: '420' },
+  { code: 'HU', flag: '\u{1F1ED}\u{1F1FA}', name: 'Hungary', dial: '36' },
+  { code: 'RO', flag: '\u{1F1F7}\u{1F1F4}', name: 'Romania', dial: '40' },
 ].sort((a, b) => a.name.localeCompare(b.name));
 
 export default function RegisterScreen({ navigation }: Props) {
@@ -130,22 +131,31 @@ export default function RegisterScreen({ navigation }: Props) {
   return (
     <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        {/* Back button */}
+        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+          <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />
+        </TouchableOpacity>
+
+        {/* Header with logo and title */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text style={styles.back}>←</Text>
-          </TouchableOpacity>
           <Image source={require('../../assets/logo.png')} style={styles.headerLogo} resizeMode="contain" />
-          <View style={styles.headerText}>
-            <Text style={styles.title}>Create Account</Text>
-            <Text style={styles.subtitle}>End-to-end encrypted from day one</Text>
-          </View>
+          <Text style={styles.title}>Create Account</Text>
+          <Text style={styles.subtitle}>End-to-end encrypted from day one</Text>
         </View>
 
+        {/* Security badge */}
+        <View style={styles.securityBadge}>
+          <Ionicons name="shield-checkmark" size={16} color={colors.shield} />
+          <Text style={styles.securityText}>Your keys are generated on-device only</Text>
+        </View>
+
+        {/* Phone Number */}
         <Text style={styles.label}>PHONE NUMBER</Text>
         <View style={styles.phoneRow}>
-          <TouchableOpacity style={styles.countryBtn} onPress={() => setPickerOpen(true)}>
+          <TouchableOpacity style={styles.countryBtn} onPress={() => setPickerOpen(true)} activeOpacity={0.7}>
             <Text style={styles.flag}>{country.flag}</Text>
             <Text style={styles.callingCode}>+{country.dial}</Text>
+            <Ionicons name="chevron-down" size={14} color={colors.textMuted} style={{ marginLeft: 2 }} />
           </TouchableOpacity>
           <View style={styles.phoneInputWrap}>
             <TextInput
@@ -161,6 +171,7 @@ export default function RegisterScreen({ navigation }: Props) {
           </View>
         </View>
 
+        {/* Password */}
         <Text style={styles.label}>PASSWORD</Text>
         <View style={styles.inputWrap}>
           <TextInput
@@ -173,7 +184,9 @@ export default function RegisterScreen({ navigation }: Props) {
             returnKeyType="next"
           />
         </View>
+        <Text style={styles.passwordHint}>Min. 8 characters</Text>
 
+        {/* Confirm Password */}
         <Text style={styles.label}>CONFIRM PASSWORD</Text>
         <View style={styles.inputWrap}>
           <TextInput
@@ -188,12 +201,28 @@ export default function RegisterScreen({ navigation }: Props) {
           />
         </View>
 
-        {!!error && <Text style={styles.error}>{error}</Text>}
+        {/* Error message */}
+        {!!error && (
+          <View style={styles.errorContainer}>
+            <Ionicons name="alert-circle" size={16} color={colors.danger} style={{ marginRight: 8 }} />
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        )}
 
-        <TouchableOpacity style={[styles.btn, busy && styles.btnDisabled]} onPress={handleRegister} disabled={busy}>
-          {busy ? <ActivityIndicator color={colors.white} /> : <Text style={styles.btnText}>Create Account</Text>}
+        {/* Submit button */}
+        <TouchableOpacity
+          style={[styles.btn, busy && styles.btnDisabled]}
+          onPress={handleRegister}
+          disabled={busy}
+          activeOpacity={0.8}
+        >
+          {busy
+            ? <ActivityIndicator color={colors.white} />
+            : <Text style={styles.btnText}>Create Account</Text>
+          }
         </TouchableOpacity>
 
+        {/* Sign in link */}
         <View style={styles.loginRow}>
           <Text style={styles.loginText}>Already have an account? </Text>
           <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -202,30 +231,47 @@ export default function RegisterScreen({ navigation }: Props) {
         </View>
       </ScrollView>
 
+      {/* Country Picker Modal */}
       <Modal visible={pickerOpen} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={styles.modalSheet}>
+            {/* Modal handle */}
+            <View style={styles.modalHandle} />
             <Text style={styles.modalTitle}>Select Country</Text>
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search..."
-              placeholderTextColor={colors.textMuted}
-              value={search}
-              onChangeText={setSearch}
-              autoFocus
-            />
+            <View style={styles.searchWrap}>
+              <Ionicons name="search" size={18} color={colors.textMuted} style={{ marginRight: 10 }} />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search country or code..."
+                placeholderTextColor={colors.textMuted}
+                value={search}
+                onChangeText={setSearch}
+                autoFocus
+              />
+            </View>
             <FlatList
               data={filtered}
               keyExtractor={item => item.code}
+              showsVerticalScrollIndicator={false}
               renderItem={({ item }) => (
-                <TouchableOpacity style={styles.countryItem} onPress={() => { setCountry(item); setPickerOpen(false); setSearch(''); }}>
-                  <Text style={styles.flag}>{item.flag}</Text>
+                <TouchableOpacity
+                  style={[
+                    styles.countryItem,
+                    item.code === country.code && styles.countryItemSelected,
+                  ]}
+                  onPress={() => { setCountry(item); setPickerOpen(false); setSearch(''); }}
+                  activeOpacity={0.6}
+                >
+                  <Text style={styles.countryFlag}>{item.flag}</Text>
                   <Text style={styles.countryName}>{item.name}</Text>
                   <Text style={styles.countryDial}>+{item.dial}</Text>
+                  {item.code === country.code && (
+                    <Ionicons name="checkmark-circle" size={20} color={colors.purple} style={{ marginLeft: 8 }} />
+                  )}
                 </TouchableOpacity>
               )}
             />
-            <TouchableOpacity style={styles.closeBtn} onPress={() => { setPickerOpen(false); setSearch(''); }}>
+            <TouchableOpacity style={styles.closeBtn} onPress={() => { setPickerOpen(false); setSearch(''); }} activeOpacity={0.8}>
               <Text style={styles.closeBtnText}>Close</Text>
             </TouchableOpacity>
           </View>
@@ -236,54 +282,291 @@ export default function RegisterScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bg },
-  scroll: { flexGrow: 1, paddingHorizontal: spacing.xl, paddingTop: 60, paddingBottom: spacing.xxl },
-  header: { flexDirection: 'row', alignItems: 'center', marginBottom: 40, gap: 10 },
-  back: { fontSize: 26, color: colors.white, marginTop: 2 },
-  headerLogo: { width: 34, height: 34 },
-  headerText: { flex: 1 },
-  title: { fontSize: font.sizes.xxl, fontWeight: font.weights.bold, color: colors.textPrimary, marginBottom: 4 },
-  subtitle: { fontSize: font.sizes.sm, color: colors.textSecondary },
-  label: { fontSize: font.sizes.xs, fontWeight: font.weights.bold, color: colors.textMuted, letterSpacing: 1.5, marginBottom: 8, marginLeft: 4 },
-  phoneRow: { flexDirection: 'row', gap: 10, marginBottom: 16 },
+  root: {
+    flex: 1,
+    backgroundColor: colors.bg,
+  },
+  scroll: {
+    flexGrow: 1,
+    paddingHorizontal: spacing.lg,
+    paddingTop: Platform.OS === 'ios' ? 56 : 44,
+    paddingBottom: spacing.xxl,
+  },
+
+  /* Back button */
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.full,
+    backgroundColor: colors.bgSurface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.lg,
+  },
+
+  /* Header */
+  header: {
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+  },
+  headerLogo: {
+    width: 56,
+    height: 56,
+    marginBottom: spacing.md,
+  },
+  title: {
+    fontSize: font.sizes.hero,
+    fontWeight: font.weights.bold,
+    color: colors.textPrimary,
+    marginBottom: 6,
+    letterSpacing: -0.5,
+  },
+  subtitle: {
+    fontSize: font.sizes.sm,
+    color: colors.textSecondary,
+    letterSpacing: 0.2,
+  },
+
+  /* Security badge */
+  securityBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(16,185,129,0.08)',
+    borderRadius: radius.pill,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    alignSelf: 'center',
+    marginBottom: spacing.xl,
+    gap: 8,
+  },
+  securityText: {
+    fontSize: font.sizes.xs,
+    color: colors.shield,
+    fontWeight: font.weights.medium,
+    letterSpacing: 0.2,
+  },
+
+  /* Labels */
+  label: {
+    fontSize: font.sizes.xs,
+    fontWeight: font.weights.bold,
+    color: colors.textMuted,
+    letterSpacing: 1.5,
+    marginBottom: 8,
+    marginLeft: 4,
+  },
+
+  /* Phone row */
+  phoneRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 20,
+  },
   countryBtn: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: colors.bgInput,
-    borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border, height: 52, paddingHorizontal: 12, gap: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.bgInput,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.borderMid,
+    height: 54,
+    paddingHorizontal: 14,
+    gap: 6,
   },
-  flag: { fontSize: 22 },
-  callingCode: { color: colors.textPrimary, fontSize: font.sizes.md, fontWeight: font.weights.semibold },
+  flag: {
+    fontSize: 22,
+  },
+  callingCode: {
+    color: colors.textPrimary,
+    fontSize: font.sizes.md,
+    fontWeight: font.weights.semibold,
+  },
   phoneInputWrap: {
-    flex: 1, backgroundColor: colors.bgInput, borderRadius: radius.lg,
-    borderWidth: 1, borderColor: colors.border, height: 52, justifyContent: 'center', paddingHorizontal: spacing.md,
+    flex: 1,
+    backgroundColor: colors.bgInput,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.borderMid,
+    height: 54,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.md + 2,
   },
+
+  /* Input fields */
   inputWrap: {
-    backgroundColor: colors.bgInput, borderRadius: radius.lg,
-    borderWidth: 1, borderColor: colors.border, height: 52,
-    justifyContent: 'center', paddingHorizontal: spacing.md,
+    backgroundColor: colors.bgInput,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.borderMid,
+    height: 54,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.md + 2,
+    marginBottom: 6,
+  },
+  input: {
+    color: colors.textPrimary,
+    fontSize: font.sizes.md,
+  },
+
+  /* Password hint */
+  passwordHint: {
+    fontSize: font.sizes.xs,
+    color: colors.textMuted,
+    marginLeft: 4,
+    marginBottom: 20,
+  },
+
+  /* Error message */
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.dangerBg,
+    borderRadius: radius.md,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginBottom: spacing.md,
+  },
+  errorText: {
+    color: colors.danger,
+    fontSize: font.sizes.sm,
+    flex: 1,
+    lineHeight: 18,
+  },
+
+  /* Primary button */
+  btn: {
+    width: '100%',
+    height: 56,
+    borderRadius: radius.pill,
+    backgroundColor: colors.purple,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: spacing.sm,
+    marginBottom: spacing.lg,
+    shadowColor: colors.purple,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  btnDisabled: {
+    opacity: 0.6,
+  },
+  btnText: {
+    fontSize: font.sizes.lg,
+    fontWeight: font.weights.bold,
+    color: colors.white,
+    letterSpacing: 0.3,
+  },
+
+  /* Sign in row */
+  loginRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: spacing.xs,
+  },
+  loginText: {
+    color: colors.textSecondary,
+    fontSize: font.sizes.sm,
+  },
+  loginLink: {
+    color: colors.purpleLight,
+    fontSize: font.sizes.sm,
+    fontWeight: font.weights.bold,
+  },
+
+  /* Modal overlay */
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'flex-end',
+  },
+  modalSheet: {
+    backgroundColor: colors.bgCard,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: Platform.OS === 'ios' ? 34 : spacing.lg,
+    maxHeight: '80%',
+  },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.borderMid,
+    alignSelf: 'center',
+    marginTop: 12,
     marginBottom: 16,
   },
-  input: { color: colors.textPrimary, fontSize: font.sizes.md },
-  error: { color: colors.danger, fontSize: font.sizes.sm, marginBottom: spacing.md, marginLeft: 4 },
-  btn: {
-    width: '100%', height: 56, borderRadius: radius.pill, borderWidth: 1.5,
-    borderColor: colors.white, alignItems: 'center', justifyContent: 'center',
-    marginTop: spacing.md, marginBottom: spacing.lg,
+  modalTitle: {
+    color: colors.white,
+    fontSize: font.sizes.xl,
+    fontWeight: font.weights.bold,
+    marginBottom: spacing.md,
+    textAlign: 'center',
   },
-  btnDisabled: { opacity: 0.7 },
-  btnText: { fontSize: font.sizes.lg, fontWeight: font.weights.semibold, color: colors.white },
-  loginRow: { flexDirection: 'row', justifyContent: 'center' },
-  loginText: { color: colors.textSecondary, fontSize: font.sizes.sm },
-  loginLink: { color: colors.purpleLight, fontSize: font.sizes.sm, fontWeight: font.weights.bold },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
-  modalSheet: { backgroundColor: colors.bgCard, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: spacing.lg, maxHeight: '80%' },
-  modalTitle: { color: colors.white, fontSize: font.sizes.xl, fontWeight: font.weights.bold, marginBottom: spacing.md, textAlign: 'center' },
+
+  /* Search inside modal */
+  searchWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.bgInput,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.borderMid,
+    paddingHorizontal: 14,
+    marginBottom: spacing.md,
+    height: 48,
+  },
   searchInput: {
-    backgroundColor: colors.bgInput, borderRadius: radius.lg, borderWidth: 1,
-    borderColor: colors.border, color: colors.white, padding: 12, fontSize: font.sizes.md, marginBottom: spacing.md,
+    flex: 1,
+    color: colors.white,
+    fontSize: font.sizes.md,
   },
-  countryItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, gap: 12, borderBottomWidth: 0.5, borderBottomColor: colors.border },
-  countryName: { flex: 1, color: colors.textPrimary, fontSize: font.sizes.md },
-  countryDial: { color: colors.textSecondary, fontSize: font.sizes.sm },
-  closeBtn: { marginTop: spacing.md, backgroundColor: colors.bgInput, borderRadius: radius.pill, paddingVertical: 14, alignItems: 'center' },
-  closeBtnText: { color: colors.white, fontSize: font.sizes.lg, fontWeight: font.weights.semibold },
+
+  /* Country list items */
+  countryItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 4,
+    gap: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.borderMid,
+  },
+  countryItemSelected: {
+    backgroundColor: 'rgba(124,58,237,0.08)',
+    borderRadius: radius.md,
+    marginHorizontal: -4,
+    paddingHorizontal: 8,
+  },
+  countryFlag: {
+    fontSize: 24,
+  },
+  countryName: {
+    flex: 1,
+    color: colors.textPrimary,
+    fontSize: font.sizes.md,
+    fontWeight: font.weights.medium,
+  },
+  countryDial: {
+    color: colors.textSecondary,
+    fontSize: font.sizes.sm,
+    fontWeight: font.weights.medium,
+  },
+
+  /* Close button in modal */
+  closeBtn: {
+    marginTop: spacing.md,
+    backgroundColor: colors.bgElevated,
+    borderRadius: radius.pill,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  closeBtnText: {
+    color: colors.white,
+    fontSize: font.sizes.lg,
+    fontWeight: font.weights.semibold,
+  },
 });
