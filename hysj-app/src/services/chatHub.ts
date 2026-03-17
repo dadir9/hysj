@@ -37,6 +37,21 @@ export const stopHub = async () => {
   _connection = null;
 };
 
+/**
+ * Acknowledge delivery of a message to the server.
+ * This tells the backend to delete the message from Redis.
+ */
+export const acknowledgeDelivery = async (
+  messageId: string,
+  recipientDeviceId: string,
+): Promise<void> => {
+  if (!_connection || _connection.state !== SignalR.HubConnectionState.Connected) return;
+  await _connection.invoke('AcknowledgeDelivery', {
+    MessageId: messageId,
+    RecipientDeviceId: recipientDeviceId,
+  });
+};
+
 // ── Ratchet State Persistence ──────────────────────────
 
 const RATCHET_KEY_PREFIX = 'ratchet:';
