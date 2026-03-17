@@ -37,7 +37,7 @@ public class HysjDbContext(DbContextOptions<HysjDbContext> options) : DbContext(
         modelBuilder.Entity<PreKey>(e =>
         {
             e.HasKey(p => p.Id);
-            e.Property(p => p.Id).UseIdentityColumn();
+            e.Property(p => p.Id).ValueGeneratedOnAdd();
             e.HasOne(p => p.Device)
              .WithMany(d => d.PreKeys)
              .HasForeignKey(p => p.DeviceId)
@@ -48,7 +48,7 @@ public class HysjDbContext(DbContextOptions<HysjDbContext> options) : DbContext(
         modelBuilder.Entity<LoginAttempt>(e =>
         {
             e.HasKey(l => l.Id);
-            e.Property(l => l.Id).UseIdentityColumn();
+            e.Property(l => l.Id).ValueGeneratedOnAdd();
             e.Property(l => l.IpAddress).HasMaxLength(45).IsRequired();
             e.Property(l => l.Username).HasMaxLength(50).IsRequired();
             e.HasIndex(l => new { l.IpAddress, l.Timestamp });

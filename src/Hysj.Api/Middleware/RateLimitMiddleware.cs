@@ -6,9 +6,9 @@ public class RateLimitMiddleware(RequestDelegate next, IConfiguration config)
 {
     private static readonly ConcurrentDictionary<string, WindowCounter> _counters = new();
 
-    private readonly int _maxAttempts = config.GetValue<int>("RateLimit:LoginAttemptsPerWindow");
-    private readonly int _windowMinutes = config.GetValue<int>("RateLimit:WindowMinutes");
-    private readonly int _lockoutMinutes = config.GetValue<int>("RateLimit:LockoutMinutes");
+    private readonly int _maxAttempts = config.GetValue("RateLimit:LoginAttemptsPerWindow", 5);
+    private readonly int _windowMinutes = config.GetValue("RateLimit:WindowMinutes", 15);
+    private readonly int _lockoutMinutes = config.GetValue("RateLimit:LockoutMinutes", 30);
 
     public async Task InvokeAsync(HttpContext context)
     {
