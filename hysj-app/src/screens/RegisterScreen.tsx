@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, KeyboardAvoidingView, Platform,
-  ScrollView, ActivityIndicator, Modal, FlatList,
+  ScrollView, ActivityIndicator, Modal, FlatList, Image,
 } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
@@ -87,7 +87,21 @@ export default function RegisterScreen({ navigation }: Props) {
     const fullNumber = `+${country.dial}${phone.replace(/\s/g, '')}`;
     setBusy(true);
     try {
-      const bundle = await generateRegistrationBundle();
+      let bundle;
+      try {
+        bundle = await generateRegistrationBundle();
+      } catch (keyErr: any) {
+        const msg = keyErr?.message ?? '';
+        if (msg.includes('Ed25519') || msg.includes('signing')) {
+          setError('Failed to generate signing keys. Please restart the app and try again.');
+        } else if (msg.includes('Kyber') || msg.includes('kyber') || msg.includes('ML-KEM')) {
+          setError('Failed to generate post-quantum keys. Please restart the app and try again.');
+        } else {
+          setError('Failed to generate encryption keys. Please restart the app and try again.');
+        }
+        setBusy(false);
+        return;
+      }
       await register({
         username: fullNumber,
         phoneNumber: fullNumber,
@@ -101,7 +115,13 @@ export default function RegisterScreen({ navigation }: Props) {
       });
       navigation.replace('Login');
     } catch (e: any) {
-      setError(e.response?.status === 409 ? 'Phone number already registered' : 'Connection error');
+      if (e.response?.status === 409) {
+        setError('Phone number already registered');
+      } else if (e.response?.status === 400) {
+        setError('Invalid key bundle. Please restart and try again.');
+      } else {
+        setError('Connection error. Check your network and try again.');
+      }
     } finally {
       setBusy(false);
     }
@@ -114,6 +134,7 @@ export default function RegisterScreen({ navigation }: Props) {
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Text style={styles.back}>←</Text>
           </TouchableOpacity>
+          <Image source={require('../../assets/logo.png')} style={styles.headerLogo} resizeMode="contain" />
           <View style={styles.headerText}>
             <Text style={styles.title}>Create Account</Text>
             <Text style={styles.subtitle}>End-to-end encrypted from day one</Text>

@@ -265,10 +265,19 @@ export default function ChatScreen({ navigation, route }: Props) {
     <View>
       {item.isOutgoing ? (
         <View style={styles.rowOut}>
-          <View style={styles.bubbleOut}>
+          <View style={[styles.bubbleOut, item.sendFailed && styles.bubbleOutFailed]}>
             <Text style={styles.bubbleOutText}>{item.content}</Text>
           </View>
-          <Text style={styles.timeOut}>{formatTime(item.sentAt)}</Text>
+          {item.sendFailed ? (
+            <View style={styles.failedRow}>
+              <Text style={styles.failedText}>Failed to send</Text>
+              <TouchableOpacity onPress={() => retry(item)}>
+                <Text style={styles.retryBtn}>Retry</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <Text style={styles.timeOut}>{formatTime(item.sentAt)}</Text>
+          )}
         </View>
       ) : (
         <View style={styles.rowIn}>
@@ -323,13 +332,24 @@ export default function ChatScreen({ navigation, route }: Props) {
           renderItem={renderItem}
           contentContainerStyle={styles.listContent}
           onLayout={() => listRef.current?.scrollToEnd({ animated: false })}
+          ListHeaderComponent={
+            sessionReady && ratchetRef.current ? (
+              <View style={styles.sessionBanner}>
+                <Text style={styles.sessionBannerText}>Secure session established</Text>
+              </View>
+            ) : null
+          }
           ListEmptyComponent={
             <View style={styles.emptyChat}>
               <View style={styles.emptyChatCircle}>
                 <Text style={styles.emptyChatLock}>{'\u{1F512}'}</Text>
               </View>
               <Text style={styles.emptyChatText}>No messages yet</Text>
-              <Text style={styles.emptyChatHint}>Messages are end-to-end encrypted</Text>
+              <Text style={styles.emptyChatHint}>
+                {sessionReady && ratchetRef.current
+                  ? 'Quantum-resistant encryption active'
+                  : 'Establishing secure session...'}
+              </Text>
             </View>
           }
         />
@@ -448,6 +468,36 @@ const styles = StyleSheet.create({
   },
   bubbleInText: { color: colors.bubbleInText, fontSize: 15, lineHeight: 21 },
   timeIn: { color: colors.textMuted, fontSize: 10, marginTop: 4, marginLeft: 6 },
+
+  // Session banner
+  sessionBanner: {
+    alignSelf: 'center',
+    backgroundColor: 'rgba(16,185,129,0.1)',
+    borderRadius: radius.pill,
+    paddingHorizontal: 14, paddingVertical: 6,
+    marginBottom: 12,
+  },
+  sessionBannerText: {
+    fontSize: font.sizes.xs, color: colors.shield,
+    fontWeight: font.weights.medium,
+  },
+
+  // Failed message
+  bubbleOutFailed: {
+    backgroundColor: colors.danger,
+    opacity: 0.8,
+  },
+  failedRow: {
+    flexDirection: 'row', alignItems: 'center',
+    gap: 8, marginTop: 4, marginRight: 6,
+  },
+  failedText: {
+    fontSize: 10, color: colors.danger,
+  },
+  retryBtn: {
+    fontSize: 10, color: colors.purpleLight,
+    fontWeight: font.weights.bold,
+  },
 
   // Input bar
   inputBar: {

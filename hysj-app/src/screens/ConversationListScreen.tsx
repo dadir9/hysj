@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity,
   StyleSheet, SafeAreaView, ScrollView, Modal,
-  TextInput, Pressable,
+  TextInput, Pressable, Image,
 } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useFocusEffect } from '@react-navigation/native';
@@ -157,13 +157,16 @@ export default function ConversationListScreen({ navigation }: Props) {
 
       {/* Header */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.headerTitle}>Messages</Text>
-          <Text style={styles.headerSubtitle}>
-            {conversations.length > 0
-              ? `${conversations.length} conversation${conversations.length !== 1 ? 's' : ''}`
-              : 'No conversations yet'}
-          </Text>
+        <View style={styles.headerLeft}>
+          <Image source={require('../../assets/logo.png')} style={styles.headerLogo} resizeMode="contain" />
+          <View>
+            <Text style={styles.headerTitle}>Messages</Text>
+            <Text style={styles.headerSubtitle}>
+              {conversations.length > 0
+                ? `${conversations.length} conversation${conversations.length !== 1 ? 's' : ''}`
+                : 'No conversations yet'}
+            </Text>
+          </View>
         </View>
         <View style={styles.headerRight}>
           <TouchableOpacity style={styles.headerIconBtn} onPress={() => navigation.navigate('Security')}>
@@ -340,8 +343,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end',
     paddingHorizontal: 22, paddingTop: 18, paddingBottom: 14,
   },
+  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  headerLogo: { width: 38, height: 38 },
   headerTitle: {
-    fontSize: font.sizes.hero, fontWeight: font.weights.bold,
+    fontSize: font.sizes.xl, fontWeight: font.weights.bold,
     color: colors.textPrimary, letterSpacing: -0.5,
   },
   headerSubtitle: {
