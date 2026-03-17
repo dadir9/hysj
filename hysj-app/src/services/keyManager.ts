@@ -2,8 +2,9 @@
  * Key Manager: generates, persists, and uploads cryptographic key bundles.
  *
  * Manages:
- *   - Identity key pair (X25519, long-lived)
- *   - Signed pre-key (X25519, rotated periodically)
+ *   - Ed25519 identity key pair (for signatures, sent to backend)
+ *   - X25519 identity key pair (for DH key exchange, used in X3DH/Ratchet)
+ *   - Signed pre-key (X25519, rotated periodically, signed with Ed25519)
  *   - One-time pre-keys (X25519, consumed on use)
  *   - Kyber key pair (ML-KEM-768, for post-quantum hybrid X3DH)
  *
@@ -12,15 +13,20 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   generateKeyPair,
+  generateSigningKeyPair,
+  sign,
   toBase64,
   fromBase64,
   kyberGenerateKeyPair,
   type KeyPair,
+  type SigningKeyPair,
   type KyberKeyPair,
 } from '../crypto';
 import * as api from './api';
 
 // ── Storage keys ──────────────────────────────────────
+const ED25519_SECRET    = 'keys:ed25519:secret';
+const ED25519_PUBLIC    = 'keys:ed25519:public';
 const IDENTITY_SECRET   = 'keys:identity:secret';
 const IDENTITY_PUBLIC   = 'keys:identity:public';
 const SPK_SECRET        = 'keys:spk:secret';
@@ -33,7 +39,24 @@ const OTP_INDEX         = 'keys:otp:index';
 const PREKEY_BATCH_SIZE = 20;
 const PREKEY_REPLENISH_THRESHOLD = 5;
 
-// ── Identity key pair ──────────────────────────────────
+// ── Ed25519 identity key pair (for signatures) ────────
+
+export async function getOrCreateEd25519KeyPair(): Promise<SigningKeyPair> {
+  const existing = await AsyncStorage.getItem(ED25519_SECRET);
+  if (existing) {
+    const pub = await AsyncStorage.getItem(ED25519_PUBLIC);
+    return {
+      secretKey: fromBase64(existing),
+      publicKey: fromBase64(pub!),
+    };
+  }
+  const kp = generateSigningKeyPair();
+  await AsyncStorage.setItem(ED25519_SECRET, toBase64(kp.secretKey));
+  await AsyncStorage.setItem(ED25519_PUBLIC, toBase64(kp.publicKey));
+  return kp;
+}
+
+// ── X25519 identity key pair (for DH exchange) ────────
 
 export async function getOrCreateIdentityKeyPair(): Promise<KeyPair> {
   const existing = await AsyncStorage.getItem(IDENTITY_SECRET);
@@ -134,6 +157,13 @@ export async function consumeOneTimePreKey(publicKeyB64: string): Promise<Uint8A
 /**
  * Generate all keys needed for registration and return them as
  * arrays compatible with the API's register endpoint.
+ *
+ * Backend expects:
+ *   - identityPublicKey: 32-byte Ed25519 public key
+ *   - signedPreKey: 32-byte X25519 public key
+ *   - signedPreKeySig: 64-byte Ed25519 signature of signedPreKey
+ *   - oneTimePreKeys: array of 32-byte X25519 public keys
+ *   - kyberPublicKey: ML-KEM-768 public key
  */
 export async function generateRegistrationBundle(): Promise<{
   identityPublicKey: string;
@@ -142,19 +172,23 @@ export async function generateRegistrationBundle(): Promise<{
   oneTimePreKeys: string[];
   kyberPublicKey: string;
 }> {
-  const identity = await getOrCreateIdentityKeyPair();
+  // Ed25519 identity key pair (for signatures — sent to backend)
+  const ed25519 = await getOrCreateEd25519KeyPair();
+
+  // X25519 identity key pair (for DH — used locally in X3DH)
+  await getOrCreateIdentityKeyPair();
+
   const spk = await getOrCreateSignedPreKey();
   const kyber = await getOrCreateKyberKeyPair();
   const otpKeys = await generateOneTimePreKeys(PREKEY_BATCH_SIZE);
 
-  // Signature placeholder — in production, sign SPK with identity key
-  // using Ed25519 (requires adding an Ed25519 key alongside X25519)
-  const sigPlaceholder = new Uint8Array(64);
+  // Sign the SignedPreKey (X25519 public key) with Ed25519 identity key
+  const spkSignature = sign(spk.publicKey, ed25519.secretKey);
 
   return {
-    identityPublicKey: toBase64(identity.publicKey),
+    identityPublicKey: toBase64(ed25519.publicKey),
     signedPreKey: toBase64(spk.publicKey),
-    signedPreKeySig: toBase64(sigPlaceholder),
+    signedPreKeySig: toBase64(spkSignature),
     oneTimePreKeys: otpKeys.map(k => toBase64(k)),
     kyberPublicKey: toBase64(kyber.publicKey),
   };

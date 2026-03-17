@@ -16,7 +16,8 @@
 
 // Key management
 export { generateKeyPair, deriveSharedSecret, zeroMemory } from './keys';
-export type { KeyPair } from './keys';
+export { generateSigningKeyPair, sign, verify } from './keys';
+export type { KeyPair, SigningKeyPair } from './keys';
 
 // Symmetric encryption
 export { encrypt, decrypt } from './cipher';

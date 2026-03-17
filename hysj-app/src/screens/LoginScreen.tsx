@@ -67,6 +67,7 @@ const COUNTRIES = [
 export default function LoginScreen({ navigation }: Props) {
   const [showFields, setShowFields]   = useState(false);
   const [phone, setPhone]             = useState('');
+  const [password, setPassword]       = useState('');
   const [country, setCountry]         = useState(COUNTRIES.find(c => c.code === 'NO')!);
   const [pickerOpen, setPickerOpen]   = useState(false);
   const [search, setSearch]           = useState('');
@@ -79,12 +80,12 @@ export default function LoginScreen({ navigation }: Props) {
   );
 
   const handleLogin = async () => {
-    if (!phone.trim()) return;
+    if (!phone.trim() || !password) { setError('Phone number and password are required'); return; }
     setBusy(true);
     setError('');
     try {
       const fullNumber = `+${country.dial}${phone.replace(/\s/g, '')}`;
-      const res = await login({ phoneNumber: fullNumber, password: '', totpCode: null });
+      const res = await login({ phoneNumber: fullNumber, password, totpCode: null });
       await saveSession({
         token: res.data.token,
         userId: res.data.userId,
@@ -93,7 +94,7 @@ export default function LoginScreen({ navigation }: Props) {
       });
       navigation.replace('ConversationList');
     } catch (e: any) {
-      setError(e.response?.status === 401 ? 'Invalid phone number' : 'Connection error');
+      setError(e.response?.status === 401 ? 'Invalid credentials' : 'Connection error');
     } finally {
       setBusy(false);
     }
@@ -137,6 +138,20 @@ export default function LoginScreen({ navigation }: Props) {
               </View>
             </View>
 
+            <Text style={styles.label}>PASSWORD</Text>
+            <View style={styles.inputWrap}>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter password"
+                placeholderTextColor={colors.textMuted}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                returnKeyType="done"
+                onSubmitEditing={handleLogin}
+              />
+            </View>
+
             {!!error && <Text style={styles.error}>{error}</Text>}
 
             <TouchableOpacity
@@ -146,7 +161,7 @@ export default function LoginScreen({ navigation }: Props) {
             >
               {busy
                 ? <ActivityIndicator color={colors.white} />
-                : <Text style={styles.pillOutlineText}>Continue with Phone</Text>}
+                : <Text style={styles.pillOutlineText}>Sign In</Text>}
             </TouchableOpacity>
 
             <View style={styles.registerRow}>
@@ -239,6 +254,12 @@ const styles = StyleSheet.create({
     flex: 1, backgroundColor: colors.bgInput, borderRadius: radius.lg,
     borderWidth: 1, borderColor: colors.border, height: 52,
     justifyContent: 'center', paddingHorizontal: spacing.md,
+  },
+  inputWrap: {
+    backgroundColor: colors.bgInput, borderRadius: radius.lg,
+    borderWidth: 1, borderColor: colors.border, height: 52,
+    justifyContent: 'center', paddingHorizontal: spacing.md,
+    marginBottom: 16,
   },
   input: { color: colors.textPrimary, fontSize: font.sizes.md },
   error: { color: colors.danger, fontSize: font.sizes.sm, marginBottom: spacing.md, marginLeft: 4 },

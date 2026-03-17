@@ -56,9 +56,9 @@ export const getDevices = () => api.get('/devices');
 export const registerDevice = (data: {
   deviceName: string;
   pushToken?: string | null;
-  signedPreKey: number[];
-  signedPreKeySig: number[];
-  oneTimePreKeys: number[][];
+  signedPreKey: string;      // base64 — backend expects byte[] (JSON base64)
+  signedPreKeySig: string;   // base64
+  oneTimePreKeys: string[];  // base64[]
 }) => api.post('/devices', data);
 export const deleteDevice = (deviceId: string) =>
   api.delete(`/devices/${deviceId}`);
@@ -72,6 +72,7 @@ export const createGroup = (data: {
   name: string;
   isAnonymous: boolean;
   membersCanAdd: boolean;
+  initialMemberUserIds?: string[];
 }) => api.post('/groups', data);
 
 export const getGroups = () => api.get('/groups');
@@ -96,9 +97,9 @@ export const wipeDevice = (targetDeviceId: string, totpCode: string) =>
   api.post('/wipe', { type: 1, targetDeviceId, totpCode });
 
 // ── Relay ─────────────────────────────────────────────
-// Backend returns { address, publicKeyBase64 }; map to frontend RelayNode shape
+// Backend returns { address, publicKey } where publicKey is base64 (C# byte[] → JSON base64)
 export const getRelayNodes = () =>
-  api.get<{ address: string; publicKeyBase64: string }[]>('/relay/nodes');
+  api.get<{ address: string; publicKey: string }[]>('/relay/nodes');
 
 // ── Users ──────────────────────────────────────────────
 export const lookupUser = (username: string) =>

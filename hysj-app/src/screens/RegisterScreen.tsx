@@ -65,12 +65,14 @@ const COUNTRIES = [
 ].sort((a, b) => a.name.localeCompare(b.name));
 
 export default function RegisterScreen({ navigation }: Props) {
-  const [phone, setPhone]           = useState('');
-  const [country, setCountry]       = useState(COUNTRIES.find(c => c.code === 'NO')!);
-  const [pickerOpen, setPickerOpen] = useState(false);
-  const [search, setSearch]         = useState('');
-  const [error, setError]           = useState('');
-  const [busy, setBusy]             = useState(false);
+  const [phone, setPhone]                   = useState('');
+  const [password, setPassword]             = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [country, setCountry]               = useState(COUNTRIES.find(c => c.code === 'NO')!);
+  const [pickerOpen, setPickerOpen]         = useState(false);
+  const [search, setSearch]                 = useState('');
+  const [error, setError]                   = useState('');
+  const [busy, setBusy]                     = useState(false);
 
   const filtered = COUNTRIES.filter(c =>
     c.name.toLowerCase().includes(search.toLowerCase()) || c.dial.includes(search)
@@ -79,6 +81,9 @@ export default function RegisterScreen({ navigation }: Props) {
   const handleRegister = async () => {
     setError('');
     if (!phone.trim()) { setError('Phone number is required'); return; }
+    if (!password) { setError('Password is required'); return; }
+    if (password.length < 8) { setError('Password must be at least 8 characters'); return; }
+    if (password !== confirmPassword) { setError('Passwords do not match'); return; }
     const fullNumber = `+${country.dial}${phone.replace(/\s/g, '')}`;
     setBusy(true);
     try {
@@ -86,7 +91,7 @@ export default function RegisterScreen({ navigation }: Props) {
       await register({
         username: fullNumber,
         phoneNumber: fullNumber,
-        password: '',
+        password,
         identityPublicKey: bundle.identityPublicKey,
         deviceName: 'Mobile',
         signedPreKey: bundle.signedPreKey,
@@ -135,10 +140,37 @@ export default function RegisterScreen({ navigation }: Props) {
           </View>
         </View>
 
+        <Text style={styles.label}>PASSWORD</Text>
+        <View style={styles.inputWrap}>
+          <TextInput
+            style={styles.input}
+            placeholder="Create password"
+            placeholderTextColor={colors.textMuted}
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            returnKeyType="next"
+          />
+        </View>
+
+        <Text style={styles.label}>CONFIRM PASSWORD</Text>
+        <View style={styles.inputWrap}>
+          <TextInput
+            style={styles.input}
+            placeholder="Confirm password"
+            placeholderTextColor={colors.textMuted}
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            secureTextEntry
+            returnKeyType="done"
+            onSubmitEditing={handleRegister}
+          />
+        </View>
+
         {!!error && <Text style={styles.error}>{error}</Text>}
 
         <TouchableOpacity style={[styles.btn, busy && styles.btnDisabled]} onPress={handleRegister} disabled={busy}>
-          {busy ? <ActivityIndicator color={colors.white} /> : <Text style={styles.btnText}>Continue with Phone</Text>}
+          {busy ? <ActivityIndicator color={colors.white} /> : <Text style={styles.btnText}>Create Account</Text>}
         </TouchableOpacity>
 
         <View style={styles.loginRow}>
@@ -201,6 +233,12 @@ const styles = StyleSheet.create({
   phoneInputWrap: {
     flex: 1, backgroundColor: colors.bgInput, borderRadius: radius.lg,
     borderWidth: 1, borderColor: colors.border, height: 52, justifyContent: 'center', paddingHorizontal: spacing.md,
+  },
+  inputWrap: {
+    backgroundColor: colors.bgInput, borderRadius: radius.lg,
+    borderWidth: 1, borderColor: colors.border, height: 52,
+    justifyContent: 'center', paddingHorizontal: spacing.md,
+    marginBottom: 16,
   },
   input: { color: colors.textPrimary, fontSize: font.sizes.md },
   error: { color: colors.danger, fontSize: font.sizes.sm, marginBottom: spacing.md, marginLeft: 4 },
