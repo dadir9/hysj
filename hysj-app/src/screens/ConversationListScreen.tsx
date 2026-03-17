@@ -323,7 +323,7 @@ export default function ConversationListScreen({ navigation }: Props) {
 
       {/* New chat FAB */}
       <TouchableOpacity style={styles.fab} onPress={() => navigation.navigate('NewChat')}>
-        <Text style={styles.fabText}>+</Text>
+        <Ionicons name="add" size={28} color={colors.white} />
       </TouchableOpacity>
 
       {/* Bottom sheet overlay */}

@@ -191,6 +191,7 @@ export default function ChatScreen({ navigation, route }: Props) {
       content,
       isOutgoing: true,
       sentAt: new Date().toISOString(),
+      deliveryStatus: 'sent',
     };
 
     setMessages(prev => [...prev, msg]);
@@ -277,7 +278,16 @@ export default function ChatScreen({ navigation, route }: Props) {
               </TouchableOpacity>
             </View>
           ) : (
-            <Text style={styles.timeOut}>{formatTime(item.sentAt)}</Text>
+            <View style={styles.timeStatusRow}>
+              <Text style={styles.timeOut}>{formatTime(item.sentAt)}</Text>
+              {item.deliveryStatus === 'read' ? (
+                <Ionicons name="checkmark-done" size={14} color="#3B82F6" />
+              ) : item.deliveryStatus === 'delivered' ? (
+                <Ionicons name="checkmark-done" size={14} color={colors.textMuted} />
+              ) : (
+                <Ionicons name="checkmark" size={14} color={colors.textMuted} />
+              )}
+            </View>
           )}
         </View>
       ) : (
@@ -448,7 +458,8 @@ const styles = StyleSheet.create({
     maxWidth: '78%',
   },
   bubbleOutText: { color: colors.bubbleOutText, fontSize: 15, lineHeight: 21 },
-  timeOut: { color: colors.textMuted, fontSize: 10, marginTop: 4, marginRight: 6 },
+  timeStatusRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4, marginRight: 6 },
+  timeOut: { color: colors.textMuted, fontSize: 10 },
 
   // Incoming bubble — dark card, left-aligned with avatar
   rowIn: { flexDirection: 'row', alignItems: 'flex-end', marginVertical: 4 },
