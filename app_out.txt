@@ -1,7 +1,7 @@
 Building...
-[Startup] PostgreSQL unavailable (Kjenner ingen slik vert.) — falling back to SQLite.
+[Startup] PostgreSQL unavailable (XX000: Tenant or user not found) — falling back to SQLite.
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (31ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (28ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
       SELECT COUNT(*) FROM "sqlite_master" WHERE "type" = 'table' AND "rootpage" IS NOT NULL;
 info: Program[0]
       SQLite development database ready (hysj_dev.db).
