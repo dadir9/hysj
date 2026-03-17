@@ -1,14 +1,15 @@
 export const colors = {
   // Backgrounds
-  bg: '#000000',
-  bgSurface: '#0D0D0F',
-  bgCard: '#1A1A1F',
-  bgInput: '#1C1C1E',
+  bg: '#0F0F1A',
+  bgSurface: '#1A1A2E',
+  bgCard: '#16213E',
+  bgInput: '#1E2746',
+  bgElevated: '#233156',
 
   // Text
   textPrimary: '#FFFFFF',
-  textSecondary: '#8E8E93',
-  textMuted: '#48484A',
+  textSecondary: '#8B8FA3',
+  textMuted: '#4A4E69',
   textDim: '#333344',
 
   // Brand
@@ -17,9 +18,9 @@ export const colors = {
   purpleDark: '#5B21B6',
 
   // Bubbles
-  bubbleOut: '#1C1C1E',
-  bubbleIn: '#F2F2F7',
-  bubbleInText: '#000000',
+  bubbleOut: '#7C3AED',
+  bubbleIn: '#16213E',
+  bubbleInText: '#FFFFFF',
   bubbleOutText: '#FFFFFF',
 
   // Status
@@ -30,8 +31,8 @@ export const colors = {
   shield: '#10B981',
 
   // Borders
-  border: '#2C2C2E',
-  borderMid: 'rgba(255,255,255,0.16)',
+  border: '#2A2F4A',
+  borderMid: 'rgba(255,255,255,0.10)',
 
   white: '#FFFFFF',
   black: '#000000',

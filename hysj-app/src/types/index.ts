@@ -11,6 +11,8 @@ export interface Conversation {
   lastMessagePreview: string;
   lastMessageAt: string;
   unreadCount: number;
+  isOnline?: boolean;
+  lastSeenAt?: string;
 }
 
 export interface Message {

@@ -105,4 +105,7 @@ export const getRelayNodes = () =>
 export const lookupUser = (username: string) =>
   api.get<{ id: string; username: string; deviceIds: string[] }>(`/users/lookup?username=${encodeURIComponent(username)}`);
 
+export const getUserStatus = (userId: string) =>
+  api.get<{ isOnline: boolean; lastSeenAt: string }>(`/users/${userId}/status`);
+
 export default api;
