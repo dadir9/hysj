@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Hysj.Api.BackgroundServices;
 using Hysj.Api.Hubs;
+using Npgsql;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,9 +34,35 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Supabase PostgreSQL
-builder.Services.AddDbContext<HysjDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
+// Database: try Supabase PostgreSQL, fall back to SQLite in dev if unreachable
+var useSqlite = false;
+var postgresConn = builder.Configuration.GetConnectionString("Postgres");
+
+if (builder.Environment.IsDevelopment() && !string.IsNullOrEmpty(postgresConn))
+{
+    try
+    {
+        using var testConn = new NpgsqlConnection(postgresConn);
+        testConn.Open();
+        testConn.Close();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[Startup] PostgreSQL unavailable ({ex.GetBaseException().Message}) — falling back to SQLite.");
+        useSqlite = true;
+    }
+}
+
+if (useSqlite || string.IsNullOrEmpty(postgresConn))
+{
+    builder.Services.AddDbContext<HysjDbContext>(options =>
+        options.UseSqlite("Data Source=hysj_dev.db"));
+}
+else
+{
+    builder.Services.AddDbContext<HysjDbContext>(options =>
+        options.UseNpgsql(postgresConn));
+}
 
 if (!builder.Environment.IsDevelopment())
 {
@@ -95,13 +122,30 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<HysjDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     try
     {
         db.Database.Migrate();
+        logger.LogInformation("Database migration completed successfully.");
+    }
+    catch (Exception ex) when (app.Environment.IsDevelopment())
+    {
+        logger.LogWarning(ex, "PostgreSQL migration failed — falling back to SQLite for local dev.");
+
+        // Re-register with SQLite and retry
+        var sqliteOptions = new DbContextOptionsBuilder<HysjDbContext>()
+            .UseSqlite("Data Source=hysj_dev.db")
+            .Options;
+        using var sqliteDb = new HysjDbContext(sqliteOptions);
+        sqliteDb.Database.EnsureCreated();
+        logger.LogInformation("SQLite fallback database created at hysj_dev.db");
+
+        // Replace the DbContext registration for the rest of the app lifetime
+        builder.Services.AddDbContext<HysjDbContext>(options =>
+            options.UseSqlite("Data Source=hysj_dev.db"));
     }
     catch (Exception ex)
     {
-        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
         logger.LogWarning(ex, "Database migration failed — continuing startup (migrations may already be applied)");
     }
 }

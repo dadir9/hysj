@@ -57,7 +57,7 @@ export async function establishOutgoingSession(
   // Persist
   await saveRatchetState(conversationId, state);
 
-  // Store handshake data so the first message includes it
+  // Store handshake data so the first message includes it for the responder
   const { default: AsyncStorage } = await import('@react-native-async-storage/async-storage');
   await AsyncStorage.setItem(
     `x3dh:pending:${conversationId}`,
@@ -65,6 +65,7 @@ export async function establishOutgoingSession(
       ephemeralPublicKey: toBase64(ephemeralPublicKey),
       kyberCiphertext: toBase64(kyberCiphertext),
       identityPublicKey: toBase64(identity.publicKey),
+      oneTimePreKeyUsed: bundle.oneTimePreKey,
     }),
   );
 
@@ -125,6 +126,7 @@ export async function consumePendingHandshake(
   ephemeralPublicKey: string;
   kyberCiphertext: string;
   identityPublicKey: string;
+  oneTimePreKeyUsed?: string;
 } | null> {
   const { default: AsyncStorage } = await import('@react-native-async-storage/async-storage');
   const key = `x3dh:pending:${conversationId}`;

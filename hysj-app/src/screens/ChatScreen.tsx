@@ -8,7 +8,7 @@ import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList, Message } from '../types';
 import { colors, font, spacing, radius } from '../constants/theme';
 import { getInitials, getAvatarColor, getSession } from '../services/auth';
-import { startHub, sendMessage, decryptReceived, decodeLegacyBlob, loadRatchetState, acknowledgeDelivery } from '../services/chatHub';
+import { startHub, sendMessage, decryptReceived, decodeLegacyBlob, loadRatchetState, acknowledgeDelivery, extractX3DHHandshake } from '../services/chatHub';
 import { getMessages, appendMessage, upsertConversation, markRead } from '../services/localStore';
 import { registerWipeListener, onWipeExecuted } from '../services/wipeService';
 import { replenishPreKeysIfNeeded } from '../services/keyManager';
@@ -87,6 +87,18 @@ export default function ChatScreen({ navigation, route }: Props) {
 
           // Acknowledge delivery so server deletes from Redis
           acknowledgeDelivery(messageId, s.deviceId).catch(() => {});
+
+          // If no ratchet exists, check for X3DH handshake data (Bob/responder side)
+          if (!ratchetRef.current) {
+            const handshake = extractX3DHHandshake(blob);
+            if (handshake) {
+              try {
+                ratchetRef.current = await establishIncomingSession(conversation.id, handshake);
+              } catch {
+                // X3DH responder failed — fall through to legacy decode
+              }
+            }
+          }
 
           // Try ratchet decryption first, fall back to legacy
           let decoded: { senderUserId: string; senderUsername: string; text: string } | null = null;

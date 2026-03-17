@@ -12,7 +12,6 @@ import {
   fromBase64,
 } from '../crypto';
 import type { RatchetState, EncryptedMessage, MessageHeader } from '../crypto';
-import { consumePendingHandshake } from './sessionManager';
 
 let _connection: SignalR.HubConnection | null = null;
 
@@ -182,6 +181,8 @@ export const sendMessage = async (
   await saveRatchetState(conversationId, ratchetState);
 
   // Include X3DH handshake data in the first message so the responder can establish the session
+  // Lazy import to avoid circular dependency (sessionManager imports from chatHub)
+  const { consumePendingHandshake } = await import('./sessionManager');
   const handshake = await consumePendingHandshake(conversationId);
   const blob = encryptedToWire(senderUserId, senderUsername, encrypted, handshake ?? undefined);
   await _connection.invoke('SendMessage', {
