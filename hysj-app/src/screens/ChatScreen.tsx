@@ -121,6 +121,20 @@ export default function ChatScreen({ navigation, route }: Props) {
           }
         });
 
+        hub.on('DeliveryReceipt', (messageId: string) => {
+          if (!mounted) return;
+          setMessages(prev => prev.map(m =>
+            m.id === messageId ? { ...m, deliveryStatus: 'delivered' as const } : m
+          ));
+        });
+
+        hub.on('MessageRead', (messageId: string) => {
+          if (!mounted) return;
+          setMessages(prev => prev.map(m =>
+            m.id === messageId ? { ...m, deliveryStatus: 'read' as const } : m
+          ));
+        });
+
         hub.on('ReceiveMessage', async (messageId: string, blob: string) => {
           if (!mounted) return;
 
