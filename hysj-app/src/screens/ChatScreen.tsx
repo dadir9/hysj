@@ -8,10 +8,11 @@ import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList, Message } from '../types';
 import { colors, font, spacing, radius } from '../constants/theme';
 import { getInitials, getAvatarColor, getSession } from '../services/auth';
-import { startHub, sendMessage, decryptReceived, decodeLegacyBlob, loadRatchetState } from '../services/chatHub';
+import { startHub, sendMessage, decryptReceived, decodeLegacyBlob, loadRatchetState, acknowledgeDelivery } from '../services/chatHub';
 import { getMessages, appendMessage, upsertConversation, markRead } from '../services/localStore';
 import { registerWipeListener, onWipeExecuted } from '../services/wipeService';
 import { replenishPreKeysIfNeeded } from '../services/keyManager';
+import { establishOutgoingSession, establishIncomingSession } from '../services/sessionManager';
 import type { RatchetState } from '../crypto';
 
 type Props = {
@@ -25,6 +26,7 @@ export default function ChatScreen({ navigation, route }: Props) {
   const [text, setText]         = useState('');
   const [sending, setSending]   = useState(false);
   const [hubError, setHubError] = useState(false);
+  const [sessionReady, setSessionReady] = useState(false);
   const listRef = useRef<FlatList>(null);
   const myUserIdRef = useRef('');
   const myUsernameRef = useRef('');
@@ -48,8 +50,19 @@ export default function ChatScreen({ navigation, route }: Props) {
       myUserIdRef.current   = s.userId;
       myUsernameRef.current = s.username;
 
-      // Load ratchet state for this conversation
+      // Load or establish ratchet session for this conversation
       ratchetRef.current = await loadRatchetState(conversation.id);
+      if (!ratchetRef.current && conversation.peerDeviceId) {
+        try {
+          ratchetRef.current = await establishOutgoingSession(
+            conversation.id,
+            conversation.peerDeviceId,
+          );
+        } catch {
+          // X3DH failed (peer offline, no pre-keys, etc.) — will retry on send
+        }
+      }
+      if (mounted) setSessionReady(true);
 
       await reload();
       await markRead(conversation.id);
@@ -130,6 +143,13 @@ export default function ChatScreen({ navigation, route }: Props) {
     setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 100);
 
     try {
+      // Establish session on-demand if not yet ready
+      if (!ratchetRef.current && conversation.peerDeviceId) {
+        ratchetRef.current = await establishOutgoingSession(
+          conversation.id,
+          conversation.peerDeviceId,
+        );
+      }
       if (ratchetRef.current) {
         await sendMessage(
           conversation.peerDeviceId,
