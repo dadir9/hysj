@@ -290,7 +290,7 @@ export default function ConversationListScreen({ navigation }: Props) {
               <TouchableOpacity style={styles.sheetGridItem}
                                 onPress={() => { setMenuOpen(false); navigation.navigate('Security'); }}>
                 <View style={[styles.sheetGridIconCircle, { backgroundColor: 'rgba(52,199,89,0.15)' }]}>
-                  <Text style={[styles.sheetGridIcon, { color: colors.online }]}>{'<shield>'}</Text>
+                  <Ionicons name="shield-checkmark-outline" size={22} color={colors.online} />
                 </View>
                 <Text style={styles.sheetGridLabel}>Security</Text>
               </TouchableOpacity>
@@ -357,7 +357,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bgSurface,
     alignItems: 'center', justifyContent: 'center',
   },
-  headerIconText: { fontSize: 12, color: colors.textSecondary },
 
   // Stories strip
   storiesStrip: { paddingLeft: 18, marginBottom: 8 },
@@ -413,7 +412,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bgSurface,
     alignItems: 'center', justifyContent: 'center', marginBottom: 16,
   },
-  emptyIcon: { fontSize: 14, color: colors.textMuted },
   emptyTitle: {
     fontSize: font.sizes.lg, fontWeight: font.weights.bold,
     color: colors.textPrimary, marginBottom: 6,

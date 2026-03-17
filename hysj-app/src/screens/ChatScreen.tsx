@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList, Message } from '../types';
 import { colors, font, spacing, radius } from '../constants/theme';
 import { getInitials, getAvatarColor, getSession } from '../services/auth';
@@ -305,7 +306,7 @@ export default function ChatScreen({ navigation, route }: Props) {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-            <Text style={styles.backIcon}>{'<'}</Text>
+            <Ionicons name="chevron-back" size={22} color={colors.textPrimary} />
           </TouchableOpacity>
           <View style={styles.headerAvatarWrap}>
             <View style={[styles.headerAvatar, { backgroundColor: getAvatarColor(conversation.peerUsername) }]}>
@@ -320,7 +321,7 @@ export default function ChatScreen({ navigation, route }: Props) {
             </Text>
           </View>
           <TouchableOpacity style={styles.headerMenuBtn}>
-            <Text style={styles.headerMenuIcon}>{'\u2026'}</Text>
+            <Ionicons name="ellipsis-horizontal" size={20} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
 
@@ -342,7 +343,7 @@ export default function ChatScreen({ navigation, route }: Props) {
           ListEmptyComponent={
             <View style={styles.emptyChat}>
               <View style={styles.emptyChatCircle}>
-                <Text style={styles.emptyChatLock}>{'\u{1F512}'}</Text>
+                <Ionicons name="lock-closed" size={28} color={colors.shield} />
               </View>
               <Text style={styles.emptyChatText}>No messages yet</Text>
               <Text style={styles.emptyChatHint}>
@@ -375,7 +376,7 @@ export default function ChatScreen({ navigation, route }: Props) {
           >
             {sending
               ? <ActivityIndicator color={colors.white} size="small" />
-              : <Text style={styles.sendIcon}>{'\u27A4'}</Text>}
+              : <Ionicons name="send" size={20} color={colors.white} />}
           </TouchableOpacity>
         </View>
 
