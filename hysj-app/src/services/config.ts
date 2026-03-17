@@ -5,7 +5,7 @@ import { Platform } from 'react-native';
 // iOS simulator    → localhost works directly
 // Web              → localhost works directly
 const HOST = Platform.select({
-  android: '10.0.2.2',
+  android: '192.168.1.74',  // LAN IP for real device via Expo Go
   default: 'localhost',
 });
 
