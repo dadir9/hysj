@@ -229,7 +229,9 @@ export default function ConversationListScreen({ navigation }: Props) {
 
       {/* Floating Menu pill */}
       <TouchableOpacity style={styles.menuPill} onPress={() => setMenuOpen(true)}>
+        <Ionicons name="menu" size={18} color={colors.white} />
         <Text style={styles.menuPillText}>Menu</Text>
+        <View style={styles.menuPillDot} />
       </TouchableOpacity>
 
       {/* New chat FAB */}
@@ -247,11 +249,11 @@ export default function ConversationListScreen({ navigation }: Props) {
 
             {/* Search bar */}
             <View style={styles.sheetSearch}>
-              <Ionicons name="search" size={18} color={colors.textMuted} />
+              <Ionicons name="search" size={18} color={colors.sheetMuted} />
               <TextInput
                 style={styles.sheetInput}
-                placeholder="Search conversations..."
-                placeholderTextColor={colors.textMuted}
+                placeholder="Search chat, people and more..."
+                placeholderTextColor={colors.sheetMuted}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
               />
@@ -260,34 +262,60 @@ export default function ConversationListScreen({ navigation }: Props) {
             {/* Quick actions grid */}
             <View style={styles.sheetGrid}>
               <TouchableOpacity style={styles.sheetGridItem}
-                                onPress={() => { setMenuOpen(false); navigation.navigate('NewChat'); }}>
-                <View style={[styles.sheetGridIconCircle, { backgroundColor: 'rgba(124,58,237,0.15)' }]}>
-                  <Ionicons name="chatbubble-outline" size={22} color={colors.purple} />
-                </View>
-                <Text style={styles.sheetGridLabel}>New Chat</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.sheetGridItem}
                                 onPress={() => { setMenuOpen(false); navigation.navigate('CreateGroup'); }}>
-                <View style={[styles.sheetGridIconCircle, { backgroundColor: 'rgba(16,185,129,0.15)' }]}>
-                  <Ionicons name="people-outline" size={22} color={colors.shield} />
+                <View style={[styles.sheetGridIconCircle, { backgroundColor: 'rgba(124,58,237,0.10)' }]}>
+                  <Ionicons name="people" size={22} color={colors.purple} />
                 </View>
-                <Text style={styles.sheetGridLabel}>New Group</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.sheetGridItem}
-                                onPress={() => { setMenuOpen(false); navigation.navigate('Settings'); }}>
-                <View style={[styles.sheetGridIconCircle, { backgroundColor: 'rgba(139,143,163,0.15)' }]}>
-                  <Ionicons name="settings-outline" size={22} color={colors.textSecondary} />
-                </View>
-                <Text style={styles.sheetGridLabel}>Settings</Text>
+                <Text style={styles.sheetGridLabel}>Group</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.sheetGridItem}
                                 onPress={() => { setMenuOpen(false); navigation.navigate('Security'); }}>
-                <View style={[styles.sheetGridIconCircle, { backgroundColor: 'rgba(52,199,89,0.15)' }]}>
-                  <Ionicons name="shield-checkmark-outline" size={22} color={colors.online} />
+                <View style={[styles.sheetGridIconCircle, { backgroundColor: 'rgba(245,158,11,0.10)' }]}>
+                  <Ionicons name="time" size={22} color={colors.warning} />
                 </View>
-                <Text style={styles.sheetGridLabel}>Security</Text>
+                <Text style={styles.sheetGridLabel}>History</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.sheetGridItem}
+                                onPress={() => { setMenuOpen(false); }}>
+                <View style={[styles.sheetGridIconCircle, { backgroundColor: 'rgba(52,199,89,0.10)' }]}>
+                  <Ionicons name="videocam" size={22} color={colors.online} />
+                </View>
+                <Text style={styles.sheetGridLabel}>Live</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.sheetGridItem}
+                                onPress={() => { setMenuOpen(false); }}>
+                <View style={[styles.sheetGridIconCircle, { backgroundColor: 'rgba(59,130,246,0.10)' }]}>
+                  <Ionicons name="call" size={22} color="#3B82F6" />
+                </View>
+                <Text style={styles.sheetGridLabel}>Call</Text>
               </TouchableOpacity>
             </View>
+
+            {/* Friends section */}
+            {conversations.length > 0 && (
+              <View style={styles.sheetFriends}>
+                <Text style={styles.sheetFriendsTitle}>Friends</Text>
+                <View style={styles.sheetFriendsRow}>
+                  {conversations.slice(0, 4).map(c => (
+                    <TouchableOpacity
+                      key={c.id}
+                      style={styles.sheetFriendItem}
+                      onPress={() => {
+                        setMenuOpen(false);
+                        navigation.navigate('Chat', { conversation: c });
+                      }}
+                    >
+                      <View style={[styles.sheetFriendAvatar, { backgroundColor: getAvatarColor(c.peerUsername) }]}>
+                        <Text style={styles.sheetFriendInitials}>{getInitials(c.peerUsername)}</Text>
+                      </View>
+                      <Text style={styles.sheetFriendName} numberOfLines={1}>
+                        {c.peerUsername.split(' ')[0]}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            )}
 
             {/* Search results */}
             {searchQuery.trim() !== '' && (
@@ -316,6 +344,7 @@ export default function ConversationListScreen({ navigation }: Props) {
 
             {/* Close */}
             <TouchableOpacity style={styles.sheetClose} onPress={() => setMenuOpen(false)}>
+              <Ionicons name="close" size={18} color={colors.sheetMuted} />
               <Text style={styles.sheetCloseText}>Close</Text>
             </TouchableOpacity>
 
@@ -338,13 +367,12 @@ const styles = StyleSheet.create({
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   headerLogo: { width: 38, height: 38 },
   headerTitle: {
-    fontSize: font.sizes.xl, fontWeight: font.weights.bold,
+    fontSize: font.sizes.xxl, fontWeight: font.weights.bold,
     color: colors.textPrimary, letterSpacing: -0.5,
   },
   headerSubtitle: {
     fontSize: font.sizes.sm, color: colors.textSecondary, marginTop: 2,
   },
-  headerRight: { flexDirection: 'row', gap: 6 },
   headerIconBtn: {
     width: 40, height: 40, borderRadius: 20,
     backgroundColor: colors.bgSurface,
@@ -451,12 +479,17 @@ const styles = StyleSheet.create({
   // Floating menu pill
   menuPill: {
     position: 'absolute', bottom: 32, alignSelf: 'center',
-    backgroundColor: colors.bgElevated, borderRadius: 22,
-    paddingHorizontal: 28, paddingVertical: 12,
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: colors.bgCard, borderRadius: 22,
+    paddingHorizontal: 20, paddingVertical: 12,
     shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35, shadowRadius: 10, elevation: 10,
   },
   menuPillText: { color: colors.white, fontSize: 15, fontWeight: font.weights.semibold },
+  menuPillDot: {
+    width: 8, height: 8, borderRadius: 4,
+    backgroundColor: colors.online,
+  },
 
   // FAB
   fab: {
@@ -475,36 +508,47 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: colors.bgCard,
+    backgroundColor: colors.sheetBg,
     borderTopLeftRadius: 24, borderTopRightRadius: 24,
     paddingTop: 10, paddingBottom: 40, paddingHorizontal: 20,
-    maxHeight: '70%',
+    maxHeight: '75%',
   },
   sheetHandle: {
     width: 40, height: 4, borderRadius: 2,
-    backgroundColor: colors.textMuted,
+    backgroundColor: '#D0D0D8',
     alignSelf: 'center', marginBottom: 18,
   },
   sheetSearch: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: colors.bgInput, borderRadius: radius.pill,
-    borderWidth: 1, borderColor: colors.border,
+    backgroundColor: colors.sheetInput, borderRadius: radius.pill,
     height: 48, paddingHorizontal: 16, gap: 10,
     marginBottom: 20,
   },
-  sheetInput: { flex: 1, color: colors.textPrimary, fontSize: 15 },
+  sheetInput: { flex: 1, color: colors.sheetText, fontSize: 15 },
   sheetGrid: {
-    flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 20,
+    flexDirection: 'row', justifyContent: 'space-around', marginBottom: 24,
   },
   sheetGridItem: {
-    width: '47%', backgroundColor: colors.bgInput,
-    borderRadius: radius.xl, padding: 16, alignItems: 'center', gap: 10,
+    alignItems: 'center', gap: 8, width: 70,
   },
   sheetGridIconCircle: {
-    width: 44, height: 44, borderRadius: 22,
+    width: 52, height: 52, borderRadius: 26,
     alignItems: 'center', justifyContent: 'center',
   },
-  sheetGridLabel: { color: colors.textPrimary, fontSize: 13, fontWeight: font.weights.semibold },
+  sheetGridLabel: { color: colors.sheetText, fontSize: 12, fontWeight: font.weights.medium },
+  sheetFriends: { marginBottom: 20 },
+  sheetFriendsTitle: {
+    fontSize: font.sizes.md, fontWeight: font.weights.bold,
+    color: colors.sheetText, marginBottom: 14,
+  },
+  sheetFriendsRow: { flexDirection: 'row', justifyContent: 'space-around' },
+  sheetFriendItem: { alignItems: 'center', width: 64 },
+  sheetFriendAvatar: {
+    width: 48, height: 48, borderRadius: 24,
+    alignItems: 'center', justifyContent: 'center', marginBottom: 6,
+  },
+  sheetFriendInitials: { color: colors.white, fontSize: 16, fontWeight: font.weights.bold },
+  sheetFriendName: { color: colors.sheetMuted, fontSize: 11, textAlign: 'center' },
   sheetResults: { marginBottom: 16 },
   sheetResultItem: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
@@ -515,11 +559,13 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   sheetResultInitials: { color: colors.white, fontSize: 14, fontWeight: font.weights.bold },
-  sheetResultName: { color: colors.textPrimary, fontSize: 15 },
-  sheetNoResult: { color: colors.textMuted, fontSize: 14, textAlign: 'center', paddingVertical: 16 },
+  sheetResultName: { color: colors.sheetText, fontSize: 15 },
+  sheetNoResult: { color: colors.sheetMuted, fontSize: 14, textAlign: 'center', paddingVertical: 16 },
   sheetClose: {
-    borderRadius: radius.pill, borderWidth: 1.5, borderColor: colors.border,
-    height: 48, alignItems: 'center', justifyContent: 'center',
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 8, borderRadius: radius.pill,
+    backgroundColor: colors.sheetInput,
+    height: 48,
   },
-  sheetCloseText: { color: colors.textSecondary, fontSize: 15, fontWeight: font.weights.semibold },
+  sheetCloseText: { color: colors.sheetMuted, fontSize: 15, fontWeight: font.weights.semibold },
 });
