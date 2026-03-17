@@ -11,6 +11,7 @@ import { colors, font, spacing, radius } from '../constants/theme';
 import { getSession, getInitials, getAvatarColor, clearSession } from '../services/auth';
 import { getConversations, upsertConversation } from '../services/localStore';
 import { startHub, stopHub, decryptReceived, decodeLegacyBlob, extractSender, loadRatchetState, acknowledgeDelivery } from '../services/chatHub';
+import { getUserStatus } from '../services/api';
 
 type Props = { navigation: StackNavigationProp<RootStackParamList, 'ConversationList'> };
 
@@ -24,6 +25,27 @@ export default function ConversationListScreen({ navigation }: Props) {
   const reload = async () => {
     const convs = await getConversations();
     setConversations([...convs]);
+    // Fetch online status for each peer (best-effort, in parallel)
+    refreshOnlineStatus(convs);
+  };
+
+  const refreshOnlineStatus = async (convs: Conversation[]) => {
+    const updates = await Promise.all(
+      convs.map(async (c) => {
+        try {
+          const res = await getUserStatus(c.peerUserId);
+          return { id: c.id, isOnline: res.data.isOnline, lastSeenAt: res.data.lastSeenAt };
+        } catch {
+          return { id: c.id, isOnline: false, lastSeenAt: undefined };
+        }
+      }),
+    );
+    setConversations(prev =>
+      prev.map(c => {
+        const u = updates.find(x => x.id === c.id);
+        return u ? { ...c, isOnline: u.isOnline, lastSeenAt: u.lastSeenAt } : c;
+      }),
+    );
   };
 
   useFocusEffect(useCallback(() => { reload(); }, []));
@@ -162,7 +184,7 @@ export default function ConversationListScreen({ navigation }: Props) {
                 <View style={[styles.avatar, { backgroundColor: getAvatarColor(item.peerUsername) }]}>
                   <Text style={styles.avatarText}>{getInitials(item.peerUsername)}</Text>
                 </View>
-                <View style={styles.onlineDot}/>
+                {item.isOnline && <View style={styles.onlineDot}/>}
               </View>
               <View style={styles.convInfo}>
                 <View style={styles.convRow}>

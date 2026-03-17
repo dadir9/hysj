@@ -13,6 +13,7 @@ import { getMessages, appendMessage, upsertConversation, markRead } from '../ser
 import { registerWipeListener, onWipeExecuted } from '../services/wipeService';
 import { replenishPreKeysIfNeeded } from '../services/keyManager';
 import { establishOutgoingSession, establishIncomingSession } from '../services/sessionManager';
+import { getUserStatus } from '../services/api';
 import type { RatchetState } from '../crypto';
 
 type Props = {
