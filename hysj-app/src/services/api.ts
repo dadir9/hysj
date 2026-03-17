@@ -108,4 +108,10 @@ export const lookupUser = (username: string) =>
 export const getUserStatus = (userId: string) =>
   api.get<{ isOnline: boolean; lastSeenAt: string }>(`/users/${userId}/status`);
 
+export const getUserStatusBatch = (userIds: string[]) =>
+  api.post<{ userId: string; isOnline: boolean; lastSeenAt: string | null }[]>(
+    '/users/status-batch',
+    userIds,
+  );
+
 export default api;

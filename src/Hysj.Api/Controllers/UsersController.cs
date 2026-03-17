@@ -47,4 +47,42 @@ public class UsersController(HysjDbContext db) : ControllerBase
 
         return Ok(new { IsOnline = isOnline, LastSeenAt = lastSeenAt });
     }
+
+    /// <summary>
+    /// Batch status lookup — returns online status for multiple users in one request.
+    /// Accepts up to 100 user IDs.
+    /// </summary>
+    [HttpPost("status-batch")]
+    public async Task<IActionResult> GetUserStatusBatch([FromBody] Guid[] userIds)
+    {
+        if (userIds is null || userIds.Length == 0)
+            return Ok(Array.Empty<object>());
+
+        if (userIds.Length > 100)
+            return BadRequest(new { error = "Maximum 100 user IDs per request." });
+
+        var distinctIds = userIds.Distinct().ToList();
+
+        var users = await db.Users
+            .Include(u => u.Devices)
+            .Where(u => distinctIds.Contains(u.Id))
+            .ToListAsync();
+
+        var results = distinctIds.Select(id =>
+        {
+            var user = users.FirstOrDefault(u => u.Id == id);
+            if (user is null)
+                return new { UserId = id, IsOnline = false, LastSeenAt = (DateTimeOffset?)null };
+
+            var isOnline = user.Devices.Any(d => d.IsOnline);
+            var lastSeenAt = user.Devices
+                .Select(d => d.LastActiveAt)
+                .DefaultIfEmpty(user.LastSeenAt)
+                .Max();
+
+            return new { UserId = id, IsOnline = isOnline, LastSeenAt = (DateTimeOffset?)lastSeenAt };
+        });
+
+        return Ok(results);
+    }
 }

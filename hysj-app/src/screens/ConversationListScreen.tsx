@@ -6,12 +6,13 @@ import {
 } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useFocusEffect } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList, Conversation } from '../types';
 import { colors, font, spacing, radius } from '../constants/theme';
 import { getSession, getInitials, getAvatarColor, clearSession } from '../services/auth';
 import { getConversations, upsertConversation } from '../services/localStore';
 import { startHub, stopHub, decryptReceived, decodeLegacyBlob, extractSender, loadRatchetState, acknowledgeDelivery } from '../services/chatHub';
-import { getUserStatus } from '../services/api';
+import { getUserStatusBatch } from '../services/api';
 
 type Props = { navigation: StackNavigationProp<RootStackParamList, 'ConversationList'> };
 
@@ -29,22 +30,20 @@ export default function ConversationListScreen({ navigation }: Props) {
   };
 
   const refreshOnlineStatus = async (convs: Conversation[]) => {
-    const updates = await Promise.all(
-      convs.map(async (c) => {
-        try {
-          const res = await getUserStatus(c.peerUserId);
-          return { id: c.id, isOnline: res.data.isOnline, lastSeenAt: res.data.lastSeenAt };
-        } catch {
-          return { id: c.id, isOnline: false, lastSeenAt: undefined };
-        }
-      }),
-    );
-    setConversations(prev =>
-      prev.map(c => {
-        const u = updates.find(x => x.id === c.id);
-        return u ? { ...c, isOnline: u.isOnline, lastSeenAt: u.lastSeenAt } : c;
-      }),
-    );
+    if (convs.length === 0) return;
+    try {
+      const userIds = [...new Set(convs.map(c => c.peerUserId))];
+      const res = await getUserStatusBatch(userIds);
+      const statusMap = new Map(res.data.map(s => [s.userId, s]));
+      setConversations(prev =>
+        prev.map(c => {
+          const s = statusMap.get(c.peerUserId);
+          return s ? { ...c, isOnline: s.isOnline, lastSeenAt: s.lastSeenAt ?? undefined } : c;
+        }),
+      );
+    } catch {
+      // Batch failed — leave status as-is
+    }
   };
 
   useFocusEffect(useCallback(() => { reload(); }, []));
@@ -170,10 +169,10 @@ export default function ConversationListScreen({ navigation }: Props) {
         </View>
         <View style={styles.headerRight}>
           <TouchableOpacity style={styles.headerIconBtn} onPress={() => navigation.navigate('Security')}>
-            <Text style={styles.headerIconText}>{'<shield>'}</Text>
+            <Ionicons name="shield-checkmark-outline" size={20} color={colors.textSecondary} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.headerIconBtn} onPress={() => navigation.navigate('Settings')}>
-            <Text style={styles.headerIconText}>{'<gear>'}</Text>
+            <Ionicons name="settings-outline" size={20} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
       </View>
@@ -220,7 +219,7 @@ export default function ConversationListScreen({ navigation }: Props) {
       {conversations.length === 0 ? (
         <View style={styles.empty}>
           <View style={styles.emptyIconCircle}>
-            <Text style={styles.emptyIcon}>{'<msg>'}</Text>
+            <Ionicons name="chatbubbles-outline" size={32} color={colors.textMuted} />
           </View>
           <Text style={styles.emptyTitle}>No conversations yet</Text>
           <Text style={styles.emptyHint}>Start a new chat to begin messaging</Text>
@@ -255,7 +254,7 @@ export default function ConversationListScreen({ navigation }: Props) {
 
             {/* Search bar */}
             <View style={styles.sheetSearch}>
-              <Text style={styles.sheetSearchIcon}>{'<search>'}</Text>
+              <Ionicons name="search" size={18} color={colors.textMuted} />
               <TextInput
                 style={styles.sheetInput}
                 placeholder="Search conversations..."
@@ -270,21 +269,21 @@ export default function ConversationListScreen({ navigation }: Props) {
               <TouchableOpacity style={styles.sheetGridItem}
                                 onPress={() => { setMenuOpen(false); navigation.navigate('NewChat'); }}>
                 <View style={[styles.sheetGridIconCircle, { backgroundColor: 'rgba(124,58,237,0.15)' }]}>
-                  <Text style={[styles.sheetGridIcon, { color: colors.purple }]}>{'<chat>'}</Text>
+                  <Ionicons name="chatbubble-outline" size={22} color={colors.purple} />
                 </View>
                 <Text style={styles.sheetGridLabel}>New Chat</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.sheetGridItem}
                                 onPress={() => { setMenuOpen(false); navigation.navigate('CreateGroup'); }}>
                 <View style={[styles.sheetGridIconCircle, { backgroundColor: 'rgba(16,185,129,0.15)' }]}>
-                  <Text style={[styles.sheetGridIcon, { color: colors.shield }]}>{'<group>'}</Text>
+                  <Ionicons name="people-outline" size={22} color={colors.shield} />
                 </View>
                 <Text style={styles.sheetGridLabel}>New Group</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.sheetGridItem}
                                 onPress={() => { setMenuOpen(false); navigation.navigate('Settings'); }}>
                 <View style={[styles.sheetGridIconCircle, { backgroundColor: 'rgba(139,143,163,0.15)' }]}>
-                  <Text style={[styles.sheetGridIcon, { color: colors.textSecondary }]}>{'<gear>'}</Text>
+                  <Ionicons name="settings-outline" size={22} color={colors.textSecondary} />
                 </View>
                 <Text style={styles.sheetGridLabel}>Settings</Text>
               </TouchableOpacity>

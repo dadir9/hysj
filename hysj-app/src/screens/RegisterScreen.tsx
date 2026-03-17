@@ -238,8 +238,9 @@ export default function RegisterScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bg },
   scroll: { flexGrow: 1, paddingHorizontal: spacing.xl, paddingTop: 60, paddingBottom: spacing.xxl },
-  header: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 40 },
-  back: { fontSize: 26, color: colors.white, marginRight: spacing.md, marginTop: 4 },
+  header: { flexDirection: 'row', alignItems: 'center', marginBottom: 40, gap: 10 },
+  back: { fontSize: 26, color: colors.white, marginTop: 2 },
+  headerLogo: { width: 34, height: 34 },
   headerText: { flex: 1 },
   title: { fontSize: font.sizes.xxl, fontWeight: font.weights.bold, color: colors.textPrimary, marginBottom: 4 },
   subtitle: { fontSize: font.sizes.sm, color: colors.textSecondary },
