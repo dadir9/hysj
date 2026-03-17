@@ -159,22 +159,15 @@ export default function ConversationListScreen({ navigation }: Props) {
         <View style={styles.headerLeft}>
           <Image source={require('../../assets/logo.png')} style={styles.headerLogo} resizeMode="contain" />
           <View>
-            <Text style={styles.headerTitle}>Messages</Text>
+            <Text style={styles.headerTitle}>hysj</Text>
             <Text style={styles.headerSubtitle}>
-              {conversations.length > 0
-                ? `${conversations.length} conversation${conversations.length !== 1 ? 's' : ''}`
-                : 'No conversations yet'}
+              {username ? `Welcome back, ${username}` : 'Your privacy, redefined'}
             </Text>
           </View>
         </View>
-        <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.headerIconBtn} onPress={() => navigation.navigate('Security')}>
-            <Ionicons name="shield-checkmark-outline" size={20} color={colors.textSecondary} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.headerIconBtn} onPress={() => navigation.navigate('Settings')}>
-            <Ionicons name="settings-outline" size={20} color={colors.textSecondary} />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity style={styles.headerIconBtn} onPress={() => navigation.navigate('Settings')}>
+          <Ionicons name="settings-outline" size={22} color={colors.textSecondary} />
+        </TouchableOpacity>
       </View>
 
       {/* Stories strip */}
@@ -499,7 +492,6 @@ const styles = StyleSheet.create({
     height: 48, paddingHorizontal: 16, gap: 10,
     marginBottom: 20,
   },
-  sheetSearchIcon: { fontSize: 12, color: colors.textMuted },
   sheetInput: { flex: 1, color: colors.textPrimary, fontSize: 15 },
   sheetGrid: {
     flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 20,
@@ -512,7 +504,6 @@ const styles = StyleSheet.create({
     width: 44, height: 44, borderRadius: 22,
     alignItems: 'center', justifyContent: 'center',
   },
-  sheetGridIcon: { fontSize: 12 },
   sheetGridLabel: { color: colors.textPrimary, fontSize: 13, fontWeight: font.weights.semibold },
   sheetResults: { marginBottom: 16 },
   sheetResultItem: {

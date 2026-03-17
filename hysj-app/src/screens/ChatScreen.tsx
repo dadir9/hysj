@@ -400,7 +400,6 @@ const styles = StyleSheet.create({
     width: 36, height: 36, borderRadius: 18,
     alignItems: 'center', justifyContent: 'center',
   },
-  backIcon: { fontSize: 20, color: colors.textPrimary, fontWeight: font.weights.bold },
   headerAvatarWrap: { position: 'relative' },
   headerAvatar: {
     width: 42, height: 42, borderRadius: 21,
@@ -423,7 +422,6 @@ const styles = StyleSheet.create({
     width: 36, height: 36, borderRadius: 18,
     alignItems: 'center', justifyContent: 'center',
   },
-  headerMenuIcon: { fontSize: 20, color: colors.textSecondary, fontWeight: font.weights.bold },
 
   // Message list
   listContent: { paddingVertical: 12, paddingHorizontal: 14, flexGrow: 1 },
@@ -434,7 +432,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bgSurface,
     alignItems: 'center', justifyContent: 'center', marginBottom: 14,
   },
-  emptyChatLock: { fontSize: 24 },
   emptyChatText: {
     fontSize: font.sizes.md, fontWeight: font.weights.semibold,
     color: colors.textPrimary,
@@ -525,5 +522,4 @@ const styles = StyleSheet.create({
   sendBtnActive: {
     backgroundColor: colors.purple,
   },
-  sendIcon: { color: colors.white, fontSize: 20, fontWeight: font.weights.bold },
 });

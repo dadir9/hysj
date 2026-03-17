@@ -1,26 +1,26 @@
 export const colors = {
   // Backgrounds
-  bg: '#0F0F1A',
-  bgSurface: '#1A1A2E',
-  bgCard: '#16213E',
-  bgInput: '#1E2746',
-  bgElevated: '#233156',
+  bg: '#2D2D3A',
+  bgSurface: '#353545',
+  bgCard: '#3D3D4A',
+  bgInput: '#454555',
+  bgElevated: '#4A4A5A',
 
   // Text
   textPrimary: '#FFFFFF',
-  textSecondary: '#8B8FA3',
-  textMuted: '#4A4E69',
-  textDim: '#333344',
+  textSecondary: '#9A9AB0',
+  textMuted: '#6B6B80',
+  textDim: '#50505F',
 
   // Brand
   purple: '#7C3AED',
   purpleLight: '#A78BFA',
   purpleDark: '#5B21B6',
 
-  // Bubbles
-  bubbleOut: '#7C3AED',
-  bubbleIn: '#16213E',
-  bubbleInText: '#FFFFFF',
+  // Bubbles — incoming: light/white, outgoing: dark gray
+  bubbleOut: '#3D3D4A',
+  bubbleIn: '#F0F0F5',
+  bubbleInText: '#1A1A2E',
   bubbleOutText: '#FFFFFF',
 
   // Status
@@ -31,8 +31,14 @@ export const colors = {
   shield: '#10B981',
 
   // Borders
-  border: '#2A2F4A',
+  border: '#4A4A5A',
   borderMid: 'rgba(255,255,255,0.10)',
+
+  // Sheet (light background)
+  sheetBg: '#FFFFFF',
+  sheetText: '#1A1A2E',
+  sheetMuted: '#9A9AB0',
+  sheetInput: '#F0F0F5',
 
   white: '#FFFFFF',
   black: '#000000',
