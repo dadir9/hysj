@@ -1,174 +1,131 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { SYSTEM_PROMPT as FRONTEND_PROMPT } from "./src/agents/frontend.js";
-import { SYSTEM_PROMPT as BACKEND_PROMPT } from "./src/agents/backend.js";
-import { SYSTEM_PROMPT as RESEARCH_PROMPT } from "./src/agents/research.js";
-import { SYSTEM_PROMPT as FULLSTACK_PROMPT } from "./src/agents/fullstack.js";
-import { SYSTEM_PROMPT as REPORT_PROMPT } from "./src/agents/report.js";
+import { SYSTEM_PROMPT as FRONTEND_PROMPT, name as FE_NAME, emoji as FE_EMOJI } from "./src/agents/frontend.js";
+import { SYSTEM_PROMPT as BACKEND_PROMPT, name as BE_NAME, emoji as BE_EMOJI } from "./src/agents/backend.js";
+import { SYSTEM_PROMPT as RESEARCH_PROMPT, name as RE_NAME, emoji as RE_EMOJI } from "./src/agents/research.js";
+import { SYSTEM_PROMPT as FULLSTACK_PROMPT, name as FS_NAME, emoji as FS_EMOJI } from "./src/agents/fullstack.js";
+import { SYSTEM_PROMPT as REPORT_PROMPT, name as RP_NAME, emoji as RP_EMOJI } from "./src/agents/report.js";
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
 /**
- * CLAUDE CODE TEAM - Multi-Agent System for Hysj
+ * CLAUDE CODE TEAM - 5-Agent System
  *
- * 5 spesialiserte agenter samarbeider i delt chat-kontekst
- * for a analysere den null-lagring meldingsappen.
+ * Hver agent har sin egen uavhengige chat.
+ * Ingen token-grenser. Ingen delt kontekst.
+ * Agenter velger selv beste tilnaerming.
+ * Report Agent samler alle funn til slutt.
  */
 
 class TeamSession {
   constructor() {
-    this.teamMembers = {
-      frontend: {
-        name: "Frontend Agent",
-        role: "UI/UX Developer",
-        expertise: ["React Native", "Expo", "TypeScript", "Accessibility", "Theme"],
-        systemPrompt: FRONTEND_PROMPT,
-      },
-      backend: {
-        name: "Backend Agent",
-        role: "API/Security Engineer",
-        expertise: ["C# 12", ".NET 8", "SignalR", "Redis", "PostgreSQL", "Security"],
-        systemPrompt: BACKEND_PROMPT,
-      },
-      research: {
-        name: "Research Agent",
-        role: "Security Researcher",
-        expertise: ["Signal Protocol", "X3DH", "Double Ratchet", "ML-KEM", "Kryptografi"],
-        systemPrompt: RESEARCH_PROMPT,
-      },
-      fullstack: {
-        name: "Fullstack Developer",
-        role: "Lead Engineer",
-        expertise: ["Frontend-Backend integrasjon", "DTOs", "SignalR", "API alignment"],
-        systemPrompt: FULLSTACK_PROMPT,
-      },
-      report: {
-        name: "Report Agent",
-        role: "Quality Analyst",
-        expertise: ["Prioritering", "Risikovurdering", "Handlingsplan"],
-        systemPrompt: REPORT_PROMPT,
-      },
+    this.agents = {
+      frontend: { name: FE_NAME, emoji: FE_EMOJI, systemPrompt: FRONTEND_PROMPT },
+      backend: { name: BE_NAME, emoji: BE_EMOJI, systemPrompt: BACKEND_PROMPT },
+      research: { name: RE_NAME, emoji: RE_EMOJI, systemPrompt: RESEARCH_PROMPT },
+      fullstack: { name: FS_NAME, emoji: FS_EMOJI, systemPrompt: FULLSTACK_PROMPT },
+      report: { name: RP_NAME, emoji: RP_EMOJI, systemPrompt: REPORT_PROMPT },
     };
 
-    this.teamChat = [];
     this.agentResponses = {};
   }
 
-  async agentSpeak(memberId, context) {
-    const agent = this.teamMembers[memberId];
+  async runAgent(agentId, context) {
+    const agent = this.agents[agentId];
+    const startTime = Date.now();
 
-    const teamContext = this.teamChat
-      .slice(-8)
-      .map((msg) => `${msg.author}: ${msg.content}`)
-      .join("\n\n");
-
-    const messages = [];
-    if (teamContext) {
-      messages.push({ role: "user", content: `Team-kontekst sa langt:\n\n${teamContext}` });
-      messages.push({ role: "assistant", content: "Forstatt. Jeg har lest teamets funn sa langt." });
-    }
-    messages.push({ role: "user", content: context });
+    console.log(`\n${agent.emoji} ${agent.name} starter analyse...`);
 
     const response = await client.messages.create({
       model: "claude-sonnet-4-20250514",
-      max_tokens: 2000,
       system: agent.systemPrompt,
-      messages,
+      messages: [{ role: "user", content: context }],
     });
 
-    const agentMessage =
-      response.content[0].type === "text" ? response.content[0].text : "";
+    const text = response.content[0].type === "text" ? response.content[0].text : "";
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
 
-    this.teamChat.push({
-      role: "assistant",
-      author: agent.name,
-      content: agentMessage,
-    });
-
-    this.agentResponses[memberId] = agentMessage;
-    return agentMessage;
+    this.agentResponses[agentId] = text;
+    console.log(`${agent.emoji} ${agent.name} ferdig (${elapsed}s)`);
+    return text;
   }
 
   async runTeamAnalysis(appDescription) {
     console.log(`
 +=========================================================================+
-|                  HYSJ TEAM SESSION STARTED                              |
+|              CLAUDE CODE TEAM - 5-AGENT SYSTEM                          |
 |                                                                         |
-|  5 spesialister samarbeider i delt chat                                 |
-|  Prosjekt: Hysj - Null-lagring meldingsapp                             |
+|  Hver agent har sin egen uavhengige chat                                |
+|  Ingen token-grenser. Full dypgaende analyse.                           |
 +=========================================================================+
     `);
 
-    // 1. Frontend Agent
-    console.log("\n--- Frontend Agent starter analyse ---\n");
-    await this.agentSpeak(
-      "frontend",
-      `Analyser Hysj frontend-kodebasen:\n\n${appDescription}\n\nFokuser pa UI/UX kvalitet, tema-konsistens, accessibility, og navigasjon.`
-    );
+    const startTime = Date.now();
+
+    // Kjor 4 agenter parallelt — hver i sin egen chat
+    console.log("--- Kjorer 4 agenter parallelt ---");
+
+    await Promise.all([
+      this.runAgent("frontend", appDescription),
+      this.runAgent("backend", appDescription),
+      this.runAgent("research", appDescription),
+      this.runAgent("fullstack", appDescription),
+    ]);
+
+    // Print alle 4 chats
+    const separator = "─".repeat(70);
+
+    console.log(`\n\n🎨 FRONTEND CHAT\n${separator}\n`);
     console.log(this.agentResponses.frontend);
 
-    // 2. Backend Agent
-    console.log("\n\n--- Backend Agent analyserer sikkerhet ---\n");
-    await this.agentSpeak(
-      "backend",
-      `Frontend Agent fant UI-problemer. Analyser backend-sikkerhet: rate limiting, null-lagring, SignalR, auth, Redis TTL.`
-    );
+    console.log(`\n\n⚙️ BACKEND CHAT\n${separator}\n`);
     console.log(this.agentResponses.backend);
 
-    // 3. Research Agent
-    console.log("\n\n--- Research Agent vurderer kryptografi ---\n");
-    await this.agentSpeak(
-      "research",
-      `Backend Agent identifiserte sikkerhetsproblemer. Vurder krypto-implementasjonen: Er X3DH, Double Ratchet, Sealed Sender, Onion Routing korrekt og integrert?`
-    );
+    console.log(`\n\n🔍 RESEARCH CHAT\n${separator}\n`);
     console.log(this.agentResponses.research);
 
-    // 4. Fullstack Developer
-    console.log("\n\n--- Fullstack Developer sjekker integrasjon ---\n");
-    await this.agentSpeak(
-      "fullstack",
-      `Basert pa alle funn - sjekk frontend<->backend alignment: DTOs vs types, SignalR signaturer, auth token-flyt, wipe-routing.`
-    );
+    console.log(`\n\n🚀 FULLSTACK CHAT\n${separator}\n`);
     console.log(this.agentResponses.fullstack);
 
-    // 5. Report Agent
-    console.log("\n\n--- Report Agent lager prioritert plan ---\n");
-    await this.agentSpeak(
-      "report",
-      `Lag en prioritert rapport (P1/P2/P3) basert pa alle agentenes funn. Inkluder anbefalt rekkefolge.`
-    );
+    // Report Agent samler alle funn
+    console.log(`\n\n--- Report Agent samler alle funn ---`);
+
+    const reportContext = `Lag en komplett prioritert rapport basert pa disse funnene fra 4 uavhengige agenter:
+
+🎨 FRONTEND AGENT FUNN:
+${this.agentResponses.frontend}
+
+⚙️ BACKEND AGENT FUNN:
+${this.agentResponses.backend}
+
+🔍 RESEARCH AGENT FUNN:
+${this.agentResponses.research}
+
+🚀 FULLSTACK DEVELOPER FUNN:
+${this.agentResponses.fullstack}`;
+
+    await this.runAgent("report", reportContext);
+
+    console.log(`\n\n📊 REPORT CHAT\n${separator}\n`);
     console.log(this.agentResponses.report);
 
+    const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
+    console.log(`\n${"=".repeat(70)}`);
+    console.log(`Team-analyse ferdig! Total tid: ${totalTime}s`);
+    console.log(`${"=".repeat(70)}`);
+
     return this.agentResponses;
-  }
-
-  getTeamSummary() {
-    return `
-=========================================================================
-                        TEAM SESSION OPPSUMMERING
-=========================================================================
-
-Team members:
-${Object.entries(this.teamMembers)
-  .map(
-    ([id, member]) => `  ${member.name} - ${member.role}
-    Fokus: ${member.expertise.join(", ")}`
-  )
-  .join("\n")}
-
-Meldinger i team chat: ${this.teamChat.length}
-Agent-svar samlet: ${Object.keys(this.agentResponses).length}
-
-=========================================================================
-    `;
   }
 }
 
 async function main() {
   const team = new TeamSession();
 
-  const appDescription = `
+  // Bruk custom app-beskrivelse fra CLI, eller default Hysj-beskrivelse
+  const customApp = process.argv[2];
+
+  const defaultApp = `
 HYSJ - Null-lagring meldingsapp
 
 Frontend (hysj-app/):
@@ -189,13 +146,7 @@ Kjerneprinsipp: Serveren er en blind, midlertidig postboks.
 Ingen meldingslagring. Ingen metadata. Ingen spor.
   `;
 
-  const responses = await team.runTeamAnalysis(appDescription);
-
-  console.log("\n" + "=".repeat(75));
-  console.log(team.getTeamSummary());
-  console.log("=".repeat(75));
-
-  console.log("\nTeam-analyse ferdig!");
+  await team.runTeamAnalysis(customApp || defaultApp);
 }
 
 main().catch(console.error);

@@ -1,15 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Read(//c/Users/abdik/Projects/biohead-app/**)",
-      "Bash(npm start)",
-      "Bash(npx expo:*)",
-      "Bash(npm install:*)",
-      "Bash(dotnet build:*)",
-      "Bash(cmd:*)",
-      "mcp__claude_ai_Supabase__execute_sql",
-      "Bash(npm ls:*)",
-      "Bash(curl:*)"
+      "mcp__claude_ai_Supabase__list_projects"
     ]
   }
 }
