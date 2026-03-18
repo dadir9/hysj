@@ -1,0 +1,32 @@
+{
+  "name": "five-agent-orchestrator",
+  "version": "1.0.0",
+  "description": "5-agent team for app development, security analysis, and deployment",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "team": "node src/team-session.js",
+    "dev": "node src/index.js --dev",
+    "agent:frontend": "node src/agents/frontend.js",
+    "agent:backend": "node src/agents/backend.js",
+    "agent:research": "node src/agents/research.js",
+    "agent:report": "node src/agents/report.js",
+    "agent:fullstack": "node src/agents/fullstack.js"
+  },
+  "keywords": [
+    "agents",
+    "ai",
+    "multi-agent",
+    "claude",
+    "orchestration"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.24.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

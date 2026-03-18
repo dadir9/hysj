@@ -12,7 +12,7 @@ import { RootStackParamList, Conversation } from '../types';
 import { colors, font, spacing, radius } from '../constants/theme';
 import { getSession, getInitials, getAvatarColor, clearSession } from '../services/auth';
 import { getConversations, upsertConversation, deleteConversation } from '../services/localStore';
-import { startHub, stopHub, decryptReceived, decodeLegacyBlob, loadRatchetState, acknowledgeDelivery } from '../services/chatHub';
+import { startHub, stopHub, decryptReceived, loadRatchetState, acknowledgeDelivery } from '../services/chatHub';
 import { getUserStatusBatch } from '../services/api';
 
 type Props = { navigation: StackNavigationProp<RootStackParamList, 'ConversationList'> };
@@ -60,10 +60,10 @@ export default function ConversationListScreen({ navigation }: Props) {
       try {
         const hub = await startHub();
 
-        hub.on('ReceiveMessage', async (messageId: string, blob: string) => {
+        hub.on('ReceiveMessage', async (msg: { messageId: string; encryptedBlob: string }) => {
           if (!mounted) return;
 
-          acknowledgeDelivery(messageId, s.deviceId).catch(() => {});
+          acknowledgeDelivery(msg.messageId, s.deviceId).catch(() => {});
 
           const convs = await getConversations();
 
@@ -75,7 +75,7 @@ export default function ConversationListScreen({ navigation }: Props) {
           for (const conv of convs) {
             const ratchet = await loadRatchetState(conv.id);
             if (!ratchet) continue;
-            const result = await decryptReceived(blob, conv.id, ratchet);
+            const result = await decryptReceived(msg.encryptedBlob, conv.id, ratchet);
             if (result) {
               decoded = result;
               matchedConvId = conv.id;
@@ -83,13 +83,9 @@ export default function ConversationListScreen({ navigation }: Props) {
             }
           }
 
-          // Fall back to legacy format (unencrypted blobs from before ratchet)
           if (!decoded) {
-            const legacy = decodeLegacyBlob(blob);
-            if (legacy) decoded = legacy;
+            throw new Error('Ratchet decryption failed: no valid ratchet state or decryption error');
           }
-
-          if (!decoded) return; // Cannot identify sender — discard
 
           const existing = convs.find(c => c.peerUserId === decoded!.senderUserId);
           const convId = matchedConvId ?? existing?.id ?? decoded.senderUserId;

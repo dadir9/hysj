@@ -31,7 +31,14 @@ public class WipeService(
 
             // prøv å sende direkte via SignalR
             await hubContext.Clients.User(deviceId.ToString())
-                .SendAsync("ExecuteWipe", wipeId, command.Type.ToString());
+                .SendAsync("WipeCommand", new
+                {
+                    wipeId,
+                    type = command.Type.ToString(),
+                    conversationId = command.ConversationPartnerId,
+                    targetDeviceId = command.TargetDeviceId,
+                    timestamp = DateTimeOffset.UtcNow
+                });
         }
 
         return wipeId;

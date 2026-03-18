@@ -1,3 +1,4 @@
+import * as Crypto from 'expo-crypto';
 import * as SignalR from '@microsoft/signalr';
 import { HUB_URL } from './config';
 import { secureGetItem, secureSetItem, secureRemoveItem } from './secureStorage';
@@ -177,7 +178,7 @@ export const sendMessage = async (
     throw new Error('Hub not connected');
   }
 
-  const messageId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const messageId = Crypto.randomUUID();
   // Embed sender identity INSIDE the encrypted payload so the server never sees it
   const innerPayload: InnerPayload = { su: senderUserId, sn: senderUsername, t: text };
   const plaintext = encodeUtf8(JSON.stringify(innerPayload));
@@ -244,14 +245,3 @@ export const extractX3DHHandshake = (blob: string): {
   return parsed?.x3dh ?? null;
 };
 
-/**
- * Legacy fallback: decode a non-encrypted blob (for backward compat with
- * messages sent before ratchet was enabled).
- */
-export const decodeLegacyBlob = (blob: string): { senderUserId: string; senderUsername: string; text: string } | null => {
-  try {
-    return JSON.parse(atob(blob));
-  } catch {
-    return null;
-  }
-};

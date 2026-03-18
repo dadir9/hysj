@@ -95,9 +95,11 @@ export default function LoginScreen({ navigation }: Props) {
       const res = await login({ phoneNumber: fullNumber, password, totpCode: null });
       await saveSession({
         token: res.data.token,
+        refreshToken: res.data.refreshToken,
         userId: res.data.userId,
         deviceId: res.data.deviceId,
         username: fullNumber,
+        expiresAt: res.data.expiresAt,
       });
       navigation.replace('ConversationList');
     } catch (e: any) {

@@ -10,7 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList, Message } from '../types';
 import { colors, font, spacing, radius } from '../constants/theme';
 import { getInitials, getAvatarColor, getSession } from '../services/auth';
-import { startHub, getHub, sendMessage, decryptReceived, decodeLegacyBlob, loadRatchetState, acknowledgeDelivery, extractX3DHHandshake } from '../services/chatHub';
+import { startHub, getHub, sendMessage, decryptReceived, loadRatchetState, acknowledgeDelivery, extractX3DHHandshake } from '../services/chatHub';
 import { getMessages, appendMessage, upsertConversation, markRead } from '../services/localStore';
 import { registerWipeListener, onWipeExecuted } from '../services/wipeService';
 import { replenishPreKeysIfNeeded } from '../services/keyManager';
@@ -157,7 +157,7 @@ export default function ChatScreen({ navigation, route }: Props) {
           }
         });
 
-        hub.on('DeliveryReceipt', (messageId: string) => {
+        hub.on('MessageDelivered', (messageId: string) => {
           if (!mounted) return;
           setMessages(prev => prev.map(m =>
             m.id === messageId ? { ...m, deliveryStatus: 'delivered' as const } : m
@@ -201,14 +201,14 @@ export default function ChatScreen({ navigation, route }: Props) {
             }
           }
 
-          // Try ratchet decryption first, fall back to legacy
+          // Decrypt with ratchet — no fallback to unencrypted
           let decoded: { senderUserId: string; senderUsername: string; text: string } | null = null;
 
           if (ratchetRef.current) {
             decoded = await decryptReceived(blob, conversation.id, ratchetRef.current);
           }
           if (!decoded) {
-            decoded = decodeLegacyBlob(blob);
+            throw new Error('Ratchet decryption failed: no valid ratchet state or decryption error');
           }
 
           if (!decoded || decoded.senderUserId !== conversation.peerUserId) return;
