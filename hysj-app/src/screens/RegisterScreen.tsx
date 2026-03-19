@@ -336,30 +336,34 @@ export default function RegisterScreen({ navigation }: Props) {
   );
 }
 
+const INPUT_HEIGHT = 52;
+
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#2D2D3A',
+    backgroundColor: colors.bg,
   },
   scroll: {
     flexGrow: 1,
     alignItems: 'center',
-    paddingHorizontal: 28,
+    paddingHorizontal: spacing.xl,
     paddingTop: 60,
-    paddingBottom: 32,
+    paddingBottom: spacing.xl,
   },
 
   /* Logo */
   logoWrap: {
-    marginBottom: 24,
+    marginBottom: spacing.lg,
   },
   logoBg: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#353545',
+    backgroundColor: colors.bgSurface,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: `${colors.purple}33`,
   },
   logoImage: {
     width: 52,
@@ -369,15 +373,15 @@ const styles = StyleSheet.create({
   /* Title */
   title: {
     fontSize: 40,
-    fontWeight: '700',
-    color: '#FFFFFF',
+    fontWeight: font.weights.bold,
+    color: colors.textPrimary,
     letterSpacing: 2,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
 
   /* Subtitle */
   subtitle: {
-    fontSize: 14,
+    fontSize: font.sizes.md,
     color: colors.textMuted,
     marginBottom: 40,
   },
@@ -392,101 +396,120 @@ const styles = StyleSheet.create({
   phoneRow: {
     flexDirection: 'row',
     gap: 10,
-    marginBottom: 14,
+    marginBottom: spacing.md,
   },
   countryBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#353545',
-    borderRadius: 16,
-    height: 54,
+    backgroundColor: colors.bgInput,
+    borderRadius: radius.md,
+    height: INPUT_HEIGHT,
     paddingHorizontal: 14,
     gap: 6,
+    borderWidth: 1,
+    borderColor: colors.borderMid,
   },
   flag: {
     fontSize: 20,
   },
   dialCode: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '600',
+    color: colors.textPrimary,
+    fontSize: font.sizes.lg,
+    fontWeight: font.weights.semibold,
   },
   phoneInput: {
     flex: 1,
-    backgroundColor: '#353545',
-    borderRadius: 16,
-    height: 54,
+    backgroundColor: colors.bgInput,
+    borderRadius: radius.md,
+    height: INPUT_HEIGHT,
     paddingHorizontal: 18,
-    color: '#FFFFFF',
-    fontSize: 15,
+    color: colors.textPrimary,
+    fontSize: font.sizes.lg,
+    borderWidth: 1,
+    borderColor: colors.borderMid,
   },
 
   /* Input fields */
   input: {
     width: '100%',
-    backgroundColor: '#353545',
-    borderRadius: 16,
-    height: 54,
+    backgroundColor: colors.bgInput,
+    borderRadius: radius.md,
+    height: INPUT_HEIGHT,
     paddingHorizontal: 18,
-    color: '#FFFFFF',
-    fontSize: 15,
-    marginBottom: 14,
+    color: colors.textPrimary,
+    fontSize: font.sizes.lg,
+    marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.borderMid,
   },
 
   /* Password hint */
   passwordHint: {
-    fontSize: 12,
+    fontSize: font.sizes.xs,
     color: colors.textMuted,
     marginLeft: 4,
     marginTop: -6,
-    marginBottom: 20,
+    marginBottom: spacing.lg,
   },
 
   /* Error */
   errorRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 16,
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+    backgroundColor: colors.dangerBg,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: radius.md,
   },
   errorText: {
     color: colors.danger,
-    fontSize: 13,
+    fontSize: font.sizes.sm,
     flex: 1,
+    fontWeight: font.weights.medium,
   },
 
   /* Create Account button */
   signInBtn: {
     width: '100%',
     height: 54,
-    borderRadius: 28,
-    backgroundColor: '#7C3AED',
+    borderRadius: radius.md,
+    backgroundColor: colors.purple,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: colors.purple,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 6,
   },
   signInBtnDisabled: {
     opacity: 0.5,
+    shadowOpacity: 0,
+    elevation: 0,
   },
   signInText: {
-    color: '#FFFFFF',
-    fontSize: 17,
-    fontWeight: '700',
+    color: colors.white,
+    fontSize: font.sizes.lg,
+    fontWeight: font.weights.bold,
+    letterSpacing: 0.5,
   },
 
   /* Sign in link */
   registerRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 24,
+    marginTop: spacing.lg,
   },
   registerText: {
     color: colors.textSecondary,
-    fontSize: 14,
+    fontSize: font.sizes.sm,
   },
   registerLink: {
     color: colors.purpleLight,
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: font.sizes.sm,
+    fontWeight: font.weights.bold,
   },
 
   /* Footer */
@@ -495,11 +518,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     marginTop: 'auto' as any,
-    paddingTop: 32,
+    paddingTop: spacing.xl,
   },
   footerText: {
     color: colors.textMuted,
-    fontSize: 12,
+    fontSize: font.sizes.xs,
+    fontWeight: font.weights.medium,
   },
 
   /* Modal */
@@ -512,10 +536,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   modalSheet: {
-    backgroundColor: '#353545',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingHorizontal: 20,
+    backgroundColor: colors.bgSurface,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    paddingHorizontal: spacing.md + 4,
     paddingBottom: Platform.OS === 'ios' ? 34 : 20,
     maxHeight: '75%',
   },
@@ -526,29 +550,29 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.15)',
     alignSelf: 'center',
     marginTop: 12,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   modalTitle: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '700',
+    color: colors.textPrimary,
+    fontSize: font.sizes.lg + 1,
+    fontWeight: font.weights.bold,
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   searchWrap: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2D2D3A',
-    borderRadius: 14,
+    backgroundColor: colors.bg,
+    borderRadius: radius.lg,
     paddingHorizontal: 14,
     gap: 10,
     marginBottom: 12,
   },
   searchInput: {
     flex: 1,
-    color: '#FFFFFF',
+    color: colors.textPrimary,
     paddingVertical: 14,
-    fontSize: 15,
+    fontSize: font.sizes.md,
   },
   countryItem: {
     flexDirection: 'row',
@@ -560,33 +584,33 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(255,255,255,0.06)',
   },
   countryItemActive: {
-    backgroundColor: 'rgba(124, 58, 237, 0.1)',
-    borderRadius: 10,
+    backgroundColor: `${colors.purple}1A`,
+    borderRadius: radius.md,
   },
   countryFlag: {
     fontSize: 22,
   },
   countryName: {
     flex: 1,
-    color: '#FFFFFF',
-    fontSize: 15,
+    color: colors.textPrimary,
+    fontSize: font.sizes.md,
   },
   countryDial: {
     color: colors.textMuted,
-    fontSize: 13,
+    fontSize: font.sizes.sm,
     marginRight: 4,
   },
   cancelBtn: {
     marginTop: 12,
-    borderRadius: 28,
+    borderRadius: radius.pill,
     height: 50,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#2D2D3A',
+    backgroundColor: colors.bg,
   },
   cancelText: {
     color: colors.textSecondary,
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: font.sizes.md + 1,
+    fontWeight: font.weights.semibold,
   },
 });

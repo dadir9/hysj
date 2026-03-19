@@ -1,44 +1,46 @@
 export const colors = {
-  // Backgrounds
-  bg: '#2D2D3A',
-  bgSurface: '#353545',
-  bgCard: '#3D3D4A',
-  bgInput: '#454555',
-  bgElevated: '#4A4A5A',
+  // Backgrounds — from Figma: #292F3F base
+  bg: '#292F3F',
+  bgSurface: '#373E4E',
+  bgCard: '#373E4E',
+  bgInput: '#000000',
+  bgElevated: '#414756',
 
   // Text
   textPrimary: '#FFFFFF',
-  textSecondary: '#9A9AB0',
-  textMuted: '#6B6B80',
-  textDim: '#50505F',
+  textSecondary: '#7A8194',
+  textMuted: '#596787',
+  textDim: '#4A5568',
 
-  // Brand
-  purple: '#7C3AED',
-  purpleLight: '#A78BFA',
-  purpleDark: '#5B21B6',
+  // Brand — from Figma accents
+  purple: '#B347EA',
+  purpleLight: '#C77EF0',
+  purpleDark: '#8B2FC4',
+  blue: '#03A9F1',
+  green: '#00AC83',
 
-  // Bubbles — incoming: white/light, outgoing: dark card
-  bubbleOut: '#3A3A4A',
-  bubbleIn: '#EEEEF3',
-  bubbleInText: '#1A1A2E',
+  // Bubbles — from Figma: sent=#272A35, received=#373E4E
+  bubbleOut: '#272A35',
+  bubbleIn: '#373E4E',
+  bubbleInText: '#FFFFFF',
   bubbleOutText: '#FFFFFF',
 
   // Status
-  online: '#34C759',
+  online: '#00AC83',
   danger: '#FF3B30',
   dangerBg: 'rgba(255,59,48,0.1)',
   warning: '#F59E0B',
-  shield: '#10B981',
+  shield: '#00AC83',
 
   // Borders
-  border: '#4A4A5A',
-  borderMid: 'rgba(255,255,255,0.10)',
+  border: '#414756',
+  borderMid: 'rgba(255,255,255,0.08)',
 
-  // Sheet (light background)
-  sheetBg: '#FFFFFF',
-  sheetText: '#1A1A2E',
-  sheetMuted: '#9A9AB0',
-  sheetInput: '#F0F0F5',
+  // Sheet (dark — matching app theme, not white)
+  sheetBg: '#292F3F',
+  sheetText: '#FFFFFF',
+  sheetMuted: '#7A8194',
+  sheetInput: '#000000',
 
   white: '#FFFFFF',
   black: '#000000',
@@ -55,24 +57,25 @@ export const spacing = {
 
 export const radius = {
   sm: 8,
-  md: 12,
-  lg: 14,
-  xl: 20,
-  pill: 28,
+  md: 10,
+  lg: 20,
+  xl: 22,
+  pill: 30,
   full: 9999,
 };
 
 export const font = {
   sizes: {
-    xs: 11,
+    xs: 12,
     sm: 13,
-    md: 15,
-    lg: 17,
-    xl: 22,
+    md: 14,
+    lg: 15,
+    xl: 20,
     xxl: 32,
     hero: 36,
   },
   weights: {
+    light: '300' as const,
     regular: '400' as const,
     medium: '500' as const,
     semibold: '600' as const,

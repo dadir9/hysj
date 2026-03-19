@@ -389,6 +389,9 @@ export default function ChatScreen({ navigation, route }: Props) {
         </View>
       ) : (
         <View style={styles.rowIn}>
+          <View style={styles.inAvatar}>
+            <Text style={styles.inAvatarText}>{getInitials(conversation.peerUsername)}</Text>
+          </View>
           <View style={styles.inBubbleWrap}>
             <View style={styles.bubbleIn}>
               <Text style={styles.bubbleInText}>{item.content}</Text>
@@ -426,40 +429,50 @@ export default function ChatScreen({ navigation, route }: Props) {
               {getStatusText()}
             </Text>
           </View>
+          <TouchableOpacity style={styles.headerActionBtn}>
+            <Ionicons name="call" size={18} color={colors.white} />
+          </TouchableOpacity>
           <TouchableOpacity style={styles.headerMenuBtn}>
-            <Ionicons name="menu" size={22} color={colors.textSecondary} />
+            <Ionicons name="ellipsis-vertical" size={18} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
 
         {/* Messages */}
-        <FlatList
-          ref={listRef}
-          data={messages}
-          keyExtractor={i => i.id}
-          renderItem={renderItem}
-          contentContainerStyle={styles.listContent}
-          onLayout={() => listRef.current?.scrollToEnd({ animated: false })}
-          ListHeaderComponent={
-            sessionReady && ratchetRef.current ? (
-              <View style={styles.sessionBanner}>
-                <Text style={styles.sessionBannerText}>Secure session established</Text>
+        <View style={{ flex: 1 }}>
+          <FlatList
+            ref={listRef}
+            data={messages}
+            keyExtractor={i => i.id}
+            renderItem={renderItem}
+            contentContainerStyle={styles.listContent}
+            onLayout={() => listRef.current?.scrollToEnd({ animated: false })}
+            ListHeaderComponent={
+              sessionReady && ratchetRef.current ? (
+                <View style={styles.sessionBanner}>
+                  <Text style={styles.sessionBannerText}>Secure session established</Text>
+                </View>
+              ) : null
+            }
+            ListEmptyComponent={
+              <View style={styles.emptyChat}>
+                <View style={styles.emptyChatCircle}>
+                  <Ionicons name="lock-closed" size={28} color={colors.shield} />
+                </View>
+                <Text style={styles.emptyChatText}>No messages yet</Text>
+                <Text style={styles.emptyChatHint}>
+                  {sessionReady && ratchetRef.current
+                    ? 'Quantum-resistant encryption active'
+                    : 'Establishing secure session...'}
+                </Text>
               </View>
-            ) : null
-          }
-          ListEmptyComponent={
-            <View style={styles.emptyChat}>
-              <View style={styles.emptyChatCircle}>
-                <Ionicons name="lock-closed" size={28} color={colors.shield} />
-              </View>
-              <Text style={styles.emptyChatText}>No messages yet</Text>
-              <Text style={styles.emptyChatHint}>
-                {sessionReady && ratchetRef.current
-                  ? 'Quantum-resistant encryption active'
-                  : 'Establishing secure session...'}
-              </Text>
-            </View>
-          }
-        />
+            }
+          />
+
+          {/* Floating action button */}
+          <TouchableOpacity style={styles.fab}>
+            <Ionicons name="add" size={24} color={colors.white} />
+          </TouchableOpacity>
+        </View>
 
         {/* Typing indicator */}
         {peerTyping && (
@@ -478,8 +491,8 @@ export default function ChatScreen({ navigation, route }: Props) {
           <View style={styles.inputWrap}>
             <TextInput
               style={styles.input}
-              placeholder="Type a message..."
-              placeholderTextColor={colors.textMuted}
+              placeholder="Write"
+              placeholderTextColor={colors.white}
               value={text}
               onChangeText={handleTextChange}
               returnKeyType="send"
@@ -504,14 +517,13 @@ export default function ChatScreen({ navigation, route }: Props) {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bg },
+  root: { flex: 1, backgroundColor: '#292F3F' },
 
   // Header
   header: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: colors.bgSurface,
-    paddingHorizontal: 12, paddingVertical: 14,
-    borderBottomWidth: 1, borderBottomColor: colors.border,
+    backgroundColor: '#292F3F',
+    paddingHorizontal: 12, paddingVertical: 12,
     gap: 10,
   },
   backBtn: {
@@ -520,24 +532,30 @@ const styles = StyleSheet.create({
   },
   headerAvatarWrap: { position: 'relative' },
   headerAvatar: {
-    width: 42, height: 42, borderRadius: 21,
+    width: 44, height: 44, borderRadius: 30,
     alignItems: 'center', justifyContent: 'center',
   },
   headerAvatarText: { color: colors.white, fontSize: 15, fontWeight: font.weights.bold },
   headerOnlineDot: {
     position: 'absolute', bottom: 0, right: 0,
     width: 12, height: 12, borderRadius: 6,
-    backgroundColor: colors.online,
-    borderWidth: 2, borderColor: colors.bgSurface,
+    backgroundColor: '#00AC83',
+    borderWidth: 2, borderColor: '#292F3F',
   },
   headerInfo: { flex: 1 },
   headerName: {
-    fontSize: font.sizes.md, fontWeight: font.weights.bold,
-    color: colors.textPrimary,
+    fontSize: 15, fontWeight: font.weights.bold,
+    color: '#FFFFFF',
   },
   headerStatus: { fontSize: 12, marginTop: 1 },
+  headerActionBtn: {
+    width: 40, height: 40, borderRadius: 10,
+    backgroundColor: '#00AC83',
+    alignItems: 'center', justifyContent: 'center',
+  },
   headerMenuBtn: {
-    width: 36, height: 36, borderRadius: 18,
+    width: 40, height: 40, borderRadius: 10,
+    backgroundColor: '#373E4E',
     alignItems: 'center', justifyContent: 'center',
   },
 
@@ -558,39 +576,58 @@ const styles = StyleSheet.create({
   emptyChat: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 80 },
   emptyChatCircle: {
     width: 64, height: 64, borderRadius: 32,
-    backgroundColor: colors.bgSurface,
+    backgroundColor: '#373E4E',
     alignItems: 'center', justifyContent: 'center', marginBottom: 14,
   },
   emptyChatText: {
-    fontSize: font.sizes.md, fontWeight: font.weights.semibold,
-    color: colors.textPrimary,
+    fontSize: 14, fontWeight: font.weights.semibold,
+    color: '#FFFFFF',
   },
-  emptyChatHint: { fontSize: font.sizes.sm, color: colors.textSecondary, marginTop: 4 },
+  emptyChatHint: { fontSize: 13, color: colors.textSecondary, marginTop: 4 },
 
   // Outgoing bubble — dark, right-aligned
-  rowOut: { alignItems: 'flex-end', marginVertical: 2 },
+  rowOut: { alignItems: 'flex-end', marginVertical: 3 },
   bubbleOut: {
-    backgroundColor: colors.bubbleOut,
-    borderTopLeftRadius: 18, borderTopRightRadius: 18,
-    borderBottomLeftRadius: 18, borderBottomRightRadius: 4,
+    backgroundColor: '#272A35',
+    borderRadius: 20,
     paddingHorizontal: 16, paddingVertical: 10,
     maxWidth: '75%',
   },
-  bubbleOutText: { color: colors.bubbleOutText, fontSize: 15, lineHeight: 21 },
+  bubbleOutText: { color: '#FFFFFF', fontSize: 13, fontWeight: font.weights.light, lineHeight: 19 },
+  bubbleOutFailed: {
+    backgroundColor: colors.danger,
+    opacity: 0.8,
+  },
   timeStatusRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4, marginRight: 4 },
-  timeOut: { color: colors.textMuted, fontSize: 10 },
+  timeOut: { color: '#FFFFFF', fontSize: 12, fontWeight: font.weights.regular },
 
-  // Incoming bubble — white/light, left-aligned (no avatar per message)
-  rowIn: { alignItems: 'flex-start', marginVertical: 2 },
-  inBubbleWrap: { maxWidth: '75%' },
+  // Incoming bubble — with small avatar, left-aligned
+  rowIn: { flexDirection: 'row', alignItems: 'flex-end', marginVertical: 3, gap: 8 },
+  inAvatar: {
+    width: 24, height: 24, borderRadius: 30,
+    backgroundColor: '#373E4E',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  inAvatarText: { color: '#FFFFFF', fontSize: 9, fontWeight: font.weights.bold },
+  inBubbleWrap: { maxWidth: '70%' },
   bubbleIn: {
-    backgroundColor: colors.bubbleIn,
-    borderTopLeftRadius: 18, borderTopRightRadius: 18,
-    borderBottomLeftRadius: 4, borderBottomRightRadius: 18,
+    backgroundColor: '#373E4E',
+    borderRadius: 20,
     paddingHorizontal: 16, paddingVertical: 10,
   },
-  bubbleInText: { color: colors.bubbleInText, fontSize: 15, lineHeight: 21 },
-  timeIn: { color: colors.textMuted, fontSize: 10, marginTop: 4, marginLeft: 4 },
+  bubbleInText: { color: '#FFFFFF', fontSize: 13, fontWeight: font.weights.light, lineHeight: 19 },
+  timeIn: { color: '#FFFFFF', fontSize: 12, fontWeight: font.weights.regular, marginTop: 4, marginLeft: 4 },
+
+  // Floating action button
+  fab: {
+    position: 'absolute', bottom: 16, right: 16,
+    width: 45, height: 45, borderRadius: 22,
+    backgroundColor: '#000000',
+    alignItems: 'center', justifyContent: 'center',
+    elevation: 4,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3, shadowRadius: 4,
+  },
 
   // Session banner
   sessionBanner: {
@@ -606,10 +643,6 @@ const styles = StyleSheet.create({
   },
 
   // Failed message
-  bubbleOutFailed: {
-    backgroundColor: colors.danger,
-    opacity: 0.8,
-  },
   failedRow: {
     flexDirection: 'row', alignItems: 'center',
     gap: 8, marginTop: 4, marginRight: 6,
@@ -637,23 +670,24 @@ const styles = StyleSheet.create({
 
   // Input bar
   inputBar: {
-    flexDirection: 'row', alignItems: 'flex-end',
-    backgroundColor: colors.bg,
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: '#292F3F',
     paddingHorizontal: 14, paddingVertical: 10,
     paddingBottom: 28,
     gap: 10,
   },
   inputWrap: {
     flex: 1,
-    backgroundColor: colors.bgSurface,
-    borderRadius: radius.pill,
-    paddingHorizontal: 18, paddingVertical: 10, minHeight: 46,
+    backgroundColor: '#000000',
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    height: 40,
     justifyContent: 'center',
   },
-  input: { color: colors.textPrimary, fontSize: 15, maxHeight: 100 },
+  input: { color: '#FFFFFF', fontSize: 14, maxHeight: 40 },
   sendBtn: {
-    width: 46, height: 46, borderRadius: 23,
-    backgroundColor: '#1A1A2E',
+    width: 40, height: 40, borderRadius: 10,
+    backgroundColor: '#00AC83',
     alignItems: 'center', justifyContent: 'center',
   },
 });

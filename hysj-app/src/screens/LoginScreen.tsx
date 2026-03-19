@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     // Subtle glow ring
     borderWidth: 1,
-    borderColor: 'rgba(124, 58, 237, 0.2)',
+    borderColor: `${colors.purple}33`,
   },
   logoImage: {
     width: 54,
@@ -401,8 +401,8 @@ const styles = StyleSheet.create({
   countryBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.bgSurface,
-    borderRadius: radius.lg,
+    backgroundColor: colors.bgInput,
+    borderRadius: radius.md,
     height: INPUT_HEIGHT,
     paddingHorizontal: 14,
     gap: 6,
@@ -419,8 +419,8 @@ const styles = StyleSheet.create({
   },
   phoneInput: {
     flex: 1,
-    backgroundColor: colors.bgSurface,
-    borderRadius: radius.lg,
+    backgroundColor: colors.bgInput,
+    borderRadius: radius.md,
     height: INPUT_HEIGHT,
     paddingHorizontal: 18,
     color: colors.textPrimary,
@@ -433,8 +433,8 @@ const styles = StyleSheet.create({
   passwordWrap: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.bgSurface,
-    borderRadius: radius.lg,
+    backgroundColor: colors.bgInput,
+    borderRadius: radius.md,
     height: INPUT_HEIGHT,
     borderWidth: 1,
     borderColor: colors.borderMid,
@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
   signInBtn: {
     width: '100%',
     height: 54,
-    borderRadius: radius.pill,
+    borderRadius: radius.md,
     backgroundColor: colors.purple,
     alignItems: 'center',
     justifyContent: 'center',
@@ -532,7 +532,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+    backgroundColor: `${colors.green}14`,
     paddingVertical: 6,
     paddingHorizontal: 14,
     borderRadius: radius.full,
@@ -601,8 +601,8 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(255,255,255,0.06)',
   },
   countryItemActive: {
-    backgroundColor: 'rgba(124, 58, 237, 0.1)',
-    borderRadius: radius.sm + 2,
+    backgroundColor: `${colors.purple}1A`,
+    borderRadius: radius.md,
   },
   countryFlag: {
     fontSize: 22,

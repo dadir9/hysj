@@ -293,58 +293,29 @@ export default function ConversationListScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.root}>
 
-      {/* Header */}
+      {/* Header — title only */}
       <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Image source={require('../../assets/logo.png')} style={styles.headerLogo} resizeMode="contain" />
-          <View>
-            <Text style={styles.headerTitle}>hysj</Text>
-            <Text style={styles.headerSubtitle}>
-              {username ? `Welcome back, ${username}` : 'Your privacy, redefined'}
-            </Text>
-          </View>
-        </View>
-        <TouchableOpacity style={styles.headerIconBtn} onPress={() => navigation.navigate('Settings')}>
-          <Ionicons name="settings-outline" size={22} color={colors.textSecondary} />
-        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Chatrooms</Text>
       </View>
 
-      {/* Stories strip */}
-      {conversations.length > 0 && (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}
-                    style={styles.storiesStrip} contentContainerStyle={styles.storiesContent}>
-          {/* Add new story / new chat */}
-          <TouchableOpacity style={styles.storyItem} onPress={() => navigation.navigate('NewChat')}>
-            <View style={styles.storyAddRing}>
-              <Text style={styles.storyAddIcon}>+</Text>
-            </View>
-            <Text style={styles.storyName}>New</Text>
-          </TouchableOpacity>
-          {conversations.map(c => (
-            <TouchableOpacity key={c.id} style={styles.storyItem}
-                              onPress={() => navigation.navigate('Chat', { conversation: c })}>
-              <View style={styles.storyRing}>
-                <View style={[styles.storyAvatar, { backgroundColor: getAvatarColor(c.peerUsername) }]}>
-                  <Text style={styles.storyInitials}>{getInitials(c.peerUsername)}</Text>
-                </View>
-                {c.isOnline && <View style={styles.storyOnlineDot}/>}
-              </View>
-              <Text style={styles.storyName} numberOfLines={1}>
-                {c.peerUsername.split(' ')[0]}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      )}
-
-      {/* Section label */}
-      <View style={styles.sectionRow}>
-        <Text style={styles.sectionLabel}>All chats</Text>
-        {conversations.length > 0 && (
-          <View style={styles.sectionBadge}>
-            <Text style={styles.sectionBadgeText}>{conversations.length}</Text>
-          </View>
-        )}
+      {/* Search bar + action buttons row */}
+      <View style={styles.searchRow}>
+        <View style={styles.searchBar}>
+          <Ionicons name="search" size={16} color={colors.white} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search..."
+            placeholderTextColor={colors.white}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </View>
+        <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('NewChat')}>
+          <Text style={styles.addButtonText}>+</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.settingsButton} onPress={() => navigation.navigate('Settings')}>
+          <Ionicons name="settings-outline" size={20} color={colors.white} />
+        </TouchableOpacity>
       </View>
 
       {/* Conversation list */}
@@ -362,23 +333,15 @@ export default function ConversationListScreen({ navigation }: Props) {
           keyExtractor={i => i.id}
           contentContainerStyle={styles.listContent}
           renderItem={renderConversation}
-          ItemSeparatorComponent={() => <View style={styles.separator} />}
         />
       )}
 
-      {/* Floating Menu pill */}
-      <TouchableOpacity style={styles.menuPill} onPress={() => setMenuOpen(true)}>
-        <Ionicons name="menu" size={18} color={colors.white} />
-        <Text style={styles.menuPillText}>Menu</Text>
-        <View style={styles.menuPillDot} />
+      {/* Floating action button — bottom right */}
+      <TouchableOpacity style={styles.fab} onPress={() => setMenuOpen(true)}>
+        <Ionicons name="ellipsis-horizontal" size={20} color={colors.white} />
       </TouchableOpacity>
 
-      {/* New chat FAB */}
-      <TouchableOpacity style={styles.fab} onPress={() => navigation.navigate('NewChat')}>
-        <Ionicons name="add" size={28} color={colors.white} />
-      </TouchableOpacity>
-
-      {/* Bottom sheet overlay */}
+      {/* Bottom sheet overlay — dark themed */}
       <Modal visible={menuOpen} transparent animationType="slide">
         <Pressable style={styles.overlay} onPress={() => setMenuOpen(false)}>
           <View style={styles.sheet} onStartShouldSetResponder={() => true}>
@@ -388,11 +351,11 @@ export default function ConversationListScreen({ navigation }: Props) {
 
             {/* Search bar */}
             <View style={styles.sheetSearch}>
-              <Ionicons name="search" size={18} color={colors.sheetMuted} />
+              <Ionicons name="search" size={18} color={colors.textMuted} />
               <TextInput
                 style={styles.sheetInput}
                 placeholder="Search chat, people and more..."
-                placeholderTextColor={colors.sheetMuted}
+                placeholderTextColor={colors.textMuted}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
               />
@@ -402,28 +365,28 @@ export default function ConversationListScreen({ navigation }: Props) {
             <View style={styles.sheetGrid}>
               <TouchableOpacity style={styles.sheetGridItem}
                                 onPress={() => { setMenuOpen(false); navigation.navigate('CreateGroup'); }}>
-                <View style={[styles.sheetGridIconCircle, { backgroundColor: 'rgba(124,58,237,0.10)' }]}>
+                <View style={[styles.sheetGridIconCircle, { backgroundColor: 'rgba(124,58,237,0.15)' }]}>
                   <Ionicons name="people" size={22} color={colors.purple} />
                 </View>
                 <Text style={styles.sheetGridLabel}>Group</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.sheetGridItem}
                                 onPress={() => { setMenuOpen(false); navigation.navigate('Security'); }}>
-                <View style={[styles.sheetGridIconCircle, { backgroundColor: 'rgba(245,158,11,0.10)' }]}>
+                <View style={[styles.sheetGridIconCircle, { backgroundColor: 'rgba(245,158,11,0.15)' }]}>
                   <Ionicons name="time" size={22} color={colors.warning} />
                 </View>
                 <Text style={styles.sheetGridLabel}>History</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.sheetGridItem}
                                 onPress={() => { setMenuOpen(false); }}>
-                <View style={[styles.sheetGridIconCircle, { backgroundColor: 'rgba(52,199,89,0.10)' }]}>
+                <View style={[styles.sheetGridIconCircle, { backgroundColor: 'rgba(52,199,89,0.15)' }]}>
                   <Ionicons name="videocam" size={22} color={colors.online} />
                 </View>
                 <Text style={styles.sheetGridLabel}>Live</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.sheetGridItem}
                                 onPress={() => { setMenuOpen(false); }}>
-                <View style={[styles.sheetGridIconCircle, { backgroundColor: 'rgba(59,130,246,0.10)' }]}>
+                <View style={[styles.sheetGridIconCircle, { backgroundColor: 'rgba(59,130,246,0.15)' }]}>
                   <Ionicons name="call" size={22} color="#3B82F6" />
                 </View>
                 <Text style={styles.sheetGridLabel}>Call</Text>
@@ -483,7 +446,7 @@ export default function ConversationListScreen({ navigation }: Props) {
 
             {/* Close */}
             <TouchableOpacity style={styles.sheetClose} onPress={() => setMenuOpen(false)}>
-              <Ionicons name="close" size={18} color={colors.sheetMuted} />
+              <Ionicons name="close" size={18} color={colors.textMuted} />
               <Text style={styles.sheetCloseText}>Close</Text>
             </TouchableOpacity>
 
@@ -496,73 +459,64 @@ export default function ConversationListScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bg },
+  root: { flex: 1, backgroundColor: '#292F3F' },
 
   // Header
   header: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end',
-    paddingHorizontal: 22, paddingTop: 18, paddingBottom: 14,
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 14,
   },
-  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  headerLogo: { width: 38, height: 38 },
   headerTitle: {
-    fontSize: font.sizes.xxl, fontWeight: font.weights.bold,
-    color: colors.textPrimary, letterSpacing: -0.5,
-  },
-  headerSubtitle: {
-    fontSize: font.sizes.sm, color: colors.textSecondary, marginTop: 2,
-  },
-  headerIconBtn: {
-    width: 40, height: 40, borderRadius: 20,
-    backgroundColor: colors.bgSurface,
-    alignItems: 'center', justifyContent: 'center',
+    fontSize: 20,
+    fontWeight: '400',
+    color: colors.white,
   },
 
-  // Stories strip
-  storiesStrip: { paddingLeft: 18, marginBottom: 8 },
-  storiesContent: { paddingRight: 18, gap: 14, paddingBottom: 14 },
-  storyItem: { alignItems: 'center', width: 64 },
-  storyAddRing: {
-    width: 60, height: 60, borderRadius: 30,
-    borderWidth: 2, borderColor: colors.textMuted, borderStyle: 'dashed',
-    alignItems: 'center', justifyContent: 'center', marginBottom: 6,
+  // Search row
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginBottom: 12,
+    gap: 10,
   },
-  storyAddIcon: { fontSize: 24, color: colors.textMuted },
-  storyRing: {
-    width: 60, height: 60, borderRadius: 30,
-    borderWidth: 2, borderColor: colors.purple,
-    alignItems: 'center', justifyContent: 'center', marginBottom: 6,
-    position: 'relative',
+  searchBar: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#000000',
+    borderRadius: 10,
+    height: 40,
+    paddingHorizontal: 14,
+    gap: 8,
   },
-  storyAvatar: {
-    width: 52, height: 52, borderRadius: 26,
-    alignItems: 'center', justifyContent: 'center',
+  searchInput: {
+    flex: 1,
+    color: colors.white,
+    fontSize: 14,
   },
-  storyInitials: { color: colors.white, fontSize: 18, fontWeight: font.weights.bold },
-  storyOnlineDot: {
-    position: 'absolute', bottom: 0, right: 0,
-    width: 14, height: 14, borderRadius: 7,
-    backgroundColor: colors.online,
-    borderWidth: 2, borderColor: colors.bg,
+  addButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: '#03A9F1',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  storyName: { color: colors.textSecondary, fontSize: 11, textAlign: 'center' },
-
-  // Section label
-  sectionRow: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 22, paddingVertical: 10, gap: 8,
+  addButtonText: {
+    color: colors.white,
+    fontSize: 24,
+    fontWeight: '300',
+    marginTop: -2,
   },
-  sectionLabel: {
-    fontSize: font.sizes.lg, fontWeight: font.weights.bold,
-    color: colors.textPrimary,
-  },
-  sectionBadge: {
-    backgroundColor: colors.purple, borderRadius: 10,
-    minWidth: 20, height: 20, paddingHorizontal: 6,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  sectionBadgeText: {
-    color: colors.white, fontSize: 11, fontWeight: font.weights.bold,
+  settingsButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: '#565E70',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   // Empty state
@@ -573,48 +527,46 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', marginBottom: 16,
   },
   emptyTitle: {
-    fontSize: font.sizes.lg, fontWeight: font.weights.bold,
-    color: colors.textPrimary, marginBottom: 6,
+    fontSize: 15, fontWeight: '400',
+    color: colors.white, marginBottom: 6,
   },
-  emptyHint: { fontSize: font.sizes.sm, color: colors.textSecondary },
+  emptyHint: { fontSize: 13, color: colors.textSecondary },
 
   // Conversation list
-  listContent: { paddingBottom: 100, paddingHorizontal: 16 },
-  separator: {
-    height: 1, backgroundColor: colors.border,
-    marginLeft: 76,
-  },
+  listContent: { paddingBottom: 100 },
   convRow: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingVertical: 14, paddingHorizontal: 6,
-    backgroundColor: colors.bg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    backgroundColor: '#292F3F',
   },
-  avatarWrap: { position: 'relative', marginRight: 14 },
+  avatarWrap: { position: 'relative', marginRight: 12 },
   avatar: {
-    width: 52, height: 52, borderRadius: 26,
+    width: 44, height: 44, borderRadius: 30,
     alignItems: 'center', justifyContent: 'center',
   },
-  avatarText: { color: colors.white, fontSize: 19, fontWeight: font.weights.bold },
+  avatarText: { color: colors.white, fontSize: 16, fontWeight: '600' },
   onlineDot: {
-    position: 'absolute', bottom: 1, right: 1,
-    width: 14, height: 14, borderRadius: 7,
+    position: 'absolute', bottom: 0, right: 0,
+    width: 12, height: 12, borderRadius: 6,
     backgroundColor: colors.online,
-    borderWidth: 2.5, borderColor: colors.bg,
+    borderWidth: 2, borderColor: '#292F3F',
   },
   convInfo: { flex: 1, marginRight: 10 },
   convName: {
-    fontSize: font.sizes.md, fontWeight: font.weights.semibold,
-    color: colors.textPrimary, marginBottom: 3,
+    fontSize: 15, fontWeight: '400',
+    color: colors.white, marginBottom: 3,
   },
-  convPreview: { fontSize: font.sizes.sm, color: colors.textSecondary },
+  convPreview: { fontSize: 13, fontWeight: '300', color: colors.white },
   convMeta: { alignItems: 'flex-end', gap: 6 },
-  convTime: { fontSize: 11, color: colors.textSecondary },
+  convTime: { fontSize: 15, fontWeight: '400', color: colors.white },
   badge: {
     backgroundColor: colors.purple, borderRadius: 11,
     minWidth: 22, height: 22,
     alignItems: 'center', justifyContent: 'center', paddingHorizontal: 6,
   },
-  badgeText: { color: colors.white, fontSize: 11, fontWeight: font.weights.bold },
+  badgeText: { color: colors.white, fontSize: 11, fontWeight: '700' },
 
   // Swipe actions
   swipeActionsRow: { flexDirection: 'row' },
@@ -624,57 +576,49 @@ const styles = StyleSheet.create({
   swipeMore: { backgroundColor: '#6B6B80' },
   swipeArchive: { backgroundColor: '#8E8E93' },
   swipeDelete: { backgroundColor: colors.danger },
-  swipeActionText: { color: colors.white, fontSize: 10, fontWeight: font.weights.medium },
+  swipeActionText: { color: colors.white, fontSize: 10, fontWeight: '500' },
 
-  // Floating menu pill
-  menuPill: {
-    position: 'absolute', bottom: 32, alignSelf: 'center',
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: colors.bgCard, borderRadius: 22,
-    paddingHorizontal: 20, paddingVertical: 12,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35, shadowRadius: 10, elevation: 10,
-  },
-  menuPillText: { color: colors.white, fontSize: 15, fontWeight: font.weights.semibold },
-  menuPillDot: {
-    width: 8, height: 8, borderRadius: 4,
-    backgroundColor: colors.online,
-  },
-
-  // FAB
+  // FAB — bottom right black circle
   fab: {
-    position: 'absolute', right: 24, bottom: 90,
-    width: 56, height: 56, borderRadius: 28,
-    backgroundColor: colors.purple,
-    alignItems: 'center', justifyContent: 'center',
-    shadowColor: colors.purple, shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4, shadowRadius: 8, elevation: 8,
+    position: 'absolute',
+    right: 24,
+    bottom: 32,
+    width: 45,
+    height: 45,
+    borderRadius: 22,
+    backgroundColor: '#000000',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 8,
   },
-  fabText: { color: colors.white, fontSize: 28, lineHeight: 32 },
 
-  // Bottom sheet overlay
+  // Bottom sheet overlay — dark themed
   overlay: {
     flex: 1, backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: colors.sheetBg,
+    backgroundColor: '#292F3F',
     borderTopLeftRadius: 24, borderTopRightRadius: 24,
     paddingTop: 10, paddingBottom: 40, paddingHorizontal: 20,
     maxHeight: '75%',
   },
   sheetHandle: {
     width: 40, height: 4, borderRadius: 2,
-    backgroundColor: '#D0D0D8',
+    backgroundColor: '#565E70',
     alignSelf: 'center', marginBottom: 18,
   },
   sheetSearch: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: colors.sheetInput, borderRadius: radius.pill,
-    height: 48, paddingHorizontal: 16, gap: 10,
+    backgroundColor: '#000000', borderRadius: 10,
+    height: 40, paddingHorizontal: 14, gap: 10,
     marginBottom: 20,
   },
-  sheetInput: { flex: 1, color: colors.sheetText, fontSize: 15 },
+  sheetInput: { flex: 1, color: colors.white, fontSize: 14 },
   sheetGrid: {
     flexDirection: 'row', justifyContent: 'space-around', marginBottom: 24,
   },
@@ -685,11 +629,11 @@ const styles = StyleSheet.create({
     width: 52, height: 52, borderRadius: 26,
     alignItems: 'center', justifyContent: 'center',
   },
-  sheetGridLabel: { color: colors.sheetText, fontSize: 12, fontWeight: font.weights.medium },
+  sheetGridLabel: { color: colors.white, fontSize: 12, fontWeight: '500' },
   sheetFriends: { marginBottom: 20 },
   sheetFriendsTitle: {
-    fontSize: font.sizes.md, fontWeight: font.weights.bold,
-    color: colors.sheetText, marginBottom: 14,
+    fontSize: 15, fontWeight: '400',
+    color: colors.white, marginBottom: 14,
   },
   sheetFriendsRow: { flexDirection: 'row', justifyContent: 'space-around' },
   sheetFriendItem: { alignItems: 'center', width: 64 },
@@ -697,8 +641,8 @@ const styles = StyleSheet.create({
     width: 48, height: 48, borderRadius: 24,
     alignItems: 'center', justifyContent: 'center', marginBottom: 6,
   },
-  sheetFriendInitials: { color: colors.white, fontSize: 16, fontWeight: font.weights.bold },
-  sheetFriendName: { color: colors.sheetMuted, fontSize: 11, textAlign: 'center' },
+  sheetFriendInitials: { color: colors.white, fontSize: 16, fontWeight: '700' },
+  sheetFriendName: { color: colors.textMuted, fontSize: 11, textAlign: 'center' },
   sheetResults: { marginBottom: 16 },
   sheetResultItem: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
@@ -708,14 +652,14 @@ const styles = StyleSheet.create({
     width: 40, height: 40, borderRadius: 20,
     alignItems: 'center', justifyContent: 'center',
   },
-  sheetResultInitials: { color: colors.white, fontSize: 14, fontWeight: font.weights.bold },
-  sheetResultName: { color: colors.sheetText, fontSize: 15 },
-  sheetNoResult: { color: colors.sheetMuted, fontSize: 14, textAlign: 'center', paddingVertical: 16 },
+  sheetResultInitials: { color: colors.white, fontSize: 14, fontWeight: '700' },
+  sheetResultName: { color: colors.white, fontSize: 15 },
+  sheetNoResult: { color: colors.textMuted, fontSize: 14, textAlign: 'center', paddingVertical: 16 },
   sheetClose: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, borderRadius: radius.pill,
-    backgroundColor: colors.sheetInput,
-    height: 48,
+    gap: 8, borderRadius: 10,
+    backgroundColor: '#000000',
+    height: 40,
   },
-  sheetCloseText: { color: colors.sheetMuted, fontSize: 15, fontWeight: font.weights.semibold },
+  sheetCloseText: { color: colors.textMuted, fontSize: 15, fontWeight: '500' },
 });
