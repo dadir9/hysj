@@ -11,6 +11,11 @@
       "sourceType": "github",
       "computedHash": "c5ddd50338549d28b2edd45cec131d6a231349b0671a093b3b7e3b51d4780ab8"
     },
+    "supabase-postgres-best-practices": {
+      "source": "supabase/agent-skills",
+      "sourceType": "github",
+      "computedHash": "e3ba3d760c5f4cc43b02a91fb8924f726c7818f95cc35d79d0a606ca622b72f5"
+    },
     "ui-ux-pro-max": {
       "source": "nextlevelbuilder/ui-ux-pro-max-skill",
       "sourceType": "github",

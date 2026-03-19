@@ -21,10 +21,13 @@ export const getHub = () => _connection;
 export const startHub = async (): Promise<SignalR.HubConnection> => {
   if (_connection?.state === SignalR.HubConnectionState.Connected) return _connection;
 
-  const token = await secureGetItem('token');
-
   _connection = new SignalR.HubConnectionBuilder()
-    .withUrl(HUB_URL, { accessTokenFactory: () => token ?? '' })
+    .withUrl(HUB_URL, {
+      accessTokenFactory: async () => {
+        const token = await secureGetItem('token');
+        return token ?? '';
+      },
+    })
     .withAutomaticReconnect()
     .configureLogging(SignalR.LogLevel.Warning)
     .build();
@@ -244,4 +247,73 @@ export const extractX3DHHandshake = (blob: string): {
   const parsed = wireToEncrypted(blob);
   return parsed?.x3dh ?? null;
 };
+
+// ── Group Message Handler ────────────────────────────
+
+export type GroupMessageCallback = (msg: {
+  messageId: string;
+  groupId: string;
+  senderDisplay: string;
+  encryptedBlob: string;
+}) => void;
+
+const _groupMessageCallbacks: GroupMessageCallback[] = [];
+
+export function onGroupMessage(callback: GroupMessageCallback): () => void {
+  _groupMessageCallbacks.push(callback);
+  return () => {
+    const idx = _groupMessageCallbacks.indexOf(callback);
+    if (idx >= 0) _groupMessageCallbacks.splice(idx, 1);
+  };
+}
+
+export function registerGroupMessageListener(): void {
+  if (!_connection) return;
+  // Backend sends 4 separate args: groupId, messageId, senderDisplay, encryptedBlob
+  _connection.on('ReceiveGroupMessage', (groupId: string, messageId: string, senderDisplay: string, encryptedBlob: string) => {
+    const msg = { groupId, messageId, senderDisplay, encryptedBlob };
+    for (const cb of _groupMessageCallbacks) {
+      try { cb(msg); } catch { /* ignore */ }
+    }
+  });
+}
+
+// ── Delivery Status Events ───────────────────────────
+
+export type DeliveryStatusCallback = (data: { messageId: string; status: 'delivered' | 'queued' | 'read' }) => void;
+
+const _deliveryStatusCallbacks: DeliveryStatusCallback[] = [];
+
+export function onDeliveryStatus(callback: DeliveryStatusCallback): () => void {
+  _deliveryStatusCallbacks.push(callback);
+  return () => {
+    const idx = _deliveryStatusCallbacks.indexOf(callback);
+    if (idx >= 0) _deliveryStatusCallbacks.splice(idx, 1);
+  };
+}
+
+export function registerDeliveryStatusListeners(): void {
+  if (!_connection) return;
+
+  // Backend sends: SendAsync("MessageDelivered", messageId) — plain string
+  _connection.on('MessageDelivered', (messageId: string) => {
+    for (const cb of _deliveryStatusCallbacks) {
+      try { cb({ messageId, status: 'delivered' }); } catch { /* ignore */ }
+    }
+  });
+
+  // Backend sends: SendAsync("MessageQueued", messageId) — plain string
+  _connection.on('MessageQueued', (messageId: string) => {
+    for (const cb of _deliveryStatusCallbacks) {
+      try { cb({ messageId, status: 'queued' }); } catch { /* ignore */ }
+    }
+  });
+
+  // Backend sends: SendAsync("MessageRead", messageId, readByUserId) — two strings
+  _connection.on('MessageRead', (messageId: string, _readBy: string) => {
+    for (const cb of _deliveryStatusCallbacks) {
+      try { cb({ messageId, status: 'read' }); } catch { /* ignore */ }
+    }
+  });
+}
 

@@ -63,6 +63,7 @@ if (builder.Environment.IsDevelopment() && !string.IsNullOrEmpty(postgresConn))
 
 if (useSqlite || string.IsNullOrEmpty(postgresConn))
 {
+    useSqlite = true;
     builder.Services.AddDbContext<HysjDbContext>(options =>
         options.UseSqlite("Data Source=hysj_dev.db"));
 }

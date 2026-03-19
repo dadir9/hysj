@@ -12,7 +12,8 @@ import { RootStackParamList, Conversation } from '../types';
 import { colors, font, spacing, radius } from '../constants/theme';
 import { getSession, getInitials, getAvatarColor, clearSession } from '../services/auth';
 import { getConversations, upsertConversation, deleteConversation } from '../services/localStore';
-import { startHub, stopHub, decryptReceived, loadRatchetState, acknowledgeDelivery } from '../services/chatHub';
+import { startHub, stopHub, decryptReceived, loadRatchetState, acknowledgeDelivery, registerGroupMessageListener, onGroupMessage, registerDeliveryStatusListeners } from '../services/chatHub';
+import { registerWipeListener, onWipeExecuted } from '../services/wipeService';
 import { getUserStatusBatch } from '../services/api';
 
 type Props = { navigation: StackNavigationProp<RootStackParamList, 'ConversationList'> };
@@ -51,6 +52,8 @@ export default function ConversationListScreen({ navigation }: Props) {
 
   useEffect(() => {
     let mounted = true;
+    const cleanups: (() => void)[] = [];
+
     (async () => {
       const s = await getSession();
       if (!s) { navigation.replace('Login'); return; }
@@ -102,6 +105,46 @@ export default function ConversationListScreen({ navigation }: Props) {
           });
           if (mounted) reload();
         });
+
+        // Register group message listener
+        registerGroupMessageListener();
+        const unsubGroup = onGroupMessage(async (msg) => {
+          if (!mounted) return;
+
+          acknowledgeDelivery(msg.messageId, s.deviceId).catch(() => {});
+
+          const convs = await getConversations();
+          const groupConv = convs.find(c => c.id === msg.groupId);
+
+          const ratchet = groupConv ? await loadRatchetState(groupConv.id) : null;
+          if (!ratchet) return;
+
+          const decoded = await decryptReceived(msg.encryptedBlob, msg.groupId, ratchet);
+          const displayName = msg.senderDisplay || decoded?.senderUsername || 'Unknown';
+          const text = decoded?.text || '[encrypted]';
+
+          await upsertConversation({
+            id: msg.groupId,
+            peerUserId: groupConv?.peerUserId ?? msg.groupId,
+            peerUsername: groupConv?.peerUsername ?? 'Group',
+            peerDeviceId: groupConv?.peerDeviceId ?? '',
+            lastMessagePreview: `${displayName}: ${text}`,
+            lastMessageAt: new Date().toISOString(),
+            unreadCount: (groupConv?.unreadCount ?? 0) + 1,
+          });
+          if (mounted) reload();
+        });
+        cleanups.push(unsubGroup);
+
+        // Register delivery status listeners
+        registerDeliveryStatusListeners();
+
+        // Register wipe listener and navigate to Login on wipe
+        registerWipeListener();
+        const unsubWipe = onWipeExecuted(() => {
+          if (mounted) navigation.replace('Login');
+        });
+        cleanups.push(unsubWipe);
       } catch (e) {
         console.log('Hub connect failed (backend offline?):', e);
       }
@@ -109,6 +152,9 @@ export default function ConversationListScreen({ navigation }: Props) {
 
     return () => {
       mounted = false;
+      for (const cleanup of cleanups) {
+        try { cleanup(); } catch { /* ignore */ }
+      }
     };
   }, []);
 
