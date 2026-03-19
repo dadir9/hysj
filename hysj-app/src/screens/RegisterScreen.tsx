@@ -79,6 +79,13 @@ export default function RegisterScreen({ navigation }: Props) {
     c.name.toLowerCase().includes(search.toLowerCase()) || c.dial.includes(search)
   );
 
+  const openModal = () => setPickerOpen(true);
+
+  const closeModal = () => {
+    setPickerOpen(false);
+    setSearch('');
+  };
+
   const handleRegister = async () => {
     setError('');
     if (!phone.trim()) { setError('Phone number is required'); return; }
@@ -145,117 +152,140 @@ export default function RegisterScreen({ navigation }: Props) {
   };
 
   return (
-    <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        {/* Back button */}
-        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-          <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />
-        </TouchableOpacity>
-
-        {/* Header with logo and title */}
-        <View style={styles.header}>
-          <Image source={require('../../assets/logo.png')} style={styles.headerLogo} resizeMode="contain" />
-          <Text style={styles.title}>Create Account</Text>
-          <Text style={styles.subtitle}>End-to-end encrypted from day one</Text>
-        </View>
-
-        {/* Security badge */}
-        <View style={styles.securityBadge}>
-          <Ionicons name="shield-checkmark" size={16} color={colors.shield} />
-          <Text style={styles.securityText}>Your keys are generated on-device only</Text>
-        </View>
-
-        {/* Phone Number */}
-        <Text style={styles.label}>PHONE NUMBER</Text>
-        <View style={styles.phoneRow}>
-          <TouchableOpacity style={styles.countryBtn} onPress={() => setPickerOpen(true)} activeOpacity={0.7}>
-            <Text style={styles.flag}>{country.flag}</Text>
-            <Text style={styles.callingCode}>+{country.dial}</Text>
-            <Ionicons name="chevron-down" size={14} color={colors.textMuted} style={{ marginLeft: 2 }} />
-          </TouchableOpacity>
-          <View style={styles.phoneInputWrap}>
-            <TextInput
-              style={styles.input}
-              placeholder="000 00 000"
-              placeholderTextColor={colors.textMuted}
-              value={phone}
-              onChangeText={setPhone}
-              keyboardType="phone-pad"
-              returnKeyType="done"
-              onSubmitEditing={handleRegister}
+    <KeyboardAvoidingView
+      style={styles.root}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Logo */}
+        <View style={styles.logoWrap}>
+          <View style={styles.logoBg}>
+            <Image
+              source={require('../../assets/logo.png')}
+              style={styles.logoImage}
+              resizeMode="contain"
             />
           </View>
         </View>
 
-        {/* Password */}
-        <Text style={styles.label}>PASSWORD</Text>
-        <View style={styles.inputWrap}>
+        {/* Title */}
+        <Text style={styles.title}>hysj</Text>
+
+        {/* Subtitle */}
+        <Text style={styles.subtitle}>Create your account</Text>
+
+        {/* Form */}
+        <View style={styles.form}>
+          {/* Phone row */}
+          <View style={styles.phoneRow}>
+            <TouchableOpacity
+              style={styles.countryBtn}
+              onPress={openModal}
+              activeOpacity={0.7}
+              accessibilityLabel={`Select country, currently ${country.name} +${country.dial}`}
+              accessibilityRole="button"
+            >
+              <Text style={styles.flag}>{country.flag}</Text>
+              <Text style={styles.dialCode}>+{country.dial}</Text>
+              <Ionicons name="chevron-down" size={14} color={colors.textMuted} />
+            </TouchableOpacity>
+
+            <TextInput
+              style={styles.phoneInput}
+              placeholder="Phone number"
+              placeholderTextColor={colors.textDim}
+              value={phone}
+              onChangeText={setPhone}
+              keyboardType="phone-pad"
+              returnKeyType="next"
+              accessibilityLabel="Phone number"
+            />
+          </View>
+
+          {/* Password */}
           <TextInput
             style={styles.input}
-            placeholder="Create password"
-            placeholderTextColor={colors.textMuted}
+            placeholder="Password"
+            placeholderTextColor={colors.textDim}
             value={password}
             onChangeText={setPassword}
             secureTextEntry
             returnKeyType="next"
+            accessibilityLabel="Password"
           />
-        </View>
-        <Text style={styles.passwordHint}>Min. 8 characters</Text>
 
-        {/* Confirm Password */}
-        <Text style={styles.label}>CONFIRM PASSWORD</Text>
-        <View style={styles.inputWrap}>
+          {/* Confirm Password */}
           <TextInput
             style={styles.input}
             placeholder="Confirm password"
-            placeholderTextColor={colors.textMuted}
+            placeholderTextColor={colors.textDim}
             value={confirmPassword}
             onChangeText={setConfirmPassword}
             secureTextEntry
             returnKeyType="done"
             onSubmitEditing={handleRegister}
+            accessibilityLabel="Confirm password"
           />
+
+          {/* Password hint */}
+          <Text style={styles.passwordHint}>Min. 8 characters</Text>
+
+          {/* Error */}
+          {!!error && (
+            <View style={styles.errorRow} accessible={true} accessibilityRole="alert" accessibilityLabel={error}>
+              <Ionicons name="alert-circle" size={16} color={colors.danger} />
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          )}
+
+          {/* Create Account button */}
+          <TouchableOpacity
+            style={[styles.signInBtn, busy && styles.signInBtnDisabled]}
+            onPress={handleRegister}
+            disabled={busy}
+            activeOpacity={0.8}
+            accessibilityLabel={busy ? 'Creating account' : 'Create account'}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: busy }}
+          >
+            {busy
+              ? <ActivityIndicator color={colors.white} />
+              : <Text style={styles.signInText}>Create Account</Text>}
+          </TouchableOpacity>
+
+          {/* Sign in link */}
+          <View style={styles.registerRow}>
+            <Text style={styles.registerText}>Already have an account?</Text>
+            <TouchableOpacity onPress={() => navigation.goBack()} activeOpacity={0.7}>
+              <Text style={styles.registerLink}> Sign in</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
-        {/* Error message */}
-        {!!error && (
-          <View style={styles.errorContainer}>
-            <Ionicons name="alert-circle" size={16} color={colors.danger} style={{ marginRight: 8 }} />
-            <Text style={styles.errorText}>{error}</Text>
-          </View>
-        )}
-
-        {/* Submit button */}
-        <TouchableOpacity
-          style={[styles.btn, busy && styles.btnDisabled]}
-          onPress={handleRegister}
-          disabled={busy}
-          activeOpacity={0.8}
-        >
-          {busy
-            ? <ActivityIndicator color={colors.white} />
-            : <Text style={styles.btnText}>Create Account</Text>
-          }
-        </TouchableOpacity>
-
-        {/* Sign in link */}
-        <View style={styles.loginRow}>
-          <Text style={styles.loginText}>Already have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text style={styles.loginLink}>Sign in</Text>
-          </TouchableOpacity>
+        {/* Footer */}
+        <View style={styles.footer}>
+          <Ionicons name="shield-checkmark" size={12} color={colors.textMuted} />
+          <Text style={styles.footerText}>Keys generated on-device only</Text>
         </View>
       </ScrollView>
 
-      {/* Country Picker Modal */}
+      {/* Country picker modal */}
       <Modal visible={pickerOpen} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
+          <TouchableOpacity
+            style={styles.modalBackdrop}
+            activeOpacity={1}
+            onPress={closeModal}
+          />
           <View style={styles.modalSheet}>
-            {/* Modal handle */}
             <View style={styles.modalHandle} />
             <Text style={styles.modalTitle}>Select Country</Text>
+
             <View style={styles.searchWrap}>
-              <Ionicons name="search" size={18} color={colors.textMuted} style={{ marginRight: 10 }} />
+              <Ionicons name="search" size={18} color={colors.textMuted} />
               <TextInput
                 style={styles.searchInput}
                 placeholder="Search country or code..."
@@ -265,6 +295,7 @@ export default function RegisterScreen({ navigation }: Props) {
                 autoFocus
               />
             </View>
+
             <FlatList
               data={filtered}
               keyExtractor={item => item.code}
@@ -273,22 +304,30 @@ export default function RegisterScreen({ navigation }: Props) {
                 <TouchableOpacity
                   style={[
                     styles.countryItem,
-                    item.code === country.code && styles.countryItemSelected,
+                    item.code === country.code && styles.countryItemActive,
                   ]}
-                  onPress={() => { setCountry(item); setPickerOpen(false); setSearch(''); }}
+                  onPress={() => {
+                    setCountry(item);
+                    closeModal();
+                  }}
                   activeOpacity={0.6}
                 >
                   <Text style={styles.countryFlag}>{item.flag}</Text>
                   <Text style={styles.countryName}>{item.name}</Text>
                   <Text style={styles.countryDial}>+{item.dial}</Text>
                   {item.code === country.code && (
-                    <Ionicons name="checkmark-circle" size={20} color={colors.purple} style={{ marginLeft: 8 }} />
+                    <Ionicons name="checkmark" size={18} color={colors.purple} />
                   )}
                 </TouchableOpacity>
               )}
             />
-            <TouchableOpacity style={styles.closeBtn} onPress={() => { setPickerOpen(false); setSearch(''); }} activeOpacity={0.8}>
-              <Text style={styles.closeBtnText}>Close</Text>
+
+            <TouchableOpacity
+              style={styles.cancelBtn}
+              onPress={closeModal}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.cancelText}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -300,289 +339,254 @@ export default function RegisterScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: colors.bg,
+    backgroundColor: '#2D2D3A',
   },
   scroll: {
     flexGrow: 1,
-    paddingHorizontal: spacing.lg,
-    paddingTop: Platform.OS === 'ios' ? 56 : 44,
-    paddingBottom: spacing.xxl,
+    alignItems: 'center',
+    paddingHorizontal: 28,
+    paddingTop: 60,
+    paddingBottom: 32,
   },
 
-  /* Back button */
-  backBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.full,
-    backgroundColor: colors.bgSurface,
+  /* Logo */
+  logoWrap: {
+    marginBottom: 24,
+  },
+  logoBg: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#353545',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: spacing.lg,
+  },
+  logoImage: {
+    width: 52,
+    height: 52,
   },
 
-  /* Header */
-  header: {
-    alignItems: 'center',
-    marginBottom: spacing.lg,
-  },
-  headerLogo: {
-    width: 56,
-    height: 56,
-    marginBottom: spacing.md,
-  },
+  /* Title */
   title: {
-    fontSize: font.sizes.hero,
-    fontWeight: font.weights.bold,
-    color: colors.textPrimary,
-    marginBottom: 6,
-    letterSpacing: -0.5,
-  },
-  subtitle: {
-    fontSize: font.sizes.sm,
-    color: colors.textSecondary,
-    letterSpacing: 0.2,
-  },
-
-  /* Security badge */
-  securityBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(16,185,129,0.08)',
-    borderRadius: radius.pill,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    alignSelf: 'center',
-    marginBottom: spacing.xl,
-    gap: 8,
-  },
-  securityText: {
-    fontSize: font.sizes.xs,
-    color: colors.shield,
-    fontWeight: font.weights.medium,
-    letterSpacing: 0.2,
-  },
-
-  /* Labels */
-  label: {
-    fontSize: font.sizes.xs,
-    fontWeight: font.weights.bold,
-    color: colors.textMuted,
-    letterSpacing: 1.5,
+    fontSize: 40,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: 2,
     marginBottom: 8,
-    marginLeft: 4,
+  },
+
+  /* Subtitle */
+  subtitle: {
+    fontSize: 14,
+    color: colors.textMuted,
+    marginBottom: 40,
+  },
+
+  /* Form */
+  form: {
+    width: '100%',
+    maxWidth: 400,
   },
 
   /* Phone row */
   phoneRow: {
     flexDirection: 'row',
     gap: 10,
-    marginBottom: 20,
+    marginBottom: 14,
   },
   countryBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.bgInput,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.borderMid,
+    backgroundColor: '#353545',
+    borderRadius: 16,
     height: 54,
     paddingHorizontal: 14,
     gap: 6,
   },
   flag: {
-    fontSize: 22,
+    fontSize: 20,
   },
-  callingCode: {
-    color: colors.textPrimary,
-    fontSize: font.sizes.md,
-    fontWeight: font.weights.semibold,
+  dialCode: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '600',
   },
-  phoneInputWrap: {
+  phoneInput: {
     flex: 1,
-    backgroundColor: colors.bgInput,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.borderMid,
+    backgroundColor: '#353545',
+    borderRadius: 16,
     height: 54,
-    justifyContent: 'center',
-    paddingHorizontal: spacing.md + 2,
+    paddingHorizontal: 18,
+    color: '#FFFFFF',
+    fontSize: 15,
   },
 
   /* Input fields */
-  inputWrap: {
-    backgroundColor: colors.bgInput,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.borderMid,
-    height: 54,
-    justifyContent: 'center',
-    paddingHorizontal: spacing.md + 2,
-    marginBottom: 6,
-  },
   input: {
-    color: colors.textPrimary,
-    fontSize: font.sizes.md,
+    width: '100%',
+    backgroundColor: '#353545',
+    borderRadius: 16,
+    height: 54,
+    paddingHorizontal: 18,
+    color: '#FFFFFF',
+    fontSize: 15,
+    marginBottom: 14,
   },
 
   /* Password hint */
   passwordHint: {
-    fontSize: font.sizes.xs,
+    fontSize: 12,
     color: colors.textMuted,
     marginLeft: 4,
+    marginTop: -6,
     marginBottom: 20,
   },
 
-  /* Error message */
-  errorContainer: {
+  /* Error */
+  errorRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.dangerBg,
-    borderRadius: radius.md,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    marginBottom: spacing.md,
+    gap: 8,
+    marginBottom: 16,
   },
   errorText: {
     color: colors.danger,
-    fontSize: font.sizes.sm,
+    fontSize: 13,
     flex: 1,
-    lineHeight: 18,
   },
 
-  /* Primary button */
-  btn: {
+  /* Create Account button */
+  signInBtn: {
     width: '100%',
-    height: 56,
-    borderRadius: radius.pill,
-    backgroundColor: colors.purple,
+    height: 54,
+    borderRadius: 28,
+    backgroundColor: '#7C3AED',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: spacing.sm,
-    marginBottom: spacing.lg,
-    shadowColor: colors.purple,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 6,
   },
-  btnDisabled: {
-    opacity: 0.6,
+  signInBtnDisabled: {
+    opacity: 0.5,
   },
-  btnText: {
-    fontSize: font.sizes.lg,
-    fontWeight: font.weights.bold,
-    color: colors.white,
-    letterSpacing: 0.3,
+  signInText: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '700',
   },
 
-  /* Sign in row */
-  loginRow: {
+  /* Sign in link */
+  registerRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: spacing.xs,
+    marginTop: 24,
   },
-  loginText: {
+  registerText: {
     color: colors.textSecondary,
-    fontSize: font.sizes.sm,
+    fontSize: 14,
   },
-  loginLink: {
+  registerLink: {
     color: colors.purpleLight,
-    fontSize: font.sizes.sm,
-    fontWeight: font.weights.bold,
+    fontSize: 14,
+    fontWeight: '700',
   },
 
-  /* Modal overlay */
+  /* Footer */
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 'auto' as any,
+    paddingTop: 32,
+  },
+  footerText: {
+    color: colors.textMuted,
+    fontSize: 12,
+  },
+
+  /* Modal */
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'flex-end',
   },
+  modalBackdrop: {
+    flex: 1,
+  },
   modalSheet: {
-    backgroundColor: colors.bgCard,
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    paddingHorizontal: spacing.lg,
-    paddingBottom: Platform.OS === 'ios' ? 34 : spacing.lg,
-    maxHeight: '80%',
+    backgroundColor: '#353545',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 20,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
+    maxHeight: '75%',
   },
   modalHandle: {
-    width: 40,
+    width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: colors.borderMid,
+    backgroundColor: 'rgba(255,255,255,0.15)',
     alignSelf: 'center',
     marginTop: 12,
     marginBottom: 16,
   },
   modalTitle: {
-    color: colors.white,
-    fontSize: font.sizes.xl,
-    fontWeight: font.weights.bold,
-    marginBottom: spacing.md,
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '700',
     textAlign: 'center',
+    marginBottom: 16,
   },
-
-  /* Search inside modal */
   searchWrap: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.bgInput,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.borderMid,
+    backgroundColor: '#2D2D3A',
+    borderRadius: 14,
     paddingHorizontal: 14,
-    marginBottom: spacing.md,
-    height: 48,
+    gap: 10,
+    marginBottom: 12,
   },
   searchInput: {
     flex: 1,
-    color: colors.white,
-    fontSize: font.sizes.md,
+    color: '#FFFFFF',
+    paddingVertical: 14,
+    fontSize: 15,
   },
-
-  /* Country list items */
   countryItem: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 14,
-    paddingHorizontal: 4,
+    paddingHorizontal: 8,
     gap: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.borderMid,
+    borderBottomColor: 'rgba(255,255,255,0.06)',
   },
-  countryItemSelected: {
-    backgroundColor: 'rgba(124,58,237,0.08)',
-    borderRadius: radius.md,
-    marginHorizontal: -4,
-    paddingHorizontal: 8,
+  countryItemActive: {
+    backgroundColor: 'rgba(124, 58, 237, 0.1)',
+    borderRadius: 10,
   },
   countryFlag: {
-    fontSize: 24,
+    fontSize: 22,
   },
   countryName: {
     flex: 1,
-    color: colors.textPrimary,
-    fontSize: font.sizes.md,
-    fontWeight: font.weights.medium,
+    color: '#FFFFFF',
+    fontSize: 15,
   },
   countryDial: {
-    color: colors.textSecondary,
-    fontSize: font.sizes.sm,
-    fontWeight: font.weights.medium,
+    color: colors.textMuted,
+    fontSize: 13,
+    marginRight: 4,
   },
-
-  /* Close button in modal */
-  closeBtn: {
-    marginTop: spacing.md,
-    backgroundColor: colors.bgElevated,
-    borderRadius: radius.pill,
-    paddingVertical: 14,
+  cancelBtn: {
+    marginTop: 12,
+    borderRadius: 28,
+    height: 50,
     alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#2D2D3A',
   },
-  closeBtnText: {
-    color: colors.white,
-    fontSize: font.sizes.lg,
-    fontWeight: font.weights.semibold,
+  cancelText: {
+    color: colors.textSecondary,
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

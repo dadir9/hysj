@@ -7,67 +7,68 @@ import {
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList } from '../types';
-import { colors, font, spacing } from '../constants/theme';
+import { colors, font, spacing, radius } from '../constants/theme';
 import { login } from '../services/api';
 import { saveSession } from '../services/auth';
 
 type Props = { navigation: StackNavigationProp<RootStackParamList, 'Login'> };
 
 const COUNTRIES = [
-  { code: 'NO', flag: '🇳🇴', name: 'Norway', dial: '47' },
-  { code: 'US', flag: '🇺🇸', name: 'United States', dial: '1' },
-  { code: 'GB', flag: '🇬🇧', name: 'United Kingdom', dial: '44' },
-  { code: 'SE', flag: '🇸🇪', name: 'Sweden', dial: '46' },
-  { code: 'DK', flag: '🇩🇰', name: 'Denmark', dial: '45' },
-  { code: 'FI', flag: '🇫🇮', name: 'Finland', dial: '358' },
-  { code: 'DE', flag: '🇩🇪', name: 'Germany', dial: '49' },
-  { code: 'FR', flag: '🇫🇷', name: 'France', dial: '33' },
-  { code: 'ES', flag: '🇪🇸', name: 'Spain', dial: '34' },
-  { code: 'IT', flag: '🇮🇹', name: 'Italy', dial: '39' },
-  { code: 'NL', flag: '🇳🇱', name: 'Netherlands', dial: '31' },
-  { code: 'PL', flag: '🇵🇱', name: 'Poland', dial: '48' },
-  { code: 'RU', flag: '🇷🇺', name: 'Russia', dial: '7' },
-  { code: 'TR', flag: '🇹🇷', name: 'Turkey', dial: '90' },
-  { code: 'IN', flag: '🇮🇳', name: 'India', dial: '91' },
-  { code: 'CN', flag: '🇨🇳', name: 'China', dial: '86' },
-  { code: 'JP', flag: '🇯🇵', name: 'Japan', dial: '81' },
-  { code: 'KR', flag: '🇰🇷', name: 'South Korea', dial: '82' },
-  { code: 'BR', flag: '🇧🇷', name: 'Brazil', dial: '55' },
-  { code: 'MX', flag: '🇲🇽', name: 'Mexico', dial: '52' },
-  { code: 'AU', flag: '🇦🇺', name: 'Australia', dial: '61' },
-  { code: 'CA', flag: '🇨🇦', name: 'Canada', dial: '1' },
-  { code: 'CH', flag: '🇨🇭', name: 'Switzerland', dial: '41' },
-  { code: 'AT', flag: '🇦🇹', name: 'Austria', dial: '43' },
-  { code: 'BE', flag: '🇧🇪', name: 'Belgium', dial: '32' },
-  { code: 'PT', flag: '🇵🇹', name: 'Portugal', dial: '351' },
-  { code: 'GR', flag: '🇬🇷', name: 'Greece', dial: '30' },
-  { code: 'PK', flag: '🇵🇰', name: 'Pakistan', dial: '92' },
-  { code: 'NG', flag: '🇳🇬', name: 'Nigeria', dial: '234' },
-  { code: 'ZA', flag: '🇿🇦', name: 'South Africa', dial: '27' },
-  { code: 'EG', flag: '🇪🇬', name: 'Egypt', dial: '20' },
-  { code: 'SA', flag: '🇸🇦', name: 'Saudi Arabia', dial: '966' },
-  { code: 'AE', flag: '🇦🇪', name: 'UAE', dial: '971' },
-  { code: 'IL', flag: '🇮🇱', name: 'Israel', dial: '972' },
-  { code: 'UA', flag: '🇺🇦', name: 'Ukraine', dial: '380' },
-  { code: 'AR', flag: '🇦🇷', name: 'Argentina', dial: '54' },
-  { code: 'CO', flag: '🇨🇴', name: 'Colombia', dial: '57' },
-  { code: 'CL', flag: '🇨🇱', name: 'Chile', dial: '56' },
-  { code: 'PH', flag: '🇵🇭', name: 'Philippines', dial: '63' },
-  { code: 'ID', flag: '🇮🇩', name: 'Indonesia', dial: '62' },
-  { code: 'MY', flag: '🇲🇾', name: 'Malaysia', dial: '60' },
-  { code: 'SG', flag: '🇸🇬', name: 'Singapore', dial: '65' },
-  { code: 'TH', flag: '🇹🇭', name: 'Thailand', dial: '66' },
-  { code: 'VN', flag: '🇻🇳', name: 'Vietnam', dial: '84' },
-  { code: 'NZ', flag: '🇳🇿', name: 'New Zealand', dial: '64' },
-  { code: 'IE', flag: '🇮🇪', name: 'Ireland', dial: '353' },
-  { code: 'CZ', flag: '🇨🇿', name: 'Czech Republic', dial: '420' },
-  { code: 'HU', flag: '🇭🇺', name: 'Hungary', dial: '36' },
-  { code: 'RO', flag: '🇷🇴', name: 'Romania', dial: '40' },
+  { code: 'NO', flag: '\u{1F1F3}\u{1F1F4}', name: 'Norway', dial: '47' },
+  { code: 'US', flag: '\u{1F1FA}\u{1F1F8}', name: 'United States', dial: '1' },
+  { code: 'GB', flag: '\u{1F1EC}\u{1F1E7}', name: 'United Kingdom', dial: '44' },
+  { code: 'SE', flag: '\u{1F1F8}\u{1F1EA}', name: 'Sweden', dial: '46' },
+  { code: 'DK', flag: '\u{1F1E9}\u{1F1F0}', name: 'Denmark', dial: '45' },
+  { code: 'FI', flag: '\u{1F1EB}\u{1F1EE}', name: 'Finland', dial: '358' },
+  { code: 'DE', flag: '\u{1F1E9}\u{1F1EA}', name: 'Germany', dial: '49' },
+  { code: 'FR', flag: '\u{1F1EB}\u{1F1F7}', name: 'France', dial: '33' },
+  { code: 'ES', flag: '\u{1F1EA}\u{1F1F8}', name: 'Spain', dial: '34' },
+  { code: 'IT', flag: '\u{1F1EE}\u{1F1F9}', name: 'Italy', dial: '39' },
+  { code: 'NL', flag: '\u{1F1F3}\u{1F1F1}', name: 'Netherlands', dial: '31' },
+  { code: 'PL', flag: '\u{1F1F5}\u{1F1F1}', name: 'Poland', dial: '48' },
+  { code: 'RU', flag: '\u{1F1F7}\u{1F1FA}', name: 'Russia', dial: '7' },
+  { code: 'TR', flag: '\u{1F1F9}\u{1F1F7}', name: 'Turkey', dial: '90' },
+  { code: 'IN', flag: '\u{1F1EE}\u{1F1F3}', name: 'India', dial: '91' },
+  { code: 'CN', flag: '\u{1F1E8}\u{1F1F3}', name: 'China', dial: '86' },
+  { code: 'JP', flag: '\u{1F1EF}\u{1F1F5}', name: 'Japan', dial: '81' },
+  { code: 'KR', flag: '\u{1F1F0}\u{1F1F7}', name: 'South Korea', dial: '82' },
+  { code: 'BR', flag: '\u{1F1E7}\u{1F1F7}', name: 'Brazil', dial: '55' },
+  { code: 'MX', flag: '\u{1F1F2}\u{1F1FD}', name: 'Mexico', dial: '52' },
+  { code: 'AU', flag: '\u{1F1E6}\u{1F1FA}', name: 'Australia', dial: '61' },
+  { code: 'CA', flag: '\u{1F1E8}\u{1F1E6}', name: 'Canada', dial: '1' },
+  { code: 'CH', flag: '\u{1F1E8}\u{1F1ED}', name: 'Switzerland', dial: '41' },
+  { code: 'AT', flag: '\u{1F1E6}\u{1F1F9}', name: 'Austria', dial: '43' },
+  { code: 'BE', flag: '\u{1F1E7}\u{1F1EA}', name: 'Belgium', dial: '32' },
+  { code: 'PT', flag: '\u{1F1F5}\u{1F1F9}', name: 'Portugal', dial: '351' },
+  { code: 'GR', flag: '\u{1F1EC}\u{1F1F7}', name: 'Greece', dial: '30' },
+  { code: 'PK', flag: '\u{1F1F5}\u{1F1F0}', name: 'Pakistan', dial: '92' },
+  { code: 'NG', flag: '\u{1F1F3}\u{1F1EC}', name: 'Nigeria', dial: '234' },
+  { code: 'ZA', flag: '\u{1F1FF}\u{1F1E6}', name: 'South Africa', dial: '27' },
+  { code: 'EG', flag: '\u{1F1EA}\u{1F1EC}', name: 'Egypt', dial: '20' },
+  { code: 'SA', flag: '\u{1F1F8}\u{1F1E6}', name: 'Saudi Arabia', dial: '966' },
+  { code: 'AE', flag: '\u{1F1E6}\u{1F1EA}', name: 'UAE', dial: '971' },
+  { code: 'IL', flag: '\u{1F1EE}\u{1F1F1}', name: 'Israel', dial: '972' },
+  { code: 'UA', flag: '\u{1F1FA}\u{1F1E6}', name: 'Ukraine', dial: '380' },
+  { code: 'AR', flag: '\u{1F1E6}\u{1F1F7}', name: 'Argentina', dial: '54' },
+  { code: 'CO', flag: '\u{1F1E8}\u{1F1F4}', name: 'Colombia', dial: '57' },
+  { code: 'CL', flag: '\u{1F1E8}\u{1F1F1}', name: 'Chile', dial: '56' },
+  { code: 'PH', flag: '\u{1F1F5}\u{1F1ED}', name: 'Philippines', dial: '63' },
+  { code: 'ID', flag: '\u{1F1EE}\u{1F1E9}', name: 'Indonesia', dial: '62' },
+  { code: 'MY', flag: '\u{1F1F2}\u{1F1FE}', name: 'Malaysia', dial: '60' },
+  { code: 'SG', flag: '\u{1F1F8}\u{1F1EC}', name: 'Singapore', dial: '65' },
+  { code: 'TH', flag: '\u{1F1F9}\u{1F1ED}', name: 'Thailand', dial: '66' },
+  { code: 'VN', flag: '\u{1F1FB}\u{1F1F3}', name: 'Vietnam', dial: '84' },
+  { code: 'NZ', flag: '\u{1F1F3}\u{1F1FF}', name: 'New Zealand', dial: '64' },
+  { code: 'IE', flag: '\u{1F1EE}\u{1F1EA}', name: 'Ireland', dial: '353' },
+  { code: 'CZ', flag: '\u{1F1E8}\u{1F1FF}', name: 'Czech Republic', dial: '420' },
+  { code: 'HU', flag: '\u{1F1ED}\u{1F1FA}', name: 'Hungary', dial: '36' },
+  { code: 'RO', flag: '\u{1F1F7}\u{1F1F4}', name: 'Romania', dial: '40' },
 ].sort((a, b) => a.name.localeCompare(b.name));
 
 export default function LoginScreen({ navigation }: Props) {
   const [phone, setPhone]           = useState('');
   const [password, setPassword]     = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [country, setCountry]       = useState(COUNTRIES.find(c => c.code === 'NO')!);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [search, setSearch]         = useState('');
@@ -156,6 +157,9 @@ export default function LoginScreen({ navigation }: Props) {
 
         {/* Form */}
         <View style={styles.form}>
+          {/* Phone label */}
+          <Text style={styles.inputLabel}>Phone number</Text>
+
           {/* Phone row */}
           <View style={styles.phoneRow}>
             <TouchableOpacity
@@ -182,23 +186,42 @@ export default function LoginScreen({ navigation }: Props) {
             />
           </View>
 
+          {/* Password label */}
+          <Text style={styles.inputLabel}>Password</Text>
+
           {/* Password */}
-          <TextInput
-            style={styles.input}
-            placeholder="Password"
-            placeholderTextColor={colors.textDim}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            returnKeyType="done"
-            onSubmitEditing={handleLogin}
-            accessibilityLabel="Password"
-          />
+          <View style={styles.passwordWrap}>
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="Enter your password"
+              placeholderTextColor={colors.textDim}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              returnKeyType="done"
+              onSubmitEditing={handleLogin}
+              accessibilityLabel="Password"
+            />
+            <TouchableOpacity
+              style={styles.eyeBtn}
+              onPress={() => setShowPassword(!showPassword)}
+              activeOpacity={0.6}
+              accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+            >
+              <Ionicons
+                name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                size={20}
+                color={colors.textMuted}
+              />
+            </TouchableOpacity>
+          </View>
 
           {/* Error */}
           {!!error && (
             <View style={styles.errorRow} accessible={true} accessibilityRole="alert" accessibilityLabel={error}>
-              <Ionicons name="alert-circle" size={16} color={colors.danger} />
+              <View style={styles.errorIconWrap}>
+                <Ionicons name="alert-circle" size={16} color={colors.danger} />
+              </View>
               <Text style={styles.errorText}>{error}</Text>
             </View>
           )}
@@ -222,15 +245,17 @@ export default function LoginScreen({ navigation }: Props) {
           <View style={styles.registerRow}>
             <Text style={styles.registerText}>Don't have an account?</Text>
             <TouchableOpacity onPress={() => navigation.navigate('Register')} activeOpacity={0.7}>
-              <Text style={styles.registerLink}> Register</Text>
+              <Text style={styles.registerLink}> Create one</Text>
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Footer */}
         <View style={styles.footer}>
-          <Ionicons name="lock-closed" size={12} color={colors.textMuted} />
-          <Text style={styles.footerText}>End-to-end encrypted</Text>
+          <View style={styles.footerBadge}>
+            <Ionicons name="shield-checkmark" size={14} color={colors.shield} />
+            <Text style={styles.footerText}>End-to-end encrypted</Text>
+          </View>
         </View>
       </ScrollView>
 
@@ -298,50 +323,56 @@ export default function LoginScreen({ navigation }: Props) {
   );
 }
 
+const INPUT_HEIGHT = 52;
+
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#2D2D3A',
+    backgroundColor: colors.bg,
   },
   scroll: {
     flexGrow: 1,
     alignItems: 'center',
-    paddingHorizontal: 28,
-    paddingTop: 80,
-    paddingBottom: 32,
+    paddingHorizontal: spacing.xl,
+    paddingTop: 90,
+    paddingBottom: spacing.xl,
   },
 
   /* Logo */
   logoWrap: {
-    marginBottom: 24,
+    marginBottom: spacing.lg,
   },
   logoBg: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#353545',
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: colors.bgSurface,
     alignItems: 'center',
     justifyContent: 'center',
+    // Subtle glow ring
+    borderWidth: 1,
+    borderColor: 'rgba(124, 58, 237, 0.2)',
   },
   logoImage: {
-    width: 52,
-    height: 52,
+    width: 54,
+    height: 54,
   },
 
   /* Title */
   title: {
-    fontSize: 40,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    letterSpacing: 2,
-    marginBottom: 8,
+    fontSize: 42,
+    fontWeight: font.weights.bold,
+    color: colors.textPrimary,
+    letterSpacing: 3,
+    marginBottom: 6,
   },
 
   /* Subtitle */
   subtitle: {
-    fontSize: 14,
+    fontSize: font.sizes.sm,
     color: colors.textMuted,
-    marginBottom: 48,
+    letterSpacing: 0.5,
+    marginBottom: 52,
   },
 
   /* Form */
@@ -350,109 +381,166 @@ const styles = StyleSheet.create({
     maxWidth: 400,
   },
 
+  /* Input labels */
+  inputLabel: {
+    color: colors.textSecondary,
+    fontSize: font.sizes.xs,
+    fontWeight: font.weights.semibold,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: spacing.sm,
+    marginLeft: 4,
+  },
+
   /* Phone row */
   phoneRow: {
     flexDirection: 'row',
     gap: 10,
-    marginBottom: 14,
+    marginBottom: spacing.lg,
   },
   countryBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#353545',
-    borderRadius: 16,
-    height: 54,
+    backgroundColor: colors.bgSurface,
+    borderRadius: radius.lg,
+    height: INPUT_HEIGHT,
     paddingHorizontal: 14,
     gap: 6,
+    borderWidth: 1,
+    borderColor: colors.borderMid,
   },
   flag: {
     fontSize: 20,
   },
   dialCode: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '600',
+    color: colors.textPrimary,
+    fontSize: font.sizes.md,
+    fontWeight: font.weights.semibold,
   },
   phoneInput: {
     flex: 1,
-    backgroundColor: '#353545',
-    borderRadius: 16,
-    height: 54,
+    backgroundColor: colors.bgSurface,
+    borderRadius: radius.lg,
+    height: INPUT_HEIGHT,
     paddingHorizontal: 18,
-    color: '#FFFFFF',
-    fontSize: 15,
+    color: colors.textPrimary,
+    fontSize: font.sizes.md,
+    borderWidth: 1,
+    borderColor: colors.borderMid,
   },
 
   /* Password input */
-  input: {
-    width: '100%',
-    backgroundColor: '#353545',
-    borderRadius: 16,
-    height: 54,
+  passwordWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.bgSurface,
+    borderRadius: radius.lg,
+    height: INPUT_HEIGHT,
+    borderWidth: 1,
+    borderColor: colors.borderMid,
+    marginBottom: spacing.lg,
+  },
+  passwordInput: {
+    flex: 1,
     paddingHorizontal: 18,
-    color: '#FFFFFF',
-    fontSize: 15,
-    marginBottom: 24,
+    color: colors.textPrimary,
+    fontSize: font.sizes.md,
+    height: '100%',
+  },
+  eyeBtn: {
+    paddingHorizontal: 14,
+    height: '100%',
+    justifyContent: 'center',
   },
 
   /* Error */
   errorRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 16,
+    gap: 10,
+    marginBottom: spacing.md,
+    backgroundColor: colors.dangerBg,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: radius.md,
+  },
+  errorIconWrap: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,59,48,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   errorText: {
     color: colors.danger,
-    fontSize: 13,
+    fontSize: font.sizes.sm,
     flex: 1,
+    fontWeight: font.weights.medium,
   },
 
   /* Sign In button */
   signInBtn: {
     width: '100%',
     height: 54,
-    borderRadius: 28,
-    backgroundColor: '#7C3AED',
+    borderRadius: radius.pill,
+    backgroundColor: colors.purple,
     alignItems: 'center',
     justifyContent: 'center',
+    // Subtle shadow
+    shadowColor: colors.purple,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 6,
   },
   signInBtnDisabled: {
     opacity: 0.5,
+    shadowOpacity: 0,
+    elevation: 0,
   },
   signInText: {
-    color: '#FFFFFF',
-    fontSize: 17,
-    fontWeight: '700',
+    color: colors.white,
+    fontSize: font.sizes.lg,
+    fontWeight: font.weights.bold,
+    letterSpacing: 0.5,
   },
 
   /* Register */
   registerRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 24,
+    marginTop: spacing.lg,
   },
   registerText: {
     color: colors.textSecondary,
-    fontSize: 14,
+    fontSize: font.sizes.sm,
   },
   registerLink: {
     color: colors.purpleLight,
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: font.sizes.sm,
+    fontWeight: font.weights.bold,
   },
 
   /* Footer */
   footer: {
+    alignItems: 'center',
+    marginTop: 'auto' as any,
+    paddingTop: spacing.xl,
+  },
+  footerBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginTop: 'auto' as any,
-    paddingTop: 32,
+    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: radius.full,
   },
   footerText: {
     color: colors.textMuted,
-    fontSize: 12,
+    fontSize: font.sizes.xs,
+    fontWeight: font.weights.medium,
   },
 
   /* Modal */
@@ -465,10 +553,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   modalSheet: {
-    backgroundColor: '#353545',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingHorizontal: 20,
+    backgroundColor: colors.bgSurface,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    paddingHorizontal: spacing.md + 4,
     paddingBottom: Platform.OS === 'ios' ? 34 : 20,
     maxHeight: '75%',
   },
@@ -479,29 +567,29 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.15)',
     alignSelf: 'center',
     marginTop: 12,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   modalTitle: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '700',
+    color: colors.textPrimary,
+    fontSize: font.sizes.lg + 1,
+    fontWeight: font.weights.bold,
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   searchWrap: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2D2D3A',
-    borderRadius: 14,
+    backgroundColor: colors.bg,
+    borderRadius: radius.lg,
     paddingHorizontal: 14,
     gap: 10,
     marginBottom: 12,
   },
   searchInput: {
     flex: 1,
-    color: '#FFFFFF',
+    color: colors.textPrimary,
     paddingVertical: 14,
-    fontSize: 15,
+    fontSize: font.sizes.md,
   },
   countryItem: {
     flexDirection: 'row',
@@ -514,32 +602,32 @@ const styles = StyleSheet.create({
   },
   countryItemActive: {
     backgroundColor: 'rgba(124, 58, 237, 0.1)',
-    borderRadius: 10,
+    borderRadius: radius.sm + 2,
   },
   countryFlag: {
     fontSize: 22,
   },
   countryName: {
     flex: 1,
-    color: '#FFFFFF',
-    fontSize: 15,
+    color: colors.textPrimary,
+    fontSize: font.sizes.md,
   },
   countryDial: {
     color: colors.textMuted,
-    fontSize: 13,
+    fontSize: font.sizes.sm,
     marginRight: 4,
   },
   cancelBtn: {
     marginTop: 12,
-    borderRadius: 28,
+    borderRadius: radius.pill,
     height: 50,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#2D2D3A',
+    backgroundColor: colors.bg,
   },
   cancelText: {
     color: colors.textSecondary,
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: font.sizes.md + 1,
+    fontWeight: font.weights.semibold,
   },
 });

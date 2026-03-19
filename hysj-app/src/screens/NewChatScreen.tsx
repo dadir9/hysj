@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, SafeAreaView, ActivityIndicator,
+  StatusBar, Platform, KeyboardAvoidingView,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
 import { colors, font, spacing, radius } from '../constants/theme';
@@ -59,106 +61,310 @@ export default function NewChatScreen({ navigation }: Props) {
       unreadCount: 0,
     };
     try {
-      // Establish X3DH session (hybrid ECC + ML-KEM-768)
       await establishOutgoingSession(conv.id, conv.peerDeviceId);
-      await upsertConversation(conv);
-      navigation.replace('Chat', { conversation: conv });
-    } catch (e: any) {
-      setError('Failed to establish secure session');
-      setBusy(false);
+    } catch {
+      // Session will be established on first send
     }
+    await upsertConversation(conv);
+    navigation.replace('Chat', { conversation: conv });
   };
 
   return (
     <SafeAreaView style={styles.root}>
+      <StatusBar barStyle="light-content" backgroundColor={colors.bg} />
+
+      {/* ── Header ── */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.back}>←</Text>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backBtn}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Ionicons name="chevron-back" size={26} color={colors.white} />
         </TouchableOpacity>
-        <Text style={styles.title}>New Chat</Text>
+        <Text style={styles.headerTitle}>New Chat</Text>
+        <View style={{ width: 40 }} />
       </View>
 
-      <View style={styles.body}>
-        <Text style={styles.label}>FIND USER</Text>
-        <View style={styles.searchRow}>
-          <View style={[styles.inputWrap, { flex: 1 }]}>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter username"
-              placeholderTextColor={colors.textMuted}
-              value={query}
-              onChangeText={setQuery}
-              autoCapitalize="none"
-              maxLength={50}
-              returnKeyType="search"
-              onSubmitEditing={handleSearch}
-            />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <View style={styles.body}>
+
+          {/* ── Section label ── */}
+          <Text style={styles.sectionLabel}>FIND USER</Text>
+
+          {/* ── Search bar ── */}
+          <View style={styles.searchRow}>
+            <View style={styles.searchInputWrap}>
+              <Ionicons
+                name="search"
+                size={18}
+                color={colors.textMuted}
+                style={styles.searchIcon}
+              />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Enter username..."
+                placeholderTextColor={colors.textMuted}
+                value={query}
+                onChangeText={(t) => { setQuery(t); if (error) setError(''); }}
+                autoCapitalize="none"
+                autoCorrect={false}
+                maxLength={50}
+                returnKeyType="search"
+                onSubmitEditing={handleSearch}
+              />
+              {query.length > 0 && (
+                <TouchableOpacity
+                  onPress={() => { setQuery(''); setResult(null); setError(''); }}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Ionicons name="close-circle" size={18} color={colors.textMuted} />
+                </TouchableOpacity>
+              )}
+            </View>
+
+            <TouchableOpacity
+              style={[styles.searchBtn, busy && styles.searchBtnDisabled]}
+              onPress={handleSearch}
+              disabled={busy}
+              activeOpacity={0.8}
+            >
+              {busy
+                ? <ActivityIndicator color={colors.white} size="small" />
+                : <Ionicons name="arrow-forward" size={20} color={colors.white} />}
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity style={styles.searchBtn} onPress={handleSearch} disabled={busy}>
-            {busy
-              ? <ActivityIndicator color={colors.white} size="small" />
-              : <Text style={styles.searchBtnText}>Search</Text>}
-          </TouchableOpacity>
+
+          {/* ── Error ── */}
+          {!!error && (
+            <View style={styles.errorRow}>
+              <Ionicons name="alert-circle" size={16} color={colors.danger} />
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          )}
+
+          {/* ── Result card ── */}
+          {result && (
+            <TouchableOpacity
+              style={styles.resultCard}
+              onPress={openChat}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.avatar, { backgroundColor: getAvatarColor(result.username) }]}>
+                <Text style={styles.avatarInitials}>{getInitials(result.username)}</Text>
+              </View>
+
+              <View style={styles.resultInfo}>
+                <Text style={styles.resultName}>{result.username}</Text>
+                <Text style={styles.resultHint}>Tap to start conversation</Text>
+              </View>
+
+              <View style={styles.resultArrowWrap}>
+                <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+              </View>
+            </TouchableOpacity>
+          )}
+
+          {/* ── Empty state hint ── */}
+          {!result && !error && !busy && (
+            <View style={styles.hintWrap}>
+              <Ionicons name="person-add-outline" size={48} color={colors.textDim} />
+              <Text style={styles.hintText}>
+                Search for a username to start a{'\n'}new encrypted conversation
+              </Text>
+            </View>
+          )}
+
+          {/* ── Loading overlay ── */}
+          {busy && !result && (
+            <View style={styles.loadingWrap}>
+              <ActivityIndicator color={colors.purple} size="large" />
+              <Text style={styles.loadingText}>Searching...</Text>
+            </View>
+          )}
         </View>
-
-        {!!error && <Text style={styles.error}>{error}</Text>}
-
-        {result && (
-          <TouchableOpacity style={styles.resultCard} onPress={openChat} activeOpacity={0.8}>
-            <View style={[styles.resultAvatar, { backgroundColor: getAvatarColor(result.username) }]}>
-              <Text style={styles.resultInitials}>{getInitials(result.username)}</Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.resultName}>{result.username}</Text>
-              <Text style={styles.resultSub}>Tap to open chat</Text>
-            </View>
-            <Text style={styles.resultArrow}>→</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bgSurface },
+  root: {
+    flex: 1,
+    backgroundColor: colors.bg,
+  },
+
+  /* ── Header ── */
   header: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: colors.bgCard,
-    paddingHorizontal: 20, paddingVertical: 16, gap: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.bg,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderMid,
   },
-  back: { fontSize: 24, color: colors.white },
-  title: { fontSize: 22, fontWeight: font.weights.bold, color: colors.textPrimary },
-  body: { padding: 20 },
-  label: {
-    fontSize: 11, fontWeight: font.weights.bold,
-    color: colors.textMuted, letterSpacing: 1.5, marginBottom: 8, marginLeft: 4,
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  searchRow: { flexDirection: 'row', gap: 10, alignItems: 'center' },
-  inputWrap: {
-    backgroundColor: colors.bgInput, borderRadius: radius.lg,
-    borderWidth: 1, borderColor: colors.border,
-    height: 52, justifyContent: 'center', paddingHorizontal: 16,
+  headerTitle: {
+    fontSize: font.sizes.xl,
+    fontWeight: font.weights.bold,
+    color: colors.textPrimary,
+    letterSpacing: 0.3,
   },
-  input: { color: colors.textPrimary, fontSize: 15 },
+
+  /* ── Body ── */
+  body: {
+    flex: 1,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+  },
+
+  /* ── Section label ── */
+  sectionLabel: {
+    fontSize: font.sizes.xs,
+    fontWeight: font.weights.bold,
+    color: colors.textMuted,
+    letterSpacing: 1.5,
+    marginBottom: spacing.sm,
+    marginLeft: spacing.xs,
+  },
+
+  /* ── Search ── */
+  searchRow: {
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'center',
+  },
+  searchInputWrap: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.bgInput,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: colors.border,
+    height: 50,
+    paddingHorizontal: 16,
+  },
+  searchIcon: {
+    marginRight: 10,
+  },
+  searchInput: {
+    flex: 1,
+    color: colors.textPrimary,
+    fontSize: font.sizes.md,
+    height: '100%',
+  },
   searchBtn: {
-    backgroundColor: colors.purple, borderRadius: radius.pill,
-    height: 52, paddingHorizontal: 20, alignItems: 'center', justifyContent: 'center',
+    width: 50,
+    height: 50,
+    borderRadius: radius.full,
+    backgroundColor: colors.purple,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  searchBtnText: { color: colors.white, fontSize: 14, fontWeight: font.weights.bold },
-  error: { color: colors.danger, fontSize: 13, marginTop: 12, marginLeft: 4 },
+  searchBtnDisabled: {
+    backgroundColor: colors.purpleDark,
+    opacity: 0.7,
+  },
+
+  /* ── Error ── */
+  errorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: spacing.md,
+    backgroundColor: colors.dangerBg,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: radius.md,
+  },
+  errorText: {
+    color: colors.danger,
+    fontSize: font.sizes.sm,
+    fontWeight: font.weights.medium,
+    flex: 1,
+  },
+
+  /* ── Result card ── */
   resultCard: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: colors.bgCard, borderRadius: radius.lg,
-    borderWidth: 1, borderColor: colors.border,
-    padding: 16, marginTop: 20, gap: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.bgCard,
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.md,
+    marginTop: spacing.lg,
+    gap: 14,
   },
-  resultAvatar: {
-    width: 52, height: 52, borderRadius: 26,
-    alignItems: 'center', justifyContent: 'center',
+  avatar: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  resultInitials: { color: colors.white, fontSize: 20, fontWeight: font.weights.bold },
-  resultName: { fontSize: 16, fontWeight: font.weights.bold, color: colors.textPrimary },
-  resultSub: { fontSize: 12, color: colors.textSecondary, marginTop: 2 },
-  resultArrow: { fontSize: 20, color: colors.textSecondary },
+  avatarInitials: {
+    color: colors.white,
+    fontSize: 20,
+    fontWeight: font.weights.bold,
+  },
+  resultInfo: {
+    flex: 1,
+  },
+  resultName: {
+    fontSize: font.sizes.lg,
+    fontWeight: font.weights.semibold,
+    color: colors.textPrimary,
+  },
+  resultHint: {
+    fontSize: font.sizes.sm,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  resultArrowWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.bgElevated,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  /* ── Empty state ── */
+  hintWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 80,
+    gap: 16,
+  },
+  hintText: {
+    fontSize: font.sizes.md,
+    color: colors.textMuted,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+
+  /* ── Loading ── */
+  loadingWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 60,
+    gap: 12,
+  },
+  loadingText: {
+    fontSize: font.sizes.sm,
+    color: colors.textSecondary,
+  },
 });

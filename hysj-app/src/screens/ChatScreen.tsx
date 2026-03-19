@@ -343,6 +343,16 @@ export default function ChatScreen({ navigation, route }: Props) {
     return curr.toDateString() !== prev.toDateString();
   };
 
+  // Group consecutive messages and show time between groups
+  const shouldShowTime = (index: number): boolean => {
+    if (index === messages.length - 1) return true;
+    const curr = messages[index];
+    const next = messages[index + 1];
+    if (curr.isOutgoing !== next.isOutgoing) return true;
+    const diffMs = new Date(next.sentAt).getTime() - new Date(curr.sentAt).getTime();
+    return diffMs > 120000; // 2 min gap
+  };
+
   const renderItem = ({ item, index }: { item: Message; index: number }) => (
     <View>
       {shouldShowDateSeparator(index) && (
@@ -364,7 +374,7 @@ export default function ChatScreen({ navigation, route }: Props) {
                 <Text style={styles.retryBtn}>Retry</Text>
               </TouchableOpacity>
             </View>
-          ) : (
+          ) : shouldShowTime(index) ? (
             <View style={styles.timeStatusRow}>
               <Text style={styles.timeOut}>{formatTime(item.sentAt)}</Text>
               {item.deliveryStatus === 'read' ? (
@@ -375,18 +385,17 @@ export default function ChatScreen({ navigation, route }: Props) {
                 <Ionicons name="checkmark" size={14} color={colors.textMuted} />
               )}
             </View>
-          )}
+          ) : null}
         </View>
       ) : (
         <View style={styles.rowIn}>
-          <View style={[styles.inAvatar, { backgroundColor: getAvatarColor(conversation.peerUsername) }]}>
-            <Text style={styles.inAvatarText}>{getInitials(conversation.peerUsername)}</Text>
-          </View>
           <View style={styles.inBubbleWrap}>
             <View style={styles.bubbleIn}>
               <Text style={styles.bubbleInText}>{item.content}</Text>
             </View>
-            <Text style={styles.timeIn}>{formatTime(item.sentAt)}</Text>
+            {shouldShowTime(index) && (
+              <Text style={styles.timeIn}>{formatTime(item.sentAt)}</Text>
+            )}
           </View>
         </View>
       )}
@@ -418,7 +427,7 @@ export default function ChatScreen({ navigation, route }: Props) {
             </Text>
           </View>
           <TouchableOpacity style={styles.headerMenuBtn}>
-            <Ionicons name="ellipsis-horizontal" size={20} color={colors.textSecondary} />
+            <Ionicons name="menu" size={22} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
 
@@ -452,6 +461,18 @@ export default function ChatScreen({ navigation, route }: Props) {
           }
         />
 
+        {/* Typing indicator */}
+        {peerTyping && (
+          <View style={styles.typingRow}>
+            <Text style={styles.typingText}>{conversation.peerUsername} is typing</Text>
+            <View style={styles.typingDots}>
+              <Animated.View style={[styles.typingDot, { opacity: dot1 }]} />
+              <Animated.View style={[styles.typingDot, { opacity: dot2 }]} />
+              <Animated.View style={[styles.typingDot, { opacity: dot3 }]} />
+            </View>
+          </View>
+        )}
+
         {/* Input bar */}
         <View style={styles.inputBar}>
           <View style={styles.inputWrap}>
@@ -460,20 +481,20 @@ export default function ChatScreen({ navigation, route }: Props) {
               placeholder="Type a message..."
               placeholderTextColor={colors.textMuted}
               value={text}
-              onChangeText={setText}
+              onChangeText={handleTextChange}
               returnKeyType="send"
               onSubmitEditing={send}
               multiline
             />
           </View>
           <TouchableOpacity
-            style={[styles.sendBtn, text.trim() ? styles.sendBtnActive : null]}
+            style={styles.sendBtn}
             onPress={send}
             disabled={sending}
           >
             {sending
               ? <ActivityIndicator color={colors.white} size="small" />
-              : <Ionicons name="send" size={20} color={colors.white} />}
+              : <Ionicons name="send" size={18} color={colors.white} />}
           </TouchableOpacity>
         </View>
 
@@ -521,7 +542,18 @@ const styles = StyleSheet.create({
   },
 
   // Message list
-  listContent: { paddingVertical: 12, paddingHorizontal: 14, flexGrow: 1 },
+  listContent: { paddingVertical: 12, paddingHorizontal: 16, flexGrow: 1 },
+
+  // Date separator
+  dateSeparator: {
+    flexDirection: 'row', alignItems: 'center',
+    marginVertical: 16, paddingHorizontal: 8,
+  },
+  dateLine: { flex: 1, height: 1, backgroundColor: colors.border },
+  dateText: {
+    color: colors.textMuted, fontSize: 11,
+    marginHorizontal: 12, fontWeight: font.weights.medium,
+  },
 
   emptyChat: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 80 },
   emptyChatCircle: {
@@ -535,40 +567,35 @@ const styles = StyleSheet.create({
   },
   emptyChatHint: { fontSize: font.sizes.sm, color: colors.textSecondary, marginTop: 4 },
 
-  // Outgoing bubble — purple, right-aligned
-  rowOut: { alignItems: 'flex-end', marginVertical: 4 },
+  // Outgoing bubble — dark, right-aligned
+  rowOut: { alignItems: 'flex-end', marginVertical: 2 },
   bubbleOut: {
     backgroundColor: colors.bubbleOut,
-    borderTopLeftRadius: 20, borderTopRightRadius: 20,
-    borderBottomLeftRadius: 20, borderBottomRightRadius: 6,
+    borderTopLeftRadius: 18, borderTopRightRadius: 18,
+    borderBottomLeftRadius: 18, borderBottomRightRadius: 4,
     paddingHorizontal: 16, paddingVertical: 10,
-    maxWidth: '78%',
+    maxWidth: '75%',
   },
   bubbleOutText: { color: colors.bubbleOutText, fontSize: 15, lineHeight: 21 },
-  timeStatusRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4, marginRight: 6 },
+  timeStatusRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4, marginRight: 4 },
   timeOut: { color: colors.textMuted, fontSize: 10 },
 
-  // Incoming bubble — dark card, left-aligned with avatar
-  rowIn: { flexDirection: 'row', alignItems: 'flex-end', marginVertical: 4 },
-  inAvatar: {
-    width: 32, height: 32, borderRadius: 16,
-    alignItems: 'center', justifyContent: 'center', marginRight: 8,
-  },
-  inAvatarText: { color: colors.white, fontSize: 12, fontWeight: font.weights.bold },
-  inBubbleWrap: { maxWidth: '78%' },
+  // Incoming bubble — white/light, left-aligned (no avatar per message)
+  rowIn: { alignItems: 'flex-start', marginVertical: 2 },
+  inBubbleWrap: { maxWidth: '75%' },
   bubbleIn: {
     backgroundColor: colors.bubbleIn,
-    borderTopLeftRadius: 20, borderTopRightRadius: 20,
-    borderBottomLeftRadius: 6, borderBottomRightRadius: 20,
+    borderTopLeftRadius: 18, borderTopRightRadius: 18,
+    borderBottomLeftRadius: 4, borderBottomRightRadius: 18,
     paddingHorizontal: 16, paddingVertical: 10,
   },
   bubbleInText: { color: colors.bubbleInText, fontSize: 15, lineHeight: 21 },
-  timeIn: { color: colors.textMuted, fontSize: 10, marginTop: 4, marginLeft: 6 },
+  timeIn: { color: colors.textMuted, fontSize: 10, marginTop: 4, marginLeft: 4 },
 
   // Session banner
   sessionBanner: {
     alignSelf: 'center',
-    backgroundColor: 'rgba(16,185,129,0.1)',
+    backgroundColor: 'rgba(16,185,129,0.08)',
     borderRadius: radius.pill,
     paddingHorizontal: 14, paddingVertical: 6,
     marginBottom: 12,
@@ -595,29 +622,38 @@ const styles = StyleSheet.create({
     fontWeight: font.weights.bold,
   },
 
+  // Typing indicator
+  typingRow: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 20, paddingVertical: 6,
+    gap: 6,
+  },
+  typingText: { color: colors.textMuted, fontSize: 12 },
+  typingDots: { flexDirection: 'row', gap: 3 },
+  typingDot: {
+    width: 5, height: 5, borderRadius: 2.5,
+    backgroundColor: colors.textMuted,
+  },
+
   // Input bar
   inputBar: {
     flexDirection: 'row', alignItems: 'flex-end',
-    backgroundColor: colors.bgSurface,
-    paddingHorizontal: 12, paddingVertical: 10,
+    backgroundColor: colors.bg,
+    paddingHorizontal: 14, paddingVertical: 10,
     paddingBottom: 28,
-    borderTopWidth: 1, borderTopColor: colors.border,
     gap: 10,
   },
   inputWrap: {
     flex: 1,
-    backgroundColor: colors.bgInput,
-    borderRadius: radius.pill, borderWidth: 1, borderColor: colors.border,
-    paddingHorizontal: 18, paddingVertical: 10, minHeight: 48,
+    backgroundColor: colors.bgSurface,
+    borderRadius: radius.pill,
+    paddingHorizontal: 18, paddingVertical: 10, minHeight: 46,
     justifyContent: 'center',
   },
   input: { color: colors.textPrimary, fontSize: 15, maxHeight: 100 },
   sendBtn: {
-    width: 48, height: 48, borderRadius: 24,
-    backgroundColor: colors.bgElevated,
+    width: 46, height: 46, borderRadius: 23,
+    backgroundColor: '#1A1A2E',
     alignItems: 'center', justifyContent: 'center',
-  },
-  sendBtnActive: {
-    backgroundColor: colors.purple,
   },
 });

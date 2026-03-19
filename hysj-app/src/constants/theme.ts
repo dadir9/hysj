@@ -17,9 +17,9 @@ export const colors = {
   purpleLight: '#A78BFA',
   purpleDark: '#5B21B6',
 
-  // Bubbles — incoming: light/white, outgoing: dark gray
-  bubbleOut: '#3D3D4A',
-  bubbleIn: '#F0F0F5',
+  // Bubbles — incoming: white/light, outgoing: dark card
+  bubbleOut: '#3A3A4A',
+  bubbleIn: '#EEEEF3',
   bubbleInText: '#1A1A2E',
   bubbleOutText: '#FFFFFF',
 
