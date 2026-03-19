@@ -20,6 +20,7 @@
     "@stablelib/sha256": "^2.0.1",
     "@stablelib/x25519": "^2.0.1",
     "@stablelib/xchacha20poly1305": "^2.0.1",
+    "@supabase/supabase-js": "^2.99.2",
     "axios": "^1.13.6",
     "expo": "^55.0.6",
     "expo-constants": "~55.0.7",
