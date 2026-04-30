@@ -5,11 +5,6 @@ use hysj_shared::dto::messages::WsMessage;
 
 use crate::state::WsSender;
 
-/// Check if a device is currently connected via WebSocket.
-pub fn is_online(connections: &DashMap<Uuid, WsSender>, device_id: Uuid) -> bool {
-    connections.contains_key(&device_id)
-}
-
 /// Send a message to a specific device if it is online.
 ///
 /// Returns Ok(()) if the message was sent, Err(()) if the device is offline

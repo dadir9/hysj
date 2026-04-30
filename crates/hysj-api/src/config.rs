@@ -9,6 +9,7 @@ pub struct AppConfig {
     pub server_address: String,
     pub twilio: Option<TwilioConfig>,
     pub fcm_server_key: Option<String>,
+    pub cors_origins: Vec<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -58,6 +59,14 @@ impl AppConfig {
         // Optional FCM server key
         let fcm_server_key = std::env::var("FCM_SERVER_KEY").ok();
 
+        // CORS allowed origins (comma-separated, or empty for permissive in dev)
+        let cors_origins: Vec<String> = std::env::var("CORS_ORIGINS")
+            .unwrap_or_default()
+            .split(',')
+            .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty())
+            .collect();
+
         Ok(Self {
             database_url,
             redis_url,
@@ -66,6 +75,7 @@ impl AppConfig {
             server_address,
             twilio,
             fcm_server_key,
+            cors_origins,
         })
     }
 }

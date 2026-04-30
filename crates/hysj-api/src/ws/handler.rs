@@ -185,6 +185,18 @@ async fn handle_ws_message(
                 )
                 .await
                 .map_err(|e| e.to_string())?;
+
+                // Send push notification to offline device
+                if let Some(ref fcm_key) = state.config.fcm_server_key {
+                    let _ = crate::routes::push::send_push_notification(
+                        &mut redis,
+                        fcm_key,
+                        recipient_device_id,
+                        "Hysj",
+                        "New message",
+                    )
+                    .await;
+                }
             }
 
             Ok(())

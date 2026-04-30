@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use std::time::Duration;
 
 use axum::extract::{Path, State};
 use axum::Json;
@@ -19,6 +20,13 @@ pub async fn issue_wipe(
     auth: AuthUser,
     Json(req): Json<WipeRequest>,
 ) -> Result<Json<WipeStatusResponse>, AppError> {
+    if !state.rate_limiter.check_rate_limit(
+        &format!("wipe:{}", auth.user_id),
+        hysj_shared::constants::rate_limits::WIPE_MAX,
+        Duration::from_secs(hysj_shared::constants::rate_limits::WIPE_WINDOW_SECONDS),
+    ) {
+        return Err(AppError(HysjError::RateLimited));
+    }
     let target_devices: Vec<Uuid> = match &req.wipe_type {
         WipeType::All => {
             let devices = hysj_db::devices::list_by_user(&state.db, auth.user_id).await?;

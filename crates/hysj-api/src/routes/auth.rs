@@ -294,6 +294,36 @@ pub async fn verify_2fa(
     Ok(Json(serde_json::json!({ "status": "2fa_enabled" })))
 }
 
+/// POST /api/auth/2fa/disable
+pub async fn disable_2fa(
+    State(state): State<Arc<AppState>>,
+    auth: AuthUser,
+    Json(req): Json<TwoFactorVerifyRequest>,
+) -> Result<Json<serde_json::Value>, AppError> {
+    let user = hysj_db::users::find_by_id(&state.db, auth.user_id)
+        .await?
+        .ok_or(AppError(HysjError::UserNotFound(auth.user_id)))?;
+
+    let totp_secret = user
+        .totp_secret
+        .ok_or_else(|| AppError(HysjError::ValidationError("2FA not enabled".into())))?;
+
+    let secret_str = String::from_utf8(totp_secret).map_err(|_| AppError(HysjError::Internal))?;
+
+    let valid = hysj_auth::totp::verify_totp(&secret_str, &req.code)
+        .map_err(|e| AppError(HysjError::AuthFailed(e.to_string())))?;
+
+    if !valid {
+        return Err(AppError(HysjError::InvalidTwoFactorCode));
+    }
+
+    hysj_db::users::disable_2fa(&state.db, auth.user_id).await?;
+
+    tracing::info!(user_id = %auth.user_id, "2FA disabled");
+
+    Ok(Json(serde_json::json!({ "status": "2fa_disabled" })))
+}
+
 /// POST /api/auth/set-username
 pub async fn set_username(
     State(state): State<Arc<AppState>>,

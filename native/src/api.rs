@@ -164,6 +164,98 @@ pub fn ratchet_decrypt(
     Ok((B64.encode(session.serialize()), B64.encode(plaintext)))
 }
 
+// ── Sealed Sender ─────────────────────────────────────────────────────
+
+/// Seal a message with sealed-sender encryption.
+/// Hides the sender identity from the server.
+/// Returns sealed_b64.
+pub fn sealed_sender_seal(
+    plaintext_b64: String,
+    sender_id: String,
+    sender_cert_b64: String,
+    recipient_identity_public_b64: String,
+) -> Result<String, String> {
+    let plaintext = B64.decode(&plaintext_b64).map_err(|e| e.to_string())?;
+    let sender_cert = B64.decode(&sender_cert_b64).map_err(|e| e.to_string())?;
+    let recipient = B64.decode(&recipient_identity_public_b64).map_err(|e| e.to_string())?;
+
+    let sealed = hysj_crypto::sealed::seal(&plaintext, &sender_id, &sender_cert, &recipient)
+        .map_err(|e| e.to_string())?;
+
+    Ok(B64.encode(sealed))
+}
+
+/// Open a sealed-sender message.
+/// Returns (sender_id, sender_cert_b64, plaintext_b64).
+pub fn sealed_sender_open(
+    sealed_b64: String,
+    our_identity_secret_b64: String,
+    cert_verification_key_b64: String,
+) -> Result<(String, String, String), String> {
+    let sealed = B64.decode(&sealed_b64).map_err(|e| e.to_string())?;
+    let our_sk = B64.decode(&our_identity_secret_b64).map_err(|e| e.to_string())?;
+    let cert_vk = B64.decode(&cert_verification_key_b64).map_err(|e| e.to_string())?;
+
+    let content =
+        hysj_crypto::sealed::open(&sealed, &our_sk, &cert_vk).map_err(|e| e.to_string())?;
+
+    Ok((
+        content.sender_id,
+        B64.encode(&content.sender_certificate),
+        B64.encode(&content.plaintext),
+    ))
+}
+
+// ── Onion Routing ─────────────────────────────────────────────────────
+
+/// Wrap a payload in onion encryption layers for the given route.
+/// Each route entry is (address, public_key_b64).
+/// Returns onion_b64.
+pub fn onion_wrap(
+    route_addresses: Vec<String>,
+    route_public_keys_b64: Vec<String>,
+    plaintext_b64: String,
+) -> Result<String, String> {
+    if route_addresses.len() != route_public_keys_b64.len() {
+        return Err("route_addresses and route_public_keys_b64 must have the same length".into());
+    }
+
+    let route: Result<Vec<hysj_crypto::onion::RelayNode>, String> = route_addresses
+        .into_iter()
+        .zip(route_public_keys_b64.into_iter())
+        .map(|(addr, pk_b64)| {
+            let pk = B64.decode(&pk_b64).map_err(|e| e.to_string())?;
+            Ok(hysj_crypto::onion::RelayNode {
+                address: addr,
+                public_key: pk,
+            })
+        })
+        .collect();
+    let route = route?;
+
+    let plaintext = B64.decode(&plaintext_b64).map_err(|e| e.to_string())?;
+
+    let onion =
+        hysj_crypto::onion::wrap_onion(&plaintext, &route).map_err(|e| e.to_string())?;
+
+    Ok(B64.encode(onion))
+}
+
+/// Unwrap one onion layer using our private key.
+/// Returns (next_hop, payload_b64).
+pub fn onion_unwrap_layer(
+    onion_b64: String,
+    our_secret_b64: String,
+) -> Result<(String, String), String> {
+    let onion = B64.decode(&onion_b64).map_err(|e| e.to_string())?;
+    let our_sk = B64.decode(&our_secret_b64).map_err(|e| e.to_string())?;
+
+    let layer =
+        hysj_crypto::onion::unwrap_layer(&onion, &our_sk).map_err(|e| e.to_string())?;
+
+    Ok((layer.next_hop, B64.encode(&layer.payload)))
+}
+
 // ── X3DH Key Agreement ──────────────────────────────────────────────────
 
 /// Perform X3DH key agreement as initiator.
@@ -215,4 +307,39 @@ pub fn x3dh_initiate(
         B64.encode(&result.ephemeral_public),
         B64.encode(&result.kyber_ciphertext),
     ))
+}
+
+/// Perform X3DH key agreement as responder.
+/// Returns shared_secret_b64.
+pub fn x3dh_respond(
+    our_identity_secret_b64: String,
+    our_signed_pre_key_secret_b64: String,
+    our_one_time_pre_key_secret_b64: Option<String>,
+    our_kyber_secret_b64: String,
+    their_identity_public_b64: String,
+    their_ephemeral_public_b64: String,
+    kyber_ciphertext_b64: String,
+) -> Result<String, String> {
+    let our_ik = B64.decode(&our_identity_secret_b64).map_err(|e| e.to_string())?;
+    let our_spk = B64.decode(&our_signed_pre_key_secret_b64).map_err(|e| e.to_string())?;
+    let our_opk = our_one_time_pre_key_secret_b64
+        .map(|s| B64.decode(&s).map_err(|e| e.to_string()))
+        .transpose()?;
+    let our_kyber = B64.decode(&our_kyber_secret_b64).map_err(|e| e.to_string())?;
+    let their_ik = B64.decode(&their_identity_public_b64).map_err(|e| e.to_string())?;
+    let their_eph = B64.decode(&their_ephemeral_public_b64).map_err(|e| e.to_string())?;
+    let kyber_ct = B64.decode(&kyber_ciphertext_b64).map_err(|e| e.to_string())?;
+
+    let shared_secret = hysj_crypto::x3dh::x3dh_respond(
+        &our_ik,
+        &our_spk,
+        our_opk.as_deref(),
+        &our_kyber,
+        &their_ik,
+        &their_eph,
+        &kyber_ct,
+    )
+    .map_err(|e| e.to_string())?;
+
+    Ok(B64.encode(&shared_secret))
 }

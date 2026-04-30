@@ -2,8 +2,6 @@ use hkdf::Hkdf;
 use hmac::{Hmac, Mac};
 use sha2::Sha256;
 
-use crate::CryptoError;
-
 type HmacSha256 = Hmac<Sha256>;
 
 /// Derive keying material using HKDF-SHA256.

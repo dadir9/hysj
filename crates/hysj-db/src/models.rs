@@ -177,6 +177,18 @@ pub struct PinnedMessage {
     pub pinned_at: DateTime<Utc>,
 }
 
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
+pub struct RelayNode {
+    pub id: Uuid,
+    pub address: String,
+    pub public_key: String,
+    pub region: String,
+    pub is_active: bool,
+    pub load_percent: i16,
+    pub created_at: DateTime<Utc>,
+    pub last_heartbeat_at: DateTime<Utc>,
+}
+
 /// A combined bundle containing everything needed to start a session with a user.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PreKeyBundleData {

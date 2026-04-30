@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use std::time::Duration;
 
 use axum::body::Bytes;
 use axum::extract::{Path, State};
@@ -19,9 +20,17 @@ use crate::state::AppState;
 /// Initialize a file upload. Stores metadata in Redis, returns file_id + upload URL.
 pub async fn upload_init(
     State(state): State<Arc<AppState>>,
-    _auth: AuthUser,
+    auth: AuthUser,
     Json(req): Json<FileUploadInitRequest>,
 ) -> Result<Json<FileUploadInitResponse>, AppError> {
+    if !state.rate_limiter.check_rate_limit(
+        &format!("file:{}", auth.user_id),
+        hysj_shared::constants::rate_limits::FILE_UPLOAD_MAX,
+        Duration::from_secs(hysj_shared::constants::rate_limits::FILE_UPLOAD_WINDOW_SECONDS),
+    ) {
+        return Err(AppError(HysjError::RateLimited));
+    }
+
     if req.file_size > MAX_FILE_SIZE {
         return Err(AppError(HysjError::ValidationError(format!(
             "File too large: {} bytes (max {} bytes)",

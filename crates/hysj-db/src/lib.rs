@@ -10,6 +10,7 @@ pub mod settings;
 pub mod pinned_messages;
 pub mod vpn;
 pub mod emojis;
+pub mod relay;
 
 use thiserror::Error;
 

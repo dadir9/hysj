@@ -125,6 +125,18 @@ pub async fn store_vpn_keys(
     Ok(())
 }
 
+/// Count active sessions on a server (for IP allocation).
+pub async fn count_sessions(pool: &PgPool, server_id: Uuid) -> Result<i64, DbError> {
+    let count: (i64,) = sqlx::query_as(
+        "SELECT COUNT(*) FROM vpn_sessions WHERE server_id = $1 AND ended_at IS NULL",
+    )
+    .bind(server_id)
+    .fetch_one(pool)
+    .await?;
+
+    Ok(count.0)
+}
+
 /// Get the stored VPN keys for a user.
 pub async fn get_vpn_keys(pool: &PgPool, user_id: Uuid) -> Result<Option<UserVpnKey>, DbError> {
     let keys = sqlx::query_as::<_, UserVpnKey>(

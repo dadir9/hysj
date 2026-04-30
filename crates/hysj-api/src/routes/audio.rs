@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use std::time::Duration;
 
 use axum::body::Bytes;
 use axum::extract::{Path, State};
@@ -22,9 +23,17 @@ use crate::state::AppState;
 /// The client then PUTs the encrypted audio bytes to the upload URL.
 pub async fn upload_init(
     State(_state): State<Arc<AppState>>,
-    _auth: AuthUser,
+    auth: AuthUser,
     Json(req): Json<AudioUploadRequest>,
 ) -> Result<Json<AudioUploadResponse>, AppError> {
+    if !_state.rate_limiter.check_rate_limit(
+        &format!("audio:{}", auth.user_id),
+        hysj_shared::constants::rate_limits::AUDIO_UPLOAD_MAX,
+        Duration::from_secs(hysj_shared::constants::rate_limits::AUDIO_UPLOAD_WINDOW_SECONDS),
+    ) {
+        return Err(AppError(HysjError::RateLimited));
+    }
+
     // Validate duration
     if req.duration_seconds == 0 || req.duration_seconds > MAX_AUDIO_DURATION_SECONDS {
         return Err(AppError(HysjError::ValidationError(format!(

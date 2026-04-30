@@ -60,31 +60,41 @@ pub async fn issue_wipe(
 }
 
 /// Get all pending wipe commands for a given device.
+///
+/// Uses SCAN instead of KEYS to avoid blocking Redis under load.
 pub async fn get_pending_wipes(
     conn: &mut impl AsyncCommands,
     device_id: Uuid,
 ) -> Result<Vec<PendingWipe>, MessagingError> {
     let pattern = format!("wipe:{}:*", device_id);
-    let keys: Vec<String> = redis::cmd("KEYS")
-        .arg(&pattern)
-        .query_async(conn)
-        .await?;
+    let mut wipes = Vec::new();
+    let mut cursor: u64 = 0;
 
-    if keys.is_empty() {
-        return Ok(Vec::new());
-    }
+    loop {
+        let (next_cursor, keys): (u64, Vec<String>) = redis::cmd("SCAN")
+            .arg(cursor)
+            .arg("MATCH")
+            .arg(&pattern)
+            .arg("COUNT")
+            .arg(100)
+            .query_async(conn)
+            .await?;
 
-    let mut wipes = Vec::with_capacity(keys.len());
-
-    for key in &keys {
-        let data: Option<Vec<u8>> = conn.get(key).await?;
-        if let Some(bytes) = data {
-            match serde_json::from_slice::<PendingWipe>(&bytes) {
-                Ok(wipe) => wipes.push(wipe),
-                Err(e) => {
-                    tracing::warn!(key = %key, error = %e, "Failed to deserialize wipe command, skipping");
+        for key in &keys {
+            let data: Option<Vec<u8>> = conn.get(key).await?;
+            if let Some(bytes) = data {
+                match serde_json::from_slice::<PendingWipe>(&bytes) {
+                    Ok(wipe) => wipes.push(wipe),
+                    Err(e) => {
+                        tracing::warn!(key = %key, error = %e, "Failed to deserialize wipe command, skipping");
+                    }
                 }
             }
+        }
+
+        cursor = next_cursor;
+        if cursor == 0 {
+            break;
         }
     }
 

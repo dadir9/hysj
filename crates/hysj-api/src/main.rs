@@ -133,6 +133,7 @@ fn build_router(state: Arc<state::AppState>) -> Router {
         .route("/api/auth/refresh", post(routes::auth::refresh))
         .route("/api/auth/2fa/setup", post(routes::auth::setup_2fa))
         .route("/api/auth/2fa/verify", post(routes::auth::verify_2fa))
+        .route("/api/auth/2fa/disable", post(routes::auth::disable_2fa))
         .route(
             "/api/auth/sender-certificate",
             post(routes::auth::sender_certificate),
@@ -344,8 +345,30 @@ fn build_router(state: Arc<state::AppState>) -> Router {
         );
 
     // Middleware
-    // TODO: Restrict CORS origins for production
+    let cors = if state.config.cors_origins.is_empty() {
+        CorsLayer::permissive()
+    } else {
+        use axum::http::{HeaderValue, Method};
+        let origins: Vec<HeaderValue> = state
+            .config
+            .cors_origins
+            .iter()
+            .filter_map(|o| o.parse().ok())
+            .collect();
+        CorsLayer::new()
+            .allow_origin(origins)
+            .allow_methods([
+                Method::GET,
+                Method::POST,
+                Method::PUT,
+                Method::DELETE,
+                Method::OPTIONS,
+            ])
+            .allow_headers(tower_http::cors::Any)
+            .allow_credentials(true)
+    };
+
     app.layer(TraceLayer::new_for_http())
-        .layer(CorsLayer::permissive())
+        .layer(cors)
         .with_state(state)
 }

@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use std::time::Duration;
 
 use axum::extract::{Path, State};
 use axum::Json;
@@ -15,9 +16,16 @@ use crate::state::AppState;
 /// GET /api/keys/:user_id
 pub async fn get_pre_key_bundle(
     State(state): State<Arc<AppState>>,
-    _auth: AuthUser,
+    auth: AuthUser,
     Path(user_id): Path<Uuid>,
 ) -> Result<Json<PreKeyBundleResponse>, AppError> {
+    if !state.rate_limiter.check_rate_limit(
+        &format!("prekey:{}", auth.user_id),
+        hysj_shared::constants::rate_limits::PREKEY_FETCH_MAX,
+        Duration::from_secs(hysj_shared::constants::rate_limits::PREKEY_FETCH_WINDOW_SECONDS),
+    ) {
+        return Err(AppError(HysjError::RateLimited));
+    }
     let bundle = hysj_db::keys::get_pre_key_bundle(&state.db, user_id)
         .await
         .map_err(|e| match e {
