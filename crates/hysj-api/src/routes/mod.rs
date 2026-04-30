@@ -1,0 +1,21 @@
+pub mod audio;
+pub mod auth;
+pub mod otp;
+pub mod push;
+pub mod contacts;
+pub mod contact_requests;
+pub mod keys;
+pub mod devices;
+pub mod groups;
+pub mod settings;
+pub mod status;
+pub mod wipe;
+
+#[cfg(feature = "vpn")]
+pub mod vpn;
+#[cfg(feature = "emojis")]
+pub mod emojis;
+#[cfg(feature = "relay")]
+pub mod relay;
+#[cfg(feature = "files")]
+pub mod files;

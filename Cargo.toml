@@ -1,0 +1,47 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/hysj-api",
+    "crates/hysj-crypto",
+    "crates/hysj-db",
+    "crates/hysj-messaging",
+    "crates/hysj-auth",
+    "crates/hysj-shared",
+    "crates/hysj-vpn",
+    "native",
+]
+
+[workspace.dependencies]
+axum = { version = "0.7", features = ["ws"] }
+axum-extra = { version = "0.9", features = ["typed-header"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "sync", "time", "io-util", "net", "signal"] }
+sqlx = { version = "0.7", features = ["postgres", "uuid", "chrono", "json", "runtime-tokio"] }
+redis = { version = "0.27", features = ["tokio-comp", "aio"] }
+jsonwebtoken = "9"
+argon2 = "0.5"
+totp-rs = { version = "5", features = ["gen_secret", "otpauth"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+tower = "0.5"
+tower-http = { version = "0.6", features = ["cors", "trace"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+anyhow = "1"
+thiserror = "2"
+dashmap = "6"
+dotenvy = "0.15"
+rand = "0.8"
+reqwest = { version = "0.12", features = ["json"] }
+base64 = "0.22"
+bytes = "1"
+futures = "0.3"
+tokio-stream = "0.1"
+async-trait = "0.1"
+zeroize = { version = "1", features = ["derive"] }
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true

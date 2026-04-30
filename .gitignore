@@ -1,0 +1,35 @@
+# Rust
+/target/
+**/*.rs.bk
+Cargo.lock
+
+# Environment
+.env
+*.pem
+*.key
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Flutter / Dart
+app/.dart_tool/
+app/build/
+app/.packages
+app/.pub-cache/
+app/.pub/
+app/*.iml
+app/.metadata
+app/.flutter-plugins
+app/.flutter-plugins-dependencies
+
+# Logs
+*.log

@@ -1,0 +1,45 @@
+services:
+  hysj-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: postgres://hysj:hysj_secret@postgres:5432/hysj
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: "${JWT_SECRET:-change_me_in_production}"
+      CERT_SIGNING_KEY: "${CERT_SIGNING_KEY:-0000000000000000000000000000000000000000000000000000000000000000}"
+      RUST_LOG: info
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --save "" --appendonly no --maxmemory 64mb --maxmemory-policy allkeys-lru
+    mem_limit: 128m
+
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: hysj
+      POSTGRES_PASSWORD: hysj_secret
+      POSTGRES_DB: hysj
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    mem_limit: 256m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hysj"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
