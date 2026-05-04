@@ -237,7 +237,7 @@ class ProfileScreen extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 18),
                       child: Container(
                         height: 1,
-                        color: HysjColors.cobalt.withOpacity(0.15),
+                        color: HysjColors.cobalt.withValues(alpha: 0.15),
                       ),
                     ),
                     // Vanish messages row

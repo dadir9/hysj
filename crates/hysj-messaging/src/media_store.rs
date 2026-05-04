@@ -6,7 +6,7 @@ use crate::MessagingError;
 /// Ephemeral media store backed by Redis.
 /// Encrypted audio/file blobs are stored with a TTL and deleted after retrieval.
 /// No disk persistence — same zero-storage principle as messages.
-
+///
 /// Store an encrypted media blob in Redis with TTL.
 ///
 /// Redis key: `media:{media_id}`

@@ -206,7 +206,7 @@ class _FilterChip extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                 decoration: BoxDecoration(
-                  color: active ? HysjColors.bad : HysjColors.bad.withOpacity(0.1),
+                  color: active ? HysjColors.bad : HysjColors.bad.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(

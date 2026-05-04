@@ -24,8 +24,8 @@ class HysjBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bgColor = isDark
-        ? HysjColors.dBg.withOpacity(0.96)
-        : HysjColors.paper.withOpacity(0.96);
+        ? HysjColors.dBg.withValues(alpha: 0.96)
+        : HysjColors.paper.withValues(alpha: 0.96);
     final inactiveColor = isDark ? HysjColors.dText3 : HysjColors.gray3;
     final borderColor = isDark ? HysjColors.dLine : HysjColors.gray1;
 

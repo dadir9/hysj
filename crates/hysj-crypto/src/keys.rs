@@ -54,9 +54,8 @@ pub fn verify(
     }
     let mut sig_bytes = [0u8; 64];
     sig_bytes.copy_from_slice(signature);
-    match ed25519_dalek::Signature::from_bytes(&sig_bytes) {
-        sig => public_key.verify(message, &sig).is_ok(),
-    }
+    let sig = ed25519_dalek::Signature::from_bytes(&sig_bytes);
+    public_key.verify(message, &sig).is_ok()
 }
 
 /// Securely zero memory using zeroize.

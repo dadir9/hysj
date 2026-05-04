@@ -98,7 +98,7 @@ async fn handle_socket(
                         break;
                     }
                     pong_received_clone.store(false, Ordering::Relaxed);
-                    if ws_sink.send(Message::Ping(vec![].into())).await.is_err() {
+                    if ws_sink.send(Message::Ping(vec![])).await.is_err() {
                         break;
                     }
                 }
@@ -441,7 +441,7 @@ async fn deliver_pending_messages(state: &AppState, device_id: Uuid) {
                     Err(_) => {
                         if let Some(sender) = state.connections.get(&device_id) {
                             let text = String::from_utf8_lossy(&queued.encrypted_blob);
-                            let _ = sender.send(Message::Text(text.into_owned().into()));
+                            let _ = sender.send(Message::Text(text.into_owned()));
                         }
                     }
                 }

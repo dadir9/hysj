@@ -33,3 +33,5 @@ app/.flutter-plugins-dependencies
 
 # Logs
 *.log
+design.html
+design_files/

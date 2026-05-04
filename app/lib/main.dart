@@ -98,13 +98,13 @@ class _MobileFrame extends StatelessWidget {
             border: Border.all(color: HysjColors.gray1, width: 2),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF0F0F14).withOpacity(0.30),
+                color: const Color(0xFF0F0F14).withValues(alpha: 0.30),
                 blurRadius: 60,
                 offset: const Offset(0, 30),
                 spreadRadius: -20,
               ),
               BoxShadow(
-                color: const Color(0xFF0F0F14).withOpacity(0.18),
+                color: const Color(0xFF0F0F14).withValues(alpha: 0.18),
                 blurRadius: 24,
                 offset: const Offset(0, 12),
                 spreadRadius: -8,

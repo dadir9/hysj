@@ -137,9 +137,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text('\u{1F1F3}\u{1F1F4}', style: TextStyle(fontSize: 20)),
-                          const SizedBox(width: 6),
-                          Text('+47', style: HysjTypo.body(size: 16, color: HysjColors.ink, weight: FontWeight.w600)),
+                          const Text('\u{1F1F3}\u{1F1F4}', style: TextStyle(fontSize: 18)),
+                          const SizedBox(width: 4),
+                          Text('+47', style: HysjTypo.body(size: 15, color: HysjColors.ink, weight: FontWeight.w600)),
                         ],
                       ),
                     ),

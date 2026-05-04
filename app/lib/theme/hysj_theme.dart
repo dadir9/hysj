@@ -19,7 +19,7 @@ class HysjColors {
   // ── Accent ──
   static const cobalt = Color(0xFF3B49B5);
   static const cobalt2 = Color(0xFF6E7BD9);
-  static Color get cobaltSoft => cobalt.withOpacity(0.10);
+  static Color get cobaltSoft => cobalt.withValues(alpha: 0.10);
   static const coral = Color(0xFFE89674);
   static const good = Color(0xFF5BA682);
   static const bad = Color(0xFFD45A3D);

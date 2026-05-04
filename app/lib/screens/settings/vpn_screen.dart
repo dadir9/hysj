@@ -83,7 +83,7 @@ class _VpnBody extends StatelessWidget {
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: HysjColors.cobalt.withOpacity(0.35),
+                                  color: HysjColors.cobalt.withValues(alpha: 0.35),
                                   blurRadius: 32,
                                   spreadRadius: 6,
                                 ),
@@ -105,7 +105,7 @@ class _VpnBody extends StatelessWidget {
                                   'SHIELDED',
                                   style: HysjTypo.mono(
                                     size: 9,
-                                    color: Colors.white.withOpacity(0.75),
+                                    color: Colors.white.withValues(alpha: 0.75),
                                     weight: FontWeight.w500,
                                     letterSpacing: 0.15,
                                   ),
@@ -266,7 +266,7 @@ class _PingDot extends StatelessWidget {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: HysjColors.cobalt.withOpacity(0.5),
+            color: HysjColors.cobalt.withValues(alpha: 0.5),
             blurRadius: 6,
             spreadRadius: 1,
           ),
@@ -343,7 +343,7 @@ class _GlobePainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2;
     final paint = Paint()
-      ..color = HysjColors.gray3.withOpacity(0.3)
+      ..color = HysjColors.gray3.withValues(alpha: 0.3)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
 

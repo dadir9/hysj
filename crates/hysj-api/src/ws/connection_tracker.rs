@@ -17,7 +17,7 @@ pub fn send_to_device(
     if let Some(sender) = connections.get(&device_id) {
         let json = serde_json::to_string(message).map_err(|_| ())?;
         sender
-            .send(axum::extract::ws::Message::Text(json.into()))
+            .send(axum::extract::ws::Message::Text(json))
             .map_err(|_| {
                 // Channel closed; remove stale connection
                 drop(sender);

@@ -27,7 +27,7 @@ class _IncomingBody extends StatelessWidget {
             center: Alignment.center,
             radius: 1.2,
             colors: [
-              HysjColors.cobalt.withOpacity(0.2),
+              HysjColors.cobalt.withValues(alpha: 0.2),
               HysjColors.dBg,
             ],
           ),
@@ -62,7 +62,7 @@ class _IncomingBody extends StatelessWidget {
                     'end-to-end encrypted',
                     style: TextStyle(
                       fontSize: 12,
-                      color: HysjColors.good.withOpacity(0.8),
+                      color: HysjColors.good.withValues(alpha: 0.8),
                     ),
                   ),
                 ],
@@ -81,7 +81,7 @@ class _IncomingBody extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: HysjColors.cobalt.withOpacity(0.08),
+                        color: HysjColors.cobalt.withValues(alpha: 0.08),
                         width: 1,
                       ),
                     ),
@@ -93,7 +93,7 @@ class _IncomingBody extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: HysjColors.cobalt.withOpacity(0.15),
+                        color: HysjColors.cobalt.withValues(alpha: 0.15),
                         width: 1,
                       ),
                     ),

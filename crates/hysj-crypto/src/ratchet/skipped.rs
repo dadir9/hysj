@@ -31,8 +31,8 @@ impl SkippedKeys {
         let key = (dh_public_hex, message_number);
 
         // If already present, don't duplicate in insertion_order
-        if self.keys.contains_key(&key) {
-            self.keys.insert(key, message_key);
+        if let std::collections::hash_map::Entry::Occupied(mut e) = self.keys.entry(key.clone()) {
+            e.insert(message_key);
             return;
         }
 

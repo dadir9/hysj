@@ -143,7 +143,7 @@ class _VoiceBody extends StatelessWidget {
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: HysjColors.bad.withOpacity(0.4),
+                              color: HysjColors.bad.withValues(alpha: 0.4),
                               blurRadius: 8,
                               spreadRadius: 2,
                             ),
@@ -176,7 +176,7 @@ class _VoiceBody extends StatelessWidget {
                           height: h.clamp(6, 48),
                           margin: const EdgeInsets.symmetric(horizontal: 1.5),
                           decoration: BoxDecoration(
-                            color: HysjColors.coral.withOpacity(0.7),
+                            color: HysjColors.coral.withValues(alpha: 0.7),
                             borderRadius: BorderRadius.circular(2),
                           ),
                         );
@@ -262,14 +262,14 @@ class _DimBubble extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: isMe ? HysjColors.dText.withOpacity(0.1) : HysjColors.dSurface2,
+          color: isMe ? HysjColors.dText.withValues(alpha: 0.1) : HysjColors.dSurface2,
           borderRadius: BorderRadius.circular(18),
         ),
         child: Text(
           text,
           style: TextStyle(
             fontSize: 15,
-            color: HysjColors.dText.withOpacity(0.5),
+            color: HysjColors.dText.withValues(alpha: 0.5),
           ),
         ),
       ),

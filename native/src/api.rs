@@ -222,7 +222,7 @@ pub fn onion_wrap(
 
     let route: Result<Vec<hysj_crypto::onion::RelayNode>, String> = route_addresses
         .into_iter()
-        .zip(route_public_keys_b64.into_iter())
+        .zip(route_public_keys_b64)
         .map(|(addr, pk_b64)| {
             let pk = B64.decode(&pk_b64).map_err(|e| e.to_string())?;
             Ok(hysj_crypto::onion::RelayNode {
