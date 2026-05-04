@@ -77,21 +77,24 @@ pub async fn send_otp(
         .await
         .map_err(|e| AppError(HysjError::InternalError(e.to_string())))?;
 
-    // Send SMS via Twilio (or log in dev mode)
+    // Send SMS via Twilio (or return code in dev mode)
+    let dev_code;
     if let Some(ref twilio) = state.config.twilio {
         send_sms_twilio(twilio, &req.phone_number, &code).await?;
+        dev_code = None;
     } else {
-        // Dev mode: log the code
         tracing::warn!(
             phone = %req.phone_number,
             code = %code,
             "DEV MODE: OTP code (no Twilio configured)"
         );
+        dev_code = Some(code);
     }
 
     Ok(Json(SendOtpResponse {
         message: "Verification code sent".into(),
         expires_in: OTP_EXPIRY_SECONDS,
+        dev_code,
     }))
 }
 

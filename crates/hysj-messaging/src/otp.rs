@@ -13,15 +13,9 @@ pub async fn store_otp(
 ) -> Result<(), MessagingError> {
     let key = format!("otp:{}", phone_number);
 
-    redis::cmd("SET")
-        .arg(&key)
-        .arg(code)
-        .arg("EX")
-        .arg(ttl_seconds)
-        .exec_async(conn)
-        .await?;
+    conn.set_ex::<_, _, ()>(&key, code, ttl_seconds).await?;
 
-    tracing::debug!(phone = %phone_number, "OTP stored");
+    tracing::debug!(phone = %phone_number, "OTP stored in Redis");
     Ok(())
 }
 
@@ -64,13 +58,7 @@ pub async fn store_verification_token(
 ) -> Result<(), MessagingError> {
     let key = format!("otp_verified:{}", token);
 
-    redis::cmd("SET")
-        .arg(&key)
-        .arg(phone_number)
-        .arg("EX")
-        .arg(ttl_seconds)
-        .exec_async(conn)
-        .await?;
+    conn.set_ex::<_, _, ()>(&key, phone_number, ttl_seconds).await?;
 
     Ok(())
 }

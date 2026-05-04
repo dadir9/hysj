@@ -92,6 +92,9 @@ pub struct SendOtpResponse {
     pub message: String,
     /// Seconds until OTP expires
     pub expires_in: u64,
+    /// DEV ONLY: the OTP code (only set when Twilio is not configured)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dev_code: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

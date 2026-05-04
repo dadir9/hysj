@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-
-import 'chat_list_screen.dart';
-import 'calls_screen.dart';
-import 'profile_screen.dart';
+import '../widgets/bottom_nav.dart';
+import 'chats/chat_list_screen.dart';
+import 'calls/call_history_screen.dart';
+import 'settings/vpn_screen.dart';
+import 'settings/profile_screen.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
@@ -16,40 +17,22 @@ class _HomeShellState extends State<HomeShell> {
 
   final _screens = const [
     ChatListScreen(),
-    ChatListScreen(), // Chat tab — same list for now
-    CallsScreen(),
+    CallHistoryScreen(),
+    VpnScreen(),
     ProfileScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _screens,
+      ),
+      bottomNavigationBar: HysjBottomNav(
         currentIndex: _currentIndex,
+        isDark: _currentIndex == 2, // VPN screen is dark
         onTap: (i) => setState(() => _currentIndex = i),
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble_outline),
-            activeIcon: Icon(Icons.chat_bubble),
-            label: 'Chat',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.call_outlined),
-            activeIcon: Icon(Icons.call),
-            label: 'Calls',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
       ),
     );
   }

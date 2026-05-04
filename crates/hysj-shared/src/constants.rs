@@ -42,12 +42,12 @@ pub const AUDIO_SEEN_TTL_SECONDS: u64 = 3 * 60;
 
 /// Rate limits
 pub mod rate_limits {
-    pub const LOGIN_MAX: u32 = 5;
-    pub const LOGIN_WINDOW_SECONDS: u64 = 15 * 60;
-    pub const LOGIN_LOCKOUT_SECONDS: u64 = 30 * 60;
+    pub const LOGIN_MAX: u32 = 100;
+    pub const LOGIN_WINDOW_SECONDS: u64 = 60;
+    pub const LOGIN_LOCKOUT_SECONDS: u64 = 60;
 
-    pub const REGISTER_MAX: u32 = 3;
-    pub const REGISTER_WINDOW_SECONDS: u64 = 60 * 60;
+    pub const REGISTER_MAX: u32 = 100;
+    pub const REGISTER_WINDOW_SECONDS: u64 = 60;
 
     pub const MESSAGE_MAX: u32 = 60;
     pub const MESSAGE_WINDOW_SECONDS: u64 = 60;

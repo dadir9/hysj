@@ -1,44 +1,24 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
+import '../theme/hysj_theme.dart';
 
-enum VoiceType {
-  robot,
-  deep,
-  high,
-  whisper,
-  distorted,
-}
+enum VoiceType { natural, robot, deep, high, echo }
 
 extension VoiceTypeExtension on VoiceType {
-  String get label {
-    switch (this) {
-      case VoiceType.robot:
-        return 'Robot';
-      case VoiceType.deep:
-        return 'Deep';
-      case VoiceType.high:
-        return 'High';
-      case VoiceType.whisper:
-        return 'Whisper';
-      case VoiceType.distorted:
-        return 'Distorted';
-    }
-  }
+  String get label => switch (this) {
+        VoiceType.natural => 'Natural',
+        VoiceType.robot => 'Robot',
+        VoiceType.deep => 'Deep',
+        VoiceType.high => 'High',
+        VoiceType.echo => 'Echo',
+      };
 
-  IconData get icon {
-    switch (this) {
-      case VoiceType.robot:
-        return Icons.smart_toy;
-      case VoiceType.deep:
-        return Icons.graphic_eq;
-      case VoiceType.high:
-        return Icons.music_note;
-      case VoiceType.whisper:
-        return Icons.volume_down;
-      case VoiceType.distorted:
-        return Icons.blur_on;
-    }
-  }
+  String get emoji => switch (this) {
+        VoiceType.natural => '',
+        VoiceType.robot => '\u{1F916}',
+        VoiceType.deep => '\u{26A1}',
+        VoiceType.high => '\u{1F388}',
+        VoiceType.echo => '\u{1F30A}',
+      };
 }
 
 class VoiceTypePicker extends StatelessWidget {
@@ -53,49 +33,48 @@ class VoiceTypePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: VoiceType.values.map((type) {
-        final isSelected = type == selected;
-        return GestureDetector(
-          onTap: () => onChanged(type),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? AppColors.primary
-                      : AppColors.surfaceLight,
-                  borderRadius: BorderRadius.circular(12),
-                  border: isSelected
-                      ? Border.all(color: AppColors.primaryLight, width: 2)
-                      : null,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: VoiceType.values.map((type) {
+              final isSelected = type == selected;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: GestureDetector(
+                  onTap: () => onChanged(type),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isSelected ? HysjColors.cobalt : Colors.transparent,
+                      borderRadius: BorderRadius.circular(HysjSpacing.pillRadius),
+                      border: Border.all(
+                        color: isSelected ? HysjColors.cobalt : HysjColors.dLine,
+                      ),
+                    ),
+                    child: Text(
+                      type.emoji.isEmpty ? type.label : '${type.emoji} ${type.label}',
+                      style: HysjTypo.body(
+                        size: 13,
+                        color: isSelected ? Colors.white : HysjColors.dText2,
+                        weight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                      ),
+                    ),
+                  ),
                 ),
-                child: Icon(
-                  type.icon,
-                  color: isSelected
-                      ? Colors.white
-                      : AppColors.textSecondary,
-                  size: 22,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                type.label,
-                style: TextStyle(
-                  fontSize: 10,
-                  color: isSelected
-                      ? AppColors.primary
-                      : AppColors.textMuted,
-                ),
-              ),
-            ],
+              );
+            }).toList(),
           ),
-        );
-      }).toList(),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'VOICE EFFECTS \u00B7 SLIDE LEFT TO CANCEL',
+          style: HysjTypo.label(size: 9, color: HysjColors.dText3),
+        ),
+      ],
     );
   }
 }

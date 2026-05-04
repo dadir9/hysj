@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 
 import 'auth_service.dart';
+import 'chat_service.dart';
 
 class ApiException implements Exception {
   final int statusCode;
@@ -73,6 +74,53 @@ class ApiClient {
 
   Future<Map<String, dynamic>> getContacts() async {
     return _get('/api/contacts');
+  }
+
+  /// Get contacts as a typed list.
+  Future<List<Contact>> getContactsList() async {
+    final response = await _http.get(
+      Uri.parse('$baseUrl/api/contacts'),
+      headers: await _headers(),
+    );
+    if (response.statusCode == 401 && !_isRefreshing) {
+      final refreshed = await _tryRefresh();
+      if (refreshed) return getContactsList();
+    }
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw ApiException(response.statusCode, response.body);
+    }
+    final list = jsonDecode(response.body) as List;
+    return list.map((e) => Contact.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  /// Get a user's devices (to find recipient_device_id for messaging).
+  Future<List<Map<String, dynamic>>> getUserDevices(String userId) async {
+    final response = await _http.get(
+      Uri.parse('$baseUrl/api/keys/$userId'),
+      headers: await _headers(),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      return [];
+    }
+    final data = jsonDecode(response.body);
+    if (data is Map && data.containsKey('device_id')) {
+      return [data.cast<String, dynamic>()];
+    }
+    if (data is List) {
+      return data.cast<Map<String, dynamic>>();
+    }
+    return [if (data is Map) data.cast<String, dynamic>()];
+  }
+
+  /// Check username availability.
+  Future<bool> checkUsername(String username) async {
+    final response = await _http.get(
+      Uri.parse('$baseUrl/api/auth/username-available/$username'),
+      headers: await _headers(),
+    );
+    if (response.statusCode != 200) return false;
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
+    return data['available'] == true;
   }
 
   // ---------------------------------------------------------------------------

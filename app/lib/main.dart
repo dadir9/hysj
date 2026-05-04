@@ -1,20 +1,24 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'theme/app_theme.dart';
-import 'screens/login_screen.dart';
+import 'theme/hysj_theme.dart';
+import 'screens/auth/login_screen.dart';
 import 'screens/home_shell.dart';
 import 'services/auth_service.dart';
 import 'services/api_client.dart';
+import 'services/ws_client.dart';
+import 'services/chat_service.dart';
 
 final authService = AuthService();
 final apiClient = ApiClient(authService: authService);
+final wsClient = WsClient(authService: authService);
+final chatService = ChatService(api: apiClient, auth: authService, ws: wsClient);
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
+      statusBarIconBrightness: Brightness.dark,
     ),
   );
   runApp(const HysjApp());
@@ -38,7 +42,13 @@ class _HysjAppState extends State<HysjApp> {
   }
 
   Future<void> _checkAuth() async {
-    final loggedIn = await authService.isLoggedIn;
+    var loggedIn = await authService.isLoggedIn;
+
+    // Initialize chat service (contacts + WebSocket)
+    if (loggedIn) {
+      try { await chatService.init(); } catch (_) {}
+    }
+
     setState(() {
       _loggedIn = loggedIn;
       _checking = false;
@@ -49,7 +59,10 @@ class _HysjAppState extends State<HysjApp> {
   Widget build(BuildContext context) {
     final Widget home;
     if (_checking) {
-      home = const Scaffold(body: Center(child: CircularProgressIndicator()));
+      home = Scaffold(
+        backgroundColor: HysjColors.paper,
+        body: const Center(child: CircularProgressIndicator(color: HysjColors.cobalt)),
+      );
     } else if (_loggedIn) {
       home = const HomeShell();
     } else {
@@ -59,7 +72,8 @@ class _HysjAppState extends State<HysjApp> {
     return MaterialApp(
       title: 'Hysj',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.dark,
+      theme: HysjTheme.light,
+      darkTheme: HysjTheme.dark,
       home: kIsWeb ? _MobileFrame(child: home) : home,
     );
   }
@@ -73,20 +87,27 @@ class _MobileFrame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF000000),
+      backgroundColor: const Color(0xFF1A1A1A),
       body: Center(
         child: Container(
           width: 393,
           height: 852,
           decoration: BoxDecoration(
-            color: AppColors.background,
-            borderRadius: BorderRadius.circular(40),
-            border: Border.all(color: Colors.white12, width: 2),
+            color: HysjColors.paper,
+            borderRadius: BorderRadius.circular(44),
+            border: Border.all(color: HysjColors.gray1, width: 2),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.5),
-                blurRadius: 30,
-                spreadRadius: 5,
+                color: const Color(0xFF0F0F14).withOpacity(0.30),
+                blurRadius: 60,
+                offset: const Offset(0, 30),
+                spreadRadius: -20,
+              ),
+              BoxShadow(
+                color: const Color(0xFF0F0F14).withOpacity(0.18),
+                blurRadius: 24,
+                offset: const Offset(0, 12),
+                spreadRadius: -8,
               ),
             ],
           ),
@@ -94,7 +115,7 @@ class _MobileFrame extends StatelessWidget {
           child: MediaQuery(
             data: const MediaQueryData(
               size: Size(393, 852),
-              padding: EdgeInsets.only(top: 54),
+              padding: EdgeInsets.only(top: 50),
             ),
             child: child,
           ),
