@@ -38,6 +38,9 @@ dependencies:
   web_socket_channel: ^3.0.0
   shared_preferences: ^2.3.0
   google_fonts: ^6.2.1
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  cryptography: ^2.7.0
 
 dev_dependencies:
   flutter_test:

@@ -53,13 +53,13 @@ class _ConversationScreenState extends State<ConversationScreen> {
     super.dispose();
   }
 
-  void _sendMessage() {
+  void _sendMessage() async {
     final text = _msgController.text.trim();
     if (text.isEmpty || _recipientDeviceId == null) return;
 
-    chatService.sendMessage(widget.contact.userId, _recipientDeviceId!, text);
     _msgController.clear();
-    setState(() {});
+    await chatService.sendMessage(widget.contact.userId, _recipientDeviceId!, text);
+    if (mounted) setState(() {});
     _scrollToBottom();
   }
 

@@ -28,6 +28,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _logout() async {
+    await chatService.logout();
     await authService.logout();
     if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(

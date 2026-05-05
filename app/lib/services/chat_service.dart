@@ -1,10 +1,12 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:math';
 
 import '../models/ws_message.dart';
 import 'api_client.dart';
 import 'auth_service.dart';
+import 'crypto_service.dart';
+import 'local_storage.dart';
+import 'notification_service.dart';
 import 'ws_client.dart';
 
 /// A contact from the API.
@@ -15,7 +17,6 @@ class Contact {
   final String? nickname;
 
   Contact({required this.userId, required this.username, this.displayName, this.nickname});
-
   String get name => displayName ?? nickname ?? username;
 
   factory Contact.fromJson(Map<String, dynamic> json) => Contact(
@@ -43,17 +44,16 @@ class ChatMessage {
   });
 }
 
-/// Manages contacts, WebSocket connection, and message state.
+/// Manages contacts, WebSocket, encryption, local storage, and notifications.
 class ChatService {
   final ApiClient api;
   final AuthService auth;
   final WsClient ws;
+  final CryptoService crypto = CryptoService();
 
   List<Contact> contacts = [];
   final Map<String, List<ChatMessage>> conversations = {};
   final Map<String, String> lastMessages = {};
-
-  // deviceId -> userId mapping (built when loading contacts)
   final Map<String, String> _deviceToUser = {};
 
   final _contactsController = StreamController<List<Contact>>.broadcast();
@@ -75,9 +75,28 @@ class ChatService {
     myUserId = await auth.currentUserId;
     _myDeviceId = await auth.currentDeviceId;
 
-    await refreshContacts();
-    await ws.connect();
+    // Init local storage
+    await LocalStorage.init();
 
+    // Load persisted messages
+    lastMessages.addAll(await LocalStorage.loadLastMessages());
+
+    // Load contacts
+    await refreshContacts();
+
+    // Load persisted conversations for each contact
+    for (final c in contacts) {
+      final msgs = await LocalStorage.loadMessages(c.userId);
+      if (msgs.isNotEmpty) {
+        conversations[c.userId] = msgs;
+      }
+    }
+
+    // Request notification permission
+    await NotificationService.requestPermission();
+
+    // Connect WebSocket
+    await ws.connect();
     ws.messages.listen(_onWsMessage);
   }
 
@@ -85,7 +104,6 @@ class ChatService {
     try {
       contacts = await api.getContactsList();
       _contactsController.add(contacts);
-      // Build device-to-user mapping for each contact
       await _buildDeviceMap();
     } catch (_) {}
   }
@@ -96,49 +114,67 @@ class ChatService {
         final devices = await api.getUserDevices(contact.userId);
         for (final d in devices) {
           final did = d['device_id'] as String?;
-          if (did != null) {
-            _deviceToUser[did] = contact.userId;
-          }
+          if (did != null) _deviceToUser[did] = contact.userId;
         }
       } catch (_) {}
     }
   }
 
-  void _onWsMessage(WsIncoming msg) {
+  void _onWsMessage(WsIncoming msg) async {
     if (msg.type == 'SendMessage') {
       final envelope = msg.envelope;
       if (envelope == null) return;
 
-      final text = _decryptMessage(envelope.ciphertext);
-      final senderDeviceId = envelope.senderDeviceId;
+      // Decrypt with real AES-256-GCM
+      final text = await crypto.decrypt(
+        envelope.ciphertext,
+        _myDeviceId ?? '',
+        envelope.senderDeviceId,
+      );
 
-      // Look up which contact owns this device
-      final contactUserId = _deviceToUser[senderDeviceId] ?? senderDeviceId;
+      final contactUserId = _deviceToUser[envelope.senderDeviceId] ?? envelope.senderDeviceId;
 
       final chatMsg = ChatMessage(
         id: envelope.messageId,
         text: text,
         isMe: false,
         timestamp: envelope.timestamp,
-        senderDeviceId: senderDeviceId,
+        senderDeviceId: envelope.senderDeviceId,
       );
 
       conversations.putIfAbsent(contactUserId, () => []);
       conversations[contactUserId]!.add(chatMsg);
       lastMessages[contactUserId] = text;
 
+      // Persist locally
+      await LocalStorage.saveMessage(contactUserId, chatMsg);
+
+      // Show notification
+      final sender = contacts.where((c) => c.userId == contactUserId).firstOrNull;
+      NotificationService.showMessageNotification(
+        sender?.username ?? 'someone',
+        text.length > 50 ? '${text.substring(0, 50)}...' : text,
+      );
+
       _messageController.add(chatMsg);
     }
   }
 
-  ChatMessage sendMessage(String recipientUserId, String recipientDeviceId, String text) {
+  Future<ChatMessage> sendMessage(String recipientUserId, String recipientDeviceId, String text) async {
     final msgId = _generateId();
     final now = DateTime.now().toUtc();
+
+    // Encrypt with real AES-256-GCM
+    final ciphertext = await crypto.encrypt(
+      text,
+      _myDeviceId ?? '',
+      recipientDeviceId,
+    );
 
     final envelope = EncryptedEnvelope(
       senderDeviceId: _myDeviceId ?? '',
       recipientDeviceId: recipientDeviceId,
-      ciphertext: _encryptMessage(text),
+      ciphertext: ciphertext,
       messageType: 1,
       messageId: msgId,
       timestamp: now,
@@ -158,6 +194,9 @@ class ChatService {
     conversations[recipientUserId]!.add(chatMsg);
     lastMessages[recipientUserId] = text;
 
+    // Persist locally
+    await LocalStorage.saveMessage(recipientUserId, chatMsg);
+
     return chatMsg;
   }
 
@@ -165,19 +204,20 @@ class ChatService {
     return conversations[recipientUserId] ?? [];
   }
 
-  String _encryptMessage(String plaintext) => base64Encode(utf8.encode(plaintext));
-
-  String _decryptMessage(String ciphertext) {
-    try {
-      return utf8.decode(base64Decode(ciphertext));
-    } catch (_) {
-      return ciphertext;
-    }
-  }
-
   String _generateId() {
     final rng = Random.secure();
     return List.generate(16, (_) => rng.nextInt(256).toRadixString(16).padLeft(2, '0')).join();
+  }
+
+  Future<void> logout() async {
+    await LocalStorage.clear();
+    crypto.clearKeys();
+    conversations.clear();
+    lastMessages.clear();
+    contacts.clear();
+    _deviceToUser.clear();
+    _initialized = false;
+    await ws.disconnect();
   }
 
   void dispose() {
