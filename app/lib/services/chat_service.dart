@@ -50,10 +50,11 @@ class ChatService {
   final WsClient ws;
 
   List<Contact> contacts = [];
-  // recipientUserId -> list of messages
   final Map<String, List<ChatMessage>> conversations = {};
-  // recipientUserId -> last message preview
   final Map<String, String> lastMessages = {};
+
+  // deviceId -> userId mapping (built when loading contacts)
+  final Map<String, String> _deviceToUser = {};
 
   final _contactsController = StreamController<List<Contact>>.broadcast();
   final _messageController = StreamController<ChatMessage>.broadcast();
@@ -63,29 +64,44 @@ class ChatService {
 
   String? myUserId;
   String? _myDeviceId;
+  bool _initialized = false;
 
   ChatService({required this.api, required this.auth, required this.ws});
 
   Future<void> init() async {
+    if (_initialized) return;
+    _initialized = true;
+
     myUserId = await auth.currentUserId;
     _myDeviceId = await auth.currentDeviceId;
 
-    // Load contacts
     await refreshContacts();
-
-    // Connect WebSocket
     await ws.connect();
 
-    // Listen for incoming messages
     ws.messages.listen(_onWsMessage);
   }
 
   Future<void> refreshContacts() async {
     try {
-      final response = await api.getContactsList();
-      contacts = response;
+      contacts = await api.getContactsList();
       _contactsController.add(contacts);
+      // Build device-to-user mapping for each contact
+      await _buildDeviceMap();
     } catch (_) {}
+  }
+
+  Future<void> _buildDeviceMap() async {
+    for (final contact in contacts) {
+      try {
+        final devices = await api.getUserDevices(contact.userId);
+        for (final d in devices) {
+          final did = d['device_id'] as String?;
+          if (did != null) {
+            _deviceToUser[did] = contact.userId;
+          }
+        }
+      } catch (_) {}
+    }
   }
 
   void _onWsMessage(WsIncoming msg) {
@@ -93,41 +109,37 @@ class ChatService {
       final envelope = msg.envelope;
       if (envelope == null) return;
 
-      // In dev mode, ciphertext is plaintext. In production, decrypt here.
       final text = _decryptMessage(envelope.ciphertext);
-      final senderId = envelope.senderDeviceId;
+      final senderDeviceId = envelope.senderDeviceId;
 
-      // Find which contact sent this
-      final contactUserId = _findContactByDeviceId(senderId);
+      // Look up which contact owns this device
+      final contactUserId = _deviceToUser[senderDeviceId] ?? senderDeviceId;
 
       final chatMsg = ChatMessage(
         id: envelope.messageId,
         text: text,
         isMe: false,
         timestamp: envelope.timestamp,
-        senderDeviceId: senderId,
+        senderDeviceId: senderDeviceId,
       );
 
-      final key = contactUserId ?? senderId;
-      conversations.putIfAbsent(key, () => []);
-      conversations[key]!.add(chatMsg);
-      lastMessages[key] = text;
+      conversations.putIfAbsent(contactUserId, () => []);
+      conversations[contactUserId]!.add(chatMsg);
+      lastMessages[contactUserId] = text;
 
       _messageController.add(chatMsg);
     }
   }
 
-  /// Send a plaintext message to a recipient device.
   ChatMessage sendMessage(String recipientUserId, String recipientDeviceId, String text) {
     final msgId = _generateId();
     final now = DateTime.now().toUtc();
 
-    // In dev mode, send plaintext as ciphertext. In production, encrypt here.
     final envelope = EncryptedEnvelope(
       senderDeviceId: _myDeviceId ?? '',
       recipientDeviceId: recipientDeviceId,
       ciphertext: _encryptMessage(text),
-      messageType: 1, // normal message
+      messageType: 1,
       messageId: msgId,
       timestamp: now,
     );
@@ -153,10 +165,7 @@ class ChatService {
     return conversations[recipientUserId] ?? [];
   }
 
-  /// Dev mode: plaintext as base64. Production: use flutter_rust_bridge crypto.
-  String _encryptMessage(String plaintext) {
-    return base64Encode(utf8.encode(plaintext));
-  }
+  String _encryptMessage(String plaintext) => base64Encode(utf8.encode(plaintext));
 
   String _decryptMessage(String ciphertext) {
     try {
@@ -166,16 +175,9 @@ class ChatService {
     }
   }
 
-  String? _findContactByDeviceId(String deviceId) {
-    // In a real app, we'd look up which user owns this device.
-    // For now, return null (we'll match by context).
-    return null;
-  }
-
   String _generateId() {
     final rng = Random.secure();
-    final bytes = List<int>.generate(16, (_) => rng.nextInt(256));
-    return bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+    return List.generate(16, (_) => rng.nextInt(256).toRadixString(16).padLeft(2, '0')).join();
   }
 
   void dispose() {

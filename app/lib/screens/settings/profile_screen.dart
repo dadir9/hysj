@@ -15,7 +15,6 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   String _username = '';
-  String _phone = '';
 
   @override
   void initState() {
@@ -25,17 +24,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _loadProfile() async {
     final uname = await authService.currentUsername ?? 'user';
-    if (mounted) {
-      setState(() {
-        _username = uname;
-        _phone = '+47 \u00B7\u00B7\u00B7 \u00B7\u00B7\u00B7';
-      });
-    }
+    if (mounted) setState(() => _username = uname);
   }
 
   Future<void> _logout() async {
     await authService.logout();
-    chatService.dispose();
     if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -46,6 +39,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final initial = _username.isNotEmpty ? _username[0].toLowerCase() : '?';
+    final contactCount = chatService.contacts.length;
 
     return Scaffold(
       backgroundColor: HysjColors.paper,
@@ -67,14 +61,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         Text('You', style: HysjTypo.displaySerif(size: 30)),
                         const SizedBox(height: 4),
-                        Text(
-                          'Account \u00B7 privacy',
-                          style: HysjTypo.mono(size: 11, color: HysjColors.gray3),
-                        ),
+                        Text('Account \u00B7 privacy', style: HysjTypo.mono(size: 11, color: HysjColors.gray3)),
                       ],
                     ),
                   ),
-                  const HysjIconButton(icon: Icons.settings_outlined, variant: IconButtonVariant.outline),
+                  HysjIconButton(icon: Icons.settings_outlined, onTap: () {}),
                 ],
               ),
               const SizedBox(height: 24),
@@ -90,17 +81,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Column(
                   children: [
                     Container(
-                      width: 96,
-                      height: 96,
+                      width: 96, height: 96,
                       decoration: const BoxDecoration(color: HysjColors.cobalt, shape: BoxShape.circle),
                       alignment: Alignment.center,
                       child: Text(initial, style: HysjTypo.displaySerif(size: 40, color: Colors.white)),
                     ),
                     const SizedBox(height: 14),
-                    Text(
-                      '@$_username',
-                      style: HysjTypo.mono(size: 18, weight: FontWeight.w500, color: HysjColors.ink),
-                    ),
+                    Text('@$_username', style: HysjTypo.mono(size: 18, weight: FontWeight.w500, color: HysjColors.ink)),
                     const SizedBox(height: 14),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -108,16 +95,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         PillChip(
                           text: 'online',
                           variant: PillVariant.good,
-                          leading: Container(
-                            width: 6, height: 6,
-                            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                          ),
+                          leading: Container(width: 6, height: 6, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
                         ),
                         const SizedBox(width: 8),
-                        Text(
-                          '${chatService.contacts.length} contacts',
-                          style: HysjTypo.mono(size: 11, color: HysjColors.gray3),
-                        ),
+                        Text('$contactCount contacts', style: HysjTypo.mono(size: 11, color: HysjColors.gray3)),
                       ],
                     ),
                   ],
@@ -138,13 +119,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   children: [
                     MenuRow(icon: Icons.edit_outlined, label: 'Edit profile', onTap: () {}),
                     const Divider(height: 1, indent: 18, endIndent: 18, color: HysjColors.gray1),
-                    MenuRow(
-                      icon: Icons.phone_outlined,
-                      label: 'Phone',
-                      caption: 'only visible to you',
-                      value: _phone,
-                      onTap: () {},
-                    ),
+                    MenuRow(icon: Icons.phone_outlined, label: 'Phone', value: 'hidden', onTap: () {}),
                     const Divider(height: 1, indent: 18, endIndent: 18, color: HysjColors.gray1),
                     MenuRow(icon: Icons.lock_outline_rounded, label: 'Privacy & blocks', value: 'strict', onTap: () {}),
                     const Divider(height: 1, indent: 18, endIndent: 18, color: HysjColors.gray1),
@@ -161,14 +136,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   onTap: _logout,
                   child: Padding(
                     padding: const EdgeInsets.all(12),
-                    child: Text(
-                      'LOG OUT',
-                      style: HysjTypo.mono(size: 13, color: HysjColors.bad, weight: FontWeight.w500, letterSpacing: 0.08),
-                    ),
+                    child: Text('LOG OUT', style: HysjTypo.mono(size: 13, color: HysjColors.bad, weight: FontWeight.w500, letterSpacing: 0.08)),
                   ),
                 ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 100),
             ],
           ),
         ),

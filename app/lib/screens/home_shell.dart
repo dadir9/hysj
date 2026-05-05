@@ -15,23 +15,23 @@ class HomeShell extends StatefulWidget {
 class _HomeShellState extends State<HomeShell> {
   int _currentIndex = 0;
 
-  final _screens = const [
-    ChatListScreen(),
-    CallHistoryScreen(),
-    VpnScreen(),
-    ProfileScreen(),
-  ];
+  Widget _buildScreen(int index) {
+    switch (index) {
+      case 0: return const ChatListScreen();
+      case 1: return const CallHistoryScreen();
+      case 2: return const VpnScreen();
+      case 3: return const ProfileScreen();
+      default: return const ChatListScreen();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
+      body: _buildScreen(_currentIndex),
       bottomNavigationBar: HysjBottomNav(
         currentIndex: _currentIndex,
-        isDark: _currentIndex == 2, // VPN screen is dark
+        isDark: _currentIndex == 2,
         onTap: (i) => setState(() => _currentIndex = i),
       ),
     );

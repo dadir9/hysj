@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../theme/hysj_theme.dart';
 import '../../widgets/hysj_avatar.dart';
@@ -16,18 +17,26 @@ class ChatListScreen extends StatefulWidget {
 
 class _ChatListScreenState extends State<ChatListScreen> {
   List<Contact> _contacts = [];
+  StreamSubscription? _contactsSub;
+  StreamSubscription? _messageSub;
 
   @override
   void initState() {
     super.initState();
     _contacts = chatService.contacts;
-    chatService.contactsStream.listen((contacts) {
+    _contactsSub = chatService.contactsStream.listen((contacts) {
       if (mounted) setState(() => _contacts = contacts);
     });
-    // Also refresh on incoming messages to update previews
-    chatService.incomingMessages.listen((_) {
+    _messageSub = chatService.incomingMessages.listen((_) {
       if (mounted) setState(() {});
     });
+  }
+
+  @override
+  void dispose() {
+    _contactsSub?.cancel();
+    _messageSub?.cancel();
+    super.dispose();
   }
 
   @override
