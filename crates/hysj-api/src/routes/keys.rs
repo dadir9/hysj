@@ -34,6 +34,7 @@ pub async fn get_pre_key_bundle(
         })?;
 
     Ok(Json(PreKeyBundleResponse {
+        device_id: bundle.device_id.to_string(),
         identity_public_key: B64.encode(&bundle.identity_public_key),
         signed_pre_key: B64.encode(&bundle.signed_pre_key),
         signed_pre_key_signature: B64.encode(&bundle.signed_pre_key_sig),

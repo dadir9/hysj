@@ -10,6 +10,7 @@ pub struct PreKeyBundleRequest {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PreKeyBundleResponse {
+    pub device_id: String,
     pub identity_public_key: String,
     pub signed_pre_key: String,
     pub signed_pre_key_signature: String,
