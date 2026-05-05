@@ -76,6 +76,11 @@ class ApiClient {
     return _get('/api/contacts');
   }
 
+  /// Add a user as contact.
+  Future<Map<String, dynamic>> addContact(String userId) async {
+    return _post('/api/contacts/$userId', body: {});
+  }
+
   /// Get contacts as a typed list.
   Future<List<Contact>> getContactsList() async {
     final response = await _http.get(
