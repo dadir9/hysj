@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#F5F2EA" />
+<title>Hysj v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #F5F2EA;
+    --paper2: #EAE6DA;
+    --paper3: #DCD7C7;
+    --ink: #0F0F14;
+    --ink2: #2A2A33;
+    --gray1: #D6D2C5;
+    --gray2: #B0AC9F;
+    --gray3: #6E6B62;
+    --cobalt: #3B49B5;
+    --cobalt2: #6E7BD9;
+    --cobalt-soft: rgba(59, 73, 181, 0.10);
+    --coral: #E89674;
+    --good: #5BA682;
+    --bad: #D45A3D;
+    --d-bg: #0A0A10;
+    --d-surface: #14141C;
+    --d-surface2: #1C1C26;
+    --d-line: #25252F;
+    --d-text: #F2F0EA;
+    --d-text2: #9A9890;
+    --d-text3: #5E5C58;
+    --a1-bg: #EDE4D0; --a1-fg: #5C3A1E;
+    --a2-bg: #C8E8D4; --a2-fg: #1E4A3A;
+    --a3-bg: #D4DEF0; --a3-fg: #1E3A6E;
+    --a4-bg: #E8D4EC; --a4-fg: #4A1E5C;
+    --a5-bg: #E0DCC8; --a5-fg: #4A3A1E;
+    --a6-bg: #D0E4E8; --a6-fg: #1E3A4A;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: #1a1a1a;
+    color: var(--ink);
+  }
+
+  .stage {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: #1a1a1a;
+  }
+  .phone {
+    width: 100vw; height: 100vh;
+    background: var(--paper);
+    overflow: hidden;
+    position: relative;
+    display: flex; flex-direction: column;
+  }
+  @media (min-width: 500px) {
+    .phone {
+      width: 393px;
+      height: 852px;
+      max-height: 95vh;
+      border-radius: 44px;
+      box-shadow:
+        0 0 0 12px #2a2a30,
+        0 0 0 14px #444,
+        0 30px 60px -20px rgba(0,0,0,0.6);
+    }
+  }
+  .phone.dark { background: var(--d-bg); color: var(--d-text); }
+
+  .top-status {
+    height: 44px;
+    padding: 14px 28px 0;
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px; font-weight: 600;
+    flex-shrink: 0;
+    color: var(--ink);
+  }
+  .phone.dark .top-status { color: var(--d-text); }
+  .top-status .icons { display: flex; gap: 5px; align-items: center; }
+  .top-status .icons svg { width: 14px; height: 14px; }
+
+  .screen-stack { flex: 1; position: relative; overflow: hidden; }
+  .screen {
+    position: absolute; inset: 0;
+    display: none;
+    flex-direction: column;
+    background: var(--paper);
+  }
+  .screen.active { display: flex; }
+  .screen.dark { background: var(--d-bg); color: var(--d-text); }
+
+  .scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .scroll::-webkit-scrollbar { width: 0; height: 0; }
+
+  .serif { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 1.32px;
+    font-weight: 500; color: var(--gray3);
+    text-transform: uppercase;
+  }
+
+  .icon-btn {
+    width: 40px; height: 40px;
+    border-radius: 999px;
+    border: 1px solid var(--gray1);
+    background: transparent;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--ink);
+    cursor: pointer; flex-shrink: 0;
+    padding: 0;
+  }
+  .icon-btn:active { background: rgba(0,0,0,0.05); }
+  .icon-btn.ink { background: var(--ink); color: #fff; border: none; }
+  .icon-btn.ink:active { background: var(--ink2); }
+  .icon-btn svg { width: 18px; height: 18px; }
+
+  .header {
+    padding: 8px 24px 0;
+    display: flex; align-items: flex-start; gap: 8px;
+    flex-shrink: 0;
+  }
+  .header .titles { flex: 1; }
+  .header h2 {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic; font-weight: 400;
+    font-size: 30px; line-height: 1.15; letter-spacing: -0.6px;
+    margin: 0 0 4px;
+    color: var(--ink);
+  }
+  .header .sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--gray3);
+  }
+  .phone.dark .header h2 { color: var(--d-text); }
+
+  .section-row {
+    padding: 24px 24px 8px;
+    display: flex; align-items: center;
+  }
+  .section-row .count {
+    margin-left: auto;
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--gray3);
+  }
+
+  .avatar {
+    width: 44px; height: 44px;
+    border-radius: 999px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .avatar.lg { width: 48px; height: 48px; font-size: 22px; }
+  .avatar.md { width: 38px; height: 38px; font-size: 18px; }
+  .avatar.a1 { background: var(--a1-bg); color: var(--a1-fg); }
+  .avatar.a2 { background: var(--a2-bg); color: var(--a2-fg); }
+  .avatar.a3 { background: var(--a3-bg); color: var(--a3-fg); }
+  .avatar.a4 { background: var(--a4-bg); color: var(--a4-fg); }
+  .avatar.a5 { background: var(--a5-bg); color: var(--a5-fg); }
+  .avatar.a6 { background: var(--a6-bg); color: var(--a6-fg); }
+  .avatar.cobalt { background: var(--cobalt); color: #fff; }
+
+  .nav {
+    height: 82px;
+    padding: 0 12px 22px;
+    border-top: 1px solid var(--gray1);
+    display: flex; align-items: center; justify-content: space-around;
+    background: var(--paper);
+    flex-shrink: 0;
+  }
+  .nav.dark { background: var(--d-bg); border-top-color: var(--d-line); }
+  .nav-item {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    color: var(--gray2); font-size: 10px;
+    font-family: 'JetBrains Mono', monospace; letter-spacing: 1px;
+    cursor: pointer;
+    padding-top: 8px;
+    background: none; border: none;
+    flex: 1;
+    font-weight: 500;
+  }
+  .nav-item.active { color: var(--ink); }
+  .nav.dark .nav-item { color: var(--d-text3); }
+  .nav.dark .nav-item.active { color: var(--d-text); }
+  .nav-item svg { width: 22px; height: 22px; }
+
+  .tile {
+    padding: 13px 24px;
+    display: flex; align-items: center; gap: 14px;
+    cursor: pointer;
+    background: none; border: none; width: 100%;
+    text-align: left;
+    font-family: inherit;
+  }
+  .tile:active { background: rgba(0,0,0,0.05); }
+  .tile-body { flex: 1; min-width: 0; }
+  .tile-name-row {
+    display: flex; align-items: baseline; gap: 6px; margin-bottom: 4px;
+  }
+  .tile-name { font-size: 15px; font-weight: 600; color: var(--ink); }
+  .tile-handle {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--gray3);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .tile-msg {
+    font-size: 14px; color: var(--ink2);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .tile-msg.empty { color: var(--gray3); }
+  .chev { color: var(--gray2); flex-shrink: 0; }
+
+  .conv-header {
+    padding: 10px 16px;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    flex-shrink: 0;
+  }
+  .back-btn {
+    width: 40px; height: 40px;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--ink);
+    background: none; border: none;
+    flex-shrink: 0;
+  }
+  .conv-header .who { flex: 1; min-width: 0; }
+  .conv-header .who .n { font-size: 15px; font-weight: 600; color: var(--ink); }
+  .conv-header .who .h { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--gray3); margin-top: 2px; }
+  .e2e-badge {
+    align-self: center;
+    margin: 12px 0;
+    padding: 5px 12px;
+    background: var(--paper2);
+    border-radius: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 1.08px;
+    font-weight: 500;
+    color: var(--gray3);
+    flex-shrink: 0;
+  }
+  .msgs { padding: 0 16px 8px; display: flex; flex-direction: column; gap: 6px; }
+  .bubble {
+    max-width: 76%;
+    padding: 10px 14px;
+    border-radius: 22px;
+    font-size: 15px;
+    line-height: 1.4;
+    word-wrap: break-word;
+  }
+  .bubble.them { background: var(--paper2); color: var(--ink); border-bottom-left-radius: 8px; align-self: flex-start; }
+  .bubble.me { background: var(--ink); color: #fff; border-bottom-right-radius: 8px; align-self: flex-end; }
+  .bubble .t {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-align: right;
+    margin-top: 4px;
+  }
+  .bubble.them .t { color: var(--gray3); }
+  .bubble.me .t { color: rgba(255,255,255,0.55); }
+  .input-bar {
+    padding: 8px 12px 14px;
+    border-top: 1px solid rgba(0,0,0,0.06);
+    display: flex; align-items: center; gap: 8px;
+    flex-shrink: 0;
+    background: var(--paper);
+  }
+  .input-bar input.field {
+    flex: 1; height: 44px;
+    background: var(--paper2);
+    border-radius: 22px;
+    border: none;
+    padding: 0 16px;
+    font-size: 15px;
+    font-family: 'Inter', sans-serif;
+    color: var(--ink);
+    outline: none;
+  }
+  .input-bar input.field::placeholder { color: var(--gray2); }
+  .send-btn {
+    width: 44px; height: 44px;
+    border-radius: 999px;
+    background: var(--cobalt);
+    color: #fff;
+    border: none;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  .send-btn.disabled { background: var(--gray2); }
+  .send-btn svg { width: 20px; height: 20px; }
+
+  .login { padding: 8px 28px 24px; flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+  .login .logo {
+    width: 56px; height: 56px;
+    background: var(--ink); color: #fff;
+    border-radius: 16px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 28px;
+    margin: 32px auto 36px;
+    flex-shrink: 0;
+  }
+  .login h1 {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic; font-weight: 400;
+    font-size: 38px; line-height: 1.15; letter-spacing: -0.76px;
+    margin: 0 0 12px;
+    color: var(--ink);
+  }
+  .login h1 .accent { color: var(--cobalt); }
+  .login .lead { font-size: 15px; color: var(--gray3); line-height: 1.5; margin: 0 0 36px; }
+  .field-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 1.2px;
+    color: var(--gray3); font-weight: 500;
+    margin-bottom: 10px;
+  }
+  .phone-row { display: flex; gap: 10px; align-items: center; }
+  .country {
+    width: 96px; height: 54px;
+    border: 1px solid var(--gray1);
+    border-radius: 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+    font-size: 15px; font-weight: 600; color: var(--ink);
+    background: var(--paper);
+    flex-shrink: 0;
+  }
+  .text-input {
+    width: 100%; height: 54px;
+    border: 1px solid var(--gray1);
+    border-radius: 14px;
+    padding: 0 16px;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    color: var(--ink);
+    background: var(--paper);
+    outline: none;
+  }
+  .text-input:focus { border-color: var(--cobalt); }
+  .privacy-row {
+    display: flex; gap: 8px; align-items: center;
+    margin: 20px 0 36px;
+    font-size: 13px; color: var(--gray3); line-height: 1.4;
+  }
+  .privacy-row svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .btn {
+    width: 100%; height: 54px;
+    border-radius: 16px;
+    border: none;
+    background: var(--ink); color: #fff;
+    font-size: 16px; font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+  }
+  .btn:active { background: var(--ink2); }
+  .btn.danger { background: var(--bad); }
+  .btn.cobalt { background: var(--cobalt); }
+  .alt-link {
+    text-align: center; margin-top: 16px;
+    font-size: 14px; color: var(--cobalt); font-weight: 500;
+    cursor: pointer;
+    padding: 8px;
+  }
+
+  .otp-boxes { display: flex; gap: 10px; justify-content: center; margin: 24px 0; }
+  .otp-box {
+    width: 48px; height: 56px;
+    border: 1px solid var(--gray1);
+    border-radius: 12px;
+    text-align: center;
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 28px;
+    color: var(--ink);
+    background: var(--paper);
+    outline: none;
+  }
+  .otp-box:focus { border-color: var(--cobalt); }
+
+  .filters { padding: 4px 24px 16px; display: flex; gap: 8px; }
+  .chip {
+    padding: 8px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--gray1);
+    background: transparent;
+    font-size: 13px; font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    color: var(--ink);
+    cursor: pointer;
+    display: inline-flex; gap: 6px; align-items: center;
+  }
+  .chip.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .chip .badge {
+    padding: 1px 5px; border-radius: 6px;
+    font-size: 10px; font-weight: 700;
+    background: rgba(212, 90, 61, 0.1); color: var(--bad);
+  }
+  .chip.active .badge { background: var(--bad); color: #fff; }
+  .call-tile { padding: 12px 24px; display: flex; align-items: center; gap: 14px; cursor: pointer; background: none; border: none; width: 100%; text-align: left; font-family: inherit; }
+  .call-tile:active { background: rgba(0,0,0,0.05); }
+  .call-tile .meta { flex: 1; }
+  .call-tile .nm { font-size: 15px; font-weight: 600; color: var(--ink); }
+  .call-tile .nm.missed { color: var(--bad); }
+  .call-tile .info { display: flex; align-items: center; gap: 4px; font-size: 13px; color: var(--gray3); margin-top: 3px; }
+  .call-tile .info.missed { color: var(--bad); }
+  .call-tile .info svg { width: 14px; height: 14px; }
+  .call-tile .right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .call-tile .right .t { font-size: 12px; color: var(--gray3); }
+  .call-tile .right svg { width: 18px; height: 18px; color: var(--cobalt); }
+
+  .profile-body { padding: 0 24px 24px; flex: 1; overflow-y: auto; }
+  .ident-card {
+    width: 100%;
+    padding: 18px 22px;
+    border: 1px solid var(--gray1);
+    border-radius: 20px;
+    text-align: center;
+    margin-top: 8px;
+  }
+  .ident-card .big-av {
+    width: 96px; height: 96px;
+    background: var(--cobalt);
+    border-radius: 999px;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 40px;
+    margin-bottom: 14px;
+  }
+  .ident-card .uname {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px; font-weight: 500; color: var(--ink);
+    margin-bottom: 14px;
+  }
+  .pills { display: flex; gap: 8px; justify-content: center; align-items: center; flex-wrap: wrap; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--good); color: #fff;
+    padding: 4px 10px; border-radius: 999px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+  .pill .dot { width: 6px; height: 6px; border-radius: 999px; background: #fff; }
+  .menu-card {
+    margin-top: 12px;
+    border: 1px solid var(--gray1);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .menu-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 18px;
+    cursor: pointer;
+    background: none; border: none; width: 100%;
+    text-align: left;
+    font-family: inherit;
+  }
+  .menu-row:active { background: rgba(0,0,0,0.04); }
+  .menu-row + .menu-row { border-top: 1px solid var(--gray1); }
+  .menu-row svg.lead { width: 18px; height: 18px; color: var(--ink); flex-shrink: 0; }
+  .menu-row .name { flex: 1; font-size: 15px; color: var(--ink); }
+  .menu-row .value { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--gray3); }
+  .menu-row .chev { color: var(--gray2); }
+  .logout {
+    text-align: center;
+    margin-top: 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; font-weight: 500;
+    color: var(--bad);
+    letter-spacing: 1px;
+    cursor: pointer;
+    background: none; border: none;
+    padding: 12px;
+    width: 100%;
+  }
+
+  .vpn-body { padding: 8px 24px 24px; flex: 1; overflow-y: auto; color: var(--d-text); }
+  .vpn-top { display: flex; align-items: center; gap: 10px; margin-bottom: 36px; padding-top: 8px; }
+  .vpn-top h2 {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic; font-weight: 400;
+    font-size: 30px; margin: 0;
+    color: var(--d-text);
+  }
+  .vpn-top .live-dot {
+    width: 8px; height: 8px;
+    border-radius: 999px;
+    background: var(--good);
+    transition: background 0.2s;
+  }
+  .vpn-body.off .vpn-top .live-dot { background: var(--bad); }
+  .vpn-top .live-txt {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 1.3px;
+    color: var(--d-text2); font-weight: 500;
+  }
+  .globe {
+    width: 220px; height: 220px;
+    margin: 0 auto;
+    position: relative;
+  }
+  .globe svg.rings { position: absolute; inset: 0; }
+  .globe .core {
+    position: absolute; inset: 0; margin: auto;
+    width: 100px; height: 100px;
+    background: var(--cobalt);
+    border-radius: 999px;
+    box-shadow: 0 0 32px 6px rgba(59,73,181,0.35);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: #fff;
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+  .vpn-body.off .globe .core {
+    background: var(--gray3);
+    box-shadow: none;
+  }
+  .globe .core .on {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 28px;
+    line-height: 1.1;
+  }
+  .globe .core .sh {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1.35px;
+    color: rgba(255,255,255,0.75);
+    font-weight: 500;
+    margin-top: 2px;
+  }
+  .globe .ping {
+    position: absolute;
+    width: 6px; height: 6px;
+    background: var(--cobalt);
+    border-radius: 999px;
+    box-shadow: 0 0 6px 1px rgba(59,73,181,0.5);
+    animation: pulse 2.2s ease-in-out infinite;
+  }
+  .vpn-body.off .globe .ping { animation: none; opacity: 0.2; }
+  .globe .p1 { top: 38px; left: 52px; animation-delay: 0s; }
+  .globe .p2 { top: 70px; right: 30px; animation-delay: 0.7s; }
+  .globe .p3 { bottom: 50px; left: 36px; animation-delay: 1.4s; }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.4); }
+  }
+  .tunnel-label {
+    text-align: center; margin: 32px 0 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 1.2px; font-weight: 500;
+    color: var(--d-text3);
+  }
+  .tunnel {
+    text-align: center;
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 28px; line-height: 1.2;
+    color: var(--d-text);
+    margin-bottom: 28px;
+  }
+  .stat-row { display: flex; gap: 8px; margin-bottom: 20px; }
+  .stat {
+    flex: 1;
+    padding: 16px 0;
+    border: 1px solid var(--d-line);
+    border-radius: 12px;
+    text-align: center;
+  }
+  .stat .lbl {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 1.1px; font-weight: 500;
+    color: var(--d-text3);
+    margin-bottom: 6px;
+  }
+  .stat .val {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 24px;
+    color: var(--d-text);
+    line-height: 1;
+  }
+  .stat .unit {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--d-text2);
+    margin-left: 2px;
+  }
+  .server-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid var(--d-line);
+    border-radius: 16px;
+    margin-bottom: 28px;
+  }
+  .server-row .flag {
+    width: 32px; height: 32px;
+    background: var(--cobalt-soft);
+    border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .server-row .who { flex: 1; }
+  .server-row .who .n { font-size: 15px; font-weight: 500; color: var(--d-text); }
+  .server-row .who .h { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1.2px; color: var(--d-text3); margin-top: 2px; }
+  .server-row .chg {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--cobalt2);
+    font-weight: 500;
+    cursor: pointer;
+    background: none; border: none;
+  }
+
+  .sheet-bg {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: none;
+    z-index: 50;
+    align-items: flex-end;
+  }
+  .sheet-bg.open { display: flex; }
+  .sheet {
+    width: 100%;
+    background: var(--paper);
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    padding: 16px 24px 24px;
+    max-height: 70%;
+    overflow-y: auto;
+    animation: slideUp 0.25s ease-out;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .sheet .grabber { width: 36px; height: 4px; background: var(--gray1); border-radius: 999px; margin: 0 auto 16px; }
+  .sheet h3 {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic; font-weight: 400;
+    font-size: 24px;
+    margin: 0 0 4px;
+    color: var(--ink);
+  }
+  .sheet p { font-size: 13px; color: var(--gray3); margin: 0 0 16px; font-family: 'JetBrains Mono', monospace; letter-spacing: 1.2px; }
+
+  .toast {
+    position: absolute;
+    top: 80px; left: 50%; transform: translateX(-50%);
+    background: var(--ink); color: #fff;
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s, top 0.3s;
+  }
+  .toast.show { opacity: 1; top: 100px; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div id="phone" class="phone">
+    <div class="top-status">
+      <span>9:41</span>
+      <div class="icons">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 17h2v-7H2v7zm4 0h2V7H6v10zm4 0h2V3h-2v14zm4 0h2V10h-2v7zm4 0h2V6h-2v11z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="18" height="10" rx="2"/><path d="M22 11v2"/></svg>
+      </div>
+    </div>
+
+    <div id="stack" class="screen-stack">
+      <div class="screen active" data-screen="login">
+        <div class="login">
+          <div class="logo">h</div>
+          <h1>Welcome <span class="accent">back.</span></h1>
+          <p class="lead">Your number is private — only used to verify.</p>
+          <div class="field-label">PHONE</div>
+          <div class="phone-row">
+            <div class="country">🇳🇴 +47</div>
+            <input id="phoneInput" class="text-input" type="tel" placeholder="912 34 567" value="912 34 567" />
+          </div>
+          <div class="privacy-row">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <span>Friends find you by @username — never by phone.</span>
+          </div>
+          <button class="btn" onclick="App.goto('otp')">New account →</button>
+          <div class="alt-link" onclick="App.demoLogin()">Already have an account? Log in</div>
+        </div>
+      </div>
+
+      <div class="screen" data-screen="otp">
+        <div class="login">
+          <button class="back-btn" style="align-self:flex-start; margin-top: 8px;" onclick="App.goto('login')">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <h1 style="margin-top: 24px;">Code <span class="accent">sent.</span></h1>
+          <p class="lead">We sent a 6-digit code to +47 912 34 567. Enter it below.</p>
+          <div class="otp-boxes">
+            <input class="otp-box" maxlength="1" inputmode="numeric" />
+            <input class="otp-box" maxlength="1" inputmode="numeric" />
+            <input class="otp-box" maxlength="1" inputmode="numeric" />
+            <input class="otp-box" maxlength="1" inputmode="numeric" />
+            <input class="otp-box" maxlength="1" inputmode="numeric" />
+            <input class="otp-box" maxlength="1" inputmode="numeric" />
+          </div>
+          <p class="lead" style="text-align:center; font-size: 13px;">Try any 6 digits — this is a demo.</p>
+          <div style="flex: 1;"></div>
+          <button class="btn" onclick="App.goto('username')">Verify code</button>
+          <div class="alt-link">Didn't receive? Resend</div>
+        </div>
+      </div>
+
+      <div class="screen" data-screen="username">
+        <div class="login">
+          <button class="back-btn" style="align-self:flex-start; margin-top: 8px;" onclick="App.goto('otp')">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <h1 style="margin-top: 24px;">Pick a <span class="accent">handle.</span></h1>
+          <p class="lead">This is how friends will find you. Letters, numbers, dots.</p>
+          <div class="field-label">USERNAME</div>
+          <div class="phone-row">
+            <div class="country" style="width: 32px;">@</div>
+            <input id="usernameInput" class="text-input" type="text" placeholder="ingrid" value="ingrid" />
+          </div>
+          <div style="flex: 1; min-height: 40px;"></div>
+          <button class="btn" onclick="App.completeLogin()">Create account →</button>
+        </div>
+      </div>
+
+      <div class="screen" data-screen="chats">
+        <div class="header">
+          <div class="titles">
+            <h2>Chats</h2>
+            <div class="sub"><span id="contactCount">4</span> contacts · all encrypted</div>
+          </div>
+          <button class="icon-btn" onclick="App.toast('Search not in demo')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          </button>
+          <button class="icon-btn ink" onclick="App.openSheet()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+        </div>
+        <div class="scroll">
+          <div class="section-row">
+            <span class="label">All chats</span>
+            <span class="count serif" id="contactCount2">4</span>
+          </div>
+          <div id="contactList"></div>
+          <div style="height: 24px;"></div>
+        </div>
+        <div class="nav">
+          <button class="nav-item active" onclick="App.tab('chats')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5z"/></svg>
+            CHATS
+          </button>
+          <button class="nav-item" onclick="App.tab('calls')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.72 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0 1 22 16.92z"/></svg>
+            CALLS
+          </button>
+          <button class="nav-item" onclick="App.tab('vpn')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            VPN
+          </button>
+          <button class="nav-item" onclick="App.tab('profile')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            YOU
+          </button>
+        </div>
+      </div>
+
+      <div class="screen" data-screen="conversation">
+        <div class="conv-header">
+          <button class="back-btn" onclick="App.tab('chats')">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <span id="convAvatar" class="avatar md a2">J</span>
+          <div class="who">
+            <div class="n" id="convName">Jamal</div>
+            <div class="h" id="convHandle">@jamal_m</div>
+          </div>
+          <button class="icon-btn" onclick="App.openCall(document.getElementById('convName').textContent)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.72 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0 1 22 16.92z"/></svg>
+          </button>
+          <button class="icon-btn" onclick="App.openCall(document.getElementById('convName').textContent, true)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          </button>
+        </div>
+        <div class="e2e-badge">🔒 End-to-end encrypted</div>
+        <div class="scroll" id="msgsScroll">
+          <div class="msgs" id="msgs"></div>
+        </div>
+        <div class="input-bar">
+          <input id="msgInput" class="field" type="text" placeholder="Message…" autocomplete="off" />
+          <button id="sendBtn" class="send-btn disabled" onclick="App.send()">
+            <svg id="sendIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 14a2 2 0 0 0 2-2V6a2 2 0 1 0-4 0v6a2 2 0 0 0 2 2zm5-2c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-4.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="screen" data-screen="calls">
+        <div class="header">
+          <div class="titles">
+            <h2>Calls</h2>
+            <div class="sub">7 this week · 3 missed</div>
+          </div>
+          <button class="icon-btn ink" onclick="App.toast('New call not in demo')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.72 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0 1 22 16.92z"/></svg>
+          </button>
+        </div>
+        <div class="scroll">
+          <div class="filters">
+            <button class="chip active" data-filter="all">All</button>
+            <button class="chip" data-filter="missed">Missed <span class="badge">3</span></button>
+            <button class="chip" data-filter="out">Out</button>
+          </div>
+          <div class="section-row"><span class="label">Today</span></div>
+          <button class="call-tile" onclick="App.openCall('Jamal')">
+            <span class="avatar a2">J</span>
+            <div class="meta">
+              <div class="nm missed">Jamal</div>
+              <div class="info missed">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="3" y2="12"/></svg>
+                Missed
+              </div>
+            </div>
+            <div class="right">
+              <div class="t">2:34 PM</div>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.72 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0 1 22 16.92z"/></svg>
+            </div>
+          </button>
+          <button class="call-tile" onclick="App.openCall('Sara')">
+            <span class="avatar a3">S</span>
+            <div class="meta">
+              <div class="nm">Sara</div>
+              <div class="info">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#5BA682" stroke-width="2"><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="3" y2="12"/></svg>
+                4:23
+              </div>
+            </div>
+            <div class="right">
+              <div class="t">11:20 AM</div>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.72 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0 1 22 16.92z"/></svg>
+            </div>
+          </button>
+          <div class="section-row"><span class="label">Yesterday</span></div>
+          <button class="call-tile" onclick="App.openCall('Omar')">
+            <span class="avatar a5">O</span>
+            <div class="meta">
+              <div class="nm">Omar</div>
+              <div class="info">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#5BA682" stroke-width="2"><polyline points="7 7 17 7 17 17"/><line x1="7" y1="17" x2="17" y2="7"/></svg>
+                12:05
+              </div>
+            </div>
+            <div class="right">
+              <div class="t">8:15 PM</div>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.72 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0 1 22 16.92z"/></svg>
+            </div>
+          </button>
+          <button class="call-tile" onclick="App.openCall('Lina')">
+            <span class="avatar a6">L</span>
+            <div class="meta">
+              <div class="nm missed">Lina</div>
+              <div class="info missed">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="3" y2="12"/></svg>
+                Missed
+              </div>
+            </div>
+            <div class="right">
+              <div class="t">3:45 PM</div>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.72 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0 1 22 16.92z"/></svg>
+            </div>
+          </button>
+          <div style="height: 24px;"></div>
+        </div>
+        <div class="nav">
+          <button class="nav-item" onclick="App.tab('chats')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5z"/></svg>
+            CHATS
+          </button>
+          <button class="nav-item active" onclick="App.tab('calls')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.72 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0 1 22 16.92z"/></svg>
+            CALLS
+          </button>
+          <button class="nav-item" onclick="App.tab('vpn')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            VPN
+          </button>
+          <button class="nav-item" onclick="App.tab('profile')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            YOU
+          </button>
+        </div>
+      </div>
+
+      <div class="screen dark" data-screen="vpn">
+        <div class="vpn-body" id="vpnPane">
+          <div class="vpn-top">
+            <h2>VPN</h2>
+            <span class="live-dot"></span>
+            <span class="live-txt" id="vpnStatus">CONNECTED · 14m</span>
+          </div>
+          <div class="globe">
+            <svg class="rings" viewBox="0 0 220 220">
+              <circle cx="110" cy="110" r="109" fill="none" stroke="rgba(110,107,98,0.3)" stroke-width="1"/>
+              <ellipse cx="110" cy="110" rx="66" ry="109" fill="none" stroke="rgba(110,107,98,0.3)" stroke-width="1"/>
+              <ellipse cx="110" cy="110" rx="38" ry="109" fill="none" stroke="rgba(110,107,98,0.3)" stroke-width="1"/>
+            </svg>
+            <div class="ping p1"></div>
+            <div class="ping p2"></div>
+            <div class="ping p3"></div>
+            <div class="core">
+              <span class="on" id="vpnCoreOn">on</span>
+              <span class="sh" id="vpnCoreSh">SHIELDED</span>
+            </div>
+          </div>
+          <div class="tunnel-label">TUNNELED THROUGH</div>
+          <div class="tunnel">Norway · Oslo 03</div>
+          <div class="stat-row">
+            <div class="stat"><div class="lbl">LATENCY</div><div><span class="val">12</span><span class="unit">ms</span></div></div>
+            <div class="stat"><div class="lbl">DOWN</div><div><span class="val">142</span><span class="unit">m/s</span></div></div>
+            <div class="stat"><div class="lbl">SAVED</div><div><span class="val">2.4</span><span class="unit">gb</span></div></div>
+          </div>
+          <div class="server-row">
+            <span class="flag">🇳🇴</span>
+            <div class="who">
+              <div class="n">Norway, Oslo</div>
+              <div class="h">WIREGUARD · 36 SERVERS</div>
+            </div>
+            <button class="chg" onclick="App.toast('Server picker not in demo')">CHANGE ›</button>
+          </div>
+          <button id="vpnToggle" class="btn danger" onclick="App.toggleVpn()">Disconnect</button>
+        </div>
+        <div class="nav dark">
+          <button class="nav-item" onclick="App.tab('chats')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5z"/></svg>
+            CHATS
+          </button>
+          <button class="nav-item" onclick="App.tab('calls')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.72 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0 1 22 16.92z"/></svg>
+            CALLS
+          </button>
+          <button class="nav-item active" onclick="App.tab('vpn')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            VPN
+          </button>
+          <button class="nav-item" onclick="App.tab('profile')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            YOU
+          </button>
+        </div>
+      </div>
+
+      <div class="screen" data-screen="profile">
+        <div class="header" style="margin-top: 8px;">
+          <div class="titles">
+            <h2>You</h2>
+            <div class="sub">Account · privacy</div>
+          </div>
+          <button class="icon-btn" onclick="App.toast('Settings not in demo')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </button>
+        </div>
+        <div class="profile-body">
+          <div class="ident-card">
+            <div class="big-av" id="profileAvatar">i</div>
+            <div class="uname" id="profileHandle">@ingrid</div>
+            <div class="pills">
+              <span class="pill"><span class="dot"></span>online</span>
+              <span class="mono" style="font-size:11px; color:var(--gray3);"><span id="profileCount">4</span> contacts</span>
+            </div>
+          </div>
+          <div style="height:28px;"></div>
+          <div class="label">ACCOUNT</div>
+          <div class="menu-card">
+            <button class="menu-row" onclick="App.toast('Edit profile demo')">
+              <svg class="lead" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+              <span class="name">Edit profile</span>
+              <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"/></svg>
+            </button>
+            <button class="menu-row" onclick="App.toast('Phone is hidden by default')">
+              <svg class="lead" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.72 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0 1 22 16.92z"/></svg>
+              <span class="name">Phone</span>
+              <span class="value">hidden</span>
+              <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"/></svg>
+            </button>
+            <button class="menu-row" onclick="App.toast('Privacy demo')">
+              <svg class="lead" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span class="name">Privacy & blocks</span>
+              <span class="value">strict</span>
+              <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"/></svg>
+            </button>
+            <button class="menu-row" onclick="App.toast('Notifications demo')">
+              <svg class="lead" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              <span class="name">Notifications</span>
+              <span class="value">all</span>
+              <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"/></svg>
+            </button>
+          </div>
+          <button class="logout" onclick="App.logout()">LOG OUT</button>
+        </div>
+        <div class="nav">
+          <button class="nav-item" onclick="App.tab('chats')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5z"/></svg>
+            CHATS
+          </button>
+          <button class="nav-item" onclick="App.tab('calls')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.72 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0 1 22 16.92z"/></svg>
+            CALLS
+          </button>
+          <button class="nav-item" onclick="App.tab('vpn')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            VPN
+          </button>
+          <button class="nav-item active" onclick="App.tab('profile')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            YOU
+          </button>
+        </div>
+      </div>
+
+      <div class="screen dark" data-screen="incoming-call">
+        <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content: space-between; padding: 80px 24px 40px; color: var(--d-text);">
+          <div style="text-align: center;">
+            <div class="label" style="color: var(--d-text3); margin-bottom: 12px;">INCOMING · END-TO-END ENCRYPTED</div>
+            <div id="incomingName" class="serif" style="font-size: 42px; line-height: 1.1; margin-bottom: 8px; color: var(--d-text);">Jamal</div>
+            <div class="mono" style="font-size: 12px; letter-spacing: 1.2px; color: var(--d-text2);">CALLING…</div>
+          </div>
+          <div id="incomingAv" class="avatar" style="width: 160px; height: 160px; font-size: 80px;">J</div>
+          <div style="display: flex; gap: 32px;">
+            <button onclick="App.tab('calls')" style="width:64px; height:64px; border-radius:999px; background: var(--bad); border:none; color:#fff; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; font-size: 28px;">✕</button>
+            <button onclick="App.acceptCall()" style="width:64px; height:64px; border-radius:999px; background: var(--good); border:none; color:#fff; display:inline-flex; align-items:center; justify-content:center; cursor:pointer;">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M20 15.5c-1.25 0-2.45-.2-3.57-.57a1.02 1.02 0 0 0-1.02.24l-2.2 2.2a15.045 15.045 0 0 1-6.59-6.59l2.2-2.21a.96.96 0 0 0 .25-1A11.36 11.36 0 0 1 8.5 4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.5c0-.55-.45-1-1-1z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="screen dark" data-screen="video-call">
+        <div style="flex:1; position:relative; background: linear-gradient(135deg, #14141C, #1C1C26); display:flex; align-items:center; justify-content:center;">
+          <div style="text-align:center; color: var(--d-text);">
+            <div id="videoAv" class="avatar" style="width: 140px; height: 140px; font-size: 64px; margin-bottom: 20px;">J</div>
+            <div id="videoName" class="serif" style="font-size: 32px;">Jamal</div>
+            <div class="mono" style="font-size: 11px; letter-spacing: 1.2px; color: var(--d-text2); margin-top: 8px;">ENCRYPTED · 01:14</div>
+          </div>
+          <div style="position:absolute; bottom:120px; right:24px; width:90px; height:130px; background: var(--cobalt); border-radius: 16px; display:flex; align-items:center; justify-content:center;">
+            <span class="avatar a4" style="width:38px; height:38px; font-size:18px;">i</span>
+          </div>
+        </div>
+        <div style="padding: 20px 24px 36px; background: rgba(10,10,16,0.95); display:flex; gap: 12px; justify-content: center;">
+          <button onclick="App.toast('Muted')" style="width:54px; height:54px; border-radius:999px; background:var(--d-surface2); border:1px solid var(--d-line); color:var(--d-text); display:inline-flex; align-items:center; justify-content:center; cursor:pointer;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </button>
+          <button onclick="App.toast('Camera off')" style="width:54px; height:54px; border-radius:999px; background:var(--d-surface2); border:1px solid var(--d-line); color:var(--d-text); display:inline-flex; align-items:center; justify-content:center; cursor:pointer;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          </button>
+          <button onclick="App.tab('calls')" style="width:54px; height:54px; border-radius:999px; background:var(--bad); border:none; color:#fff; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; font-size: 22px;">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="sheetBg" class="sheet-bg" onclick="App.closeSheet(event)">
+      <div class="sheet" onclick="event.stopPropagation()">
+        <div class="grabber"></div>
+        <h3>New chat</h3>
+        <p>FIND USERS BY @USERNAME</p>
+        <input id="newChatInput" class="text-input" type="text" placeholder="@username" />
+        <div style="height: 16px;"></div>
+        <button class="btn" onclick="App.addContact()">Add contact</button>
+        <div style="height: 8px;"></div>
+        <button class="btn" style="background: var(--paper2); color: var(--ink);" onclick="App.closeSheet()">Cancel</button>
+      </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+  </div>
+</div>
+
+<script>
+const App = (() => {
+  const COLORS = ['a1','a2','a3','a4','a5','a6'];
+  const colorFor = (name) => {
+    let h = 0;
+    for (const c of name) h = (h*31 + c.charCodeAt(0)) | 0;
+    return COLORS[Math.abs(h) % 6];
+  };
+
+  let state = {
+    me: { username: 'ingrid' },
+    contacts: [
+      { id: 'u1', name: 'Jamal', username: 'jamal_m', initial: 'J', preview: 'See you at the cafe at 3pm 👋' },
+      { id: 'u2', name: 'Sara', username: 'sara_k', initial: 'S', preview: 'Sent the keys 🔑' },
+      { id: 'u3', name: 'Omar', username: 'omar_dev', initial: 'O', preview: 'deploy is green' },
+      { id: 'u4', name: 'Lina', username: 'lina.h', initial: 'L', preview: null },
+    ],
+    threads: {
+      u1: [
+        { who: 'them', text: 'Hey, are we still on for coffee at 3?', time: '14:21' },
+        { who: 'me', text: 'Yes — Hysj HQ, see you there', time: '14:23' },
+        { who: 'them', text: 'Cool. Bringing the keys 🔑', time: '14:24' },
+        { who: 'me', text: 'Perfect 🙌', time: '14:24' },
+        { who: 'them', text: 'Btw — VPN is finally working on my phone', time: '14:25' },
+      ],
+      u2: [
+        { who: 'them', text: 'Did you get the keys?', time: '11:14' },
+        { who: 'me', text: 'Got them — thanks!', time: '11:18' },
+        { who: 'them', text: 'Sent the keys 🔑', time: '11:20' },
+      ],
+      u3: [
+        { who: 'me', text: 'pushed the fix', time: '20:10' },
+        { who: 'them', text: 'deploy is green', time: '20:15' },
+      ],
+      u4: [],
+    },
+    activeContact: 'u1',
+    vpnOn: true,
+  };
+
+  let toastTimer = null;
+
+  function renderContacts() {
+    const list = document.getElementById('contactList');
+    list.innerHTML = '';
+    state.contacts.forEach((c) => {
+      const lastMsg = state.threads[c.id] && state.threads[c.id].length
+        ? state.threads[c.id][state.threads[c.id].length - 1].text
+        : c.preview;
+      const empty = !lastMsg;
+      const el = document.createElement('button');
+      el.className = 'tile';
+      el.innerHTML = `
+        <span class="avatar lg ${colorFor(c.name)}">${c.initial}</span>
+        <div class="tile-body">
+          <div class="tile-name-row">
+            <span class="tile-name">${c.name}</span>
+            <span class="tile-handle">@${c.username}</span>
+          </div>
+          <div class="tile-msg ${empty ? 'empty' : ''}">${empty ? 'Tap to start chatting' : escapeHtml(lastMsg)}</div>
+        </div>
+        <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"/></svg>
+      `;
+      el.onclick = () => openConversation(c.id);
+      list.appendChild(el);
+    });
+    document.getElementById('contactCount').textContent = state.contacts.length;
+    document.getElementById('contactCount2').textContent = state.contacts.length;
+    document.getElementById('profileCount').textContent = state.contacts.length;
+  }
+
+  function escapeHtml(s) {
+    return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+  }
+
+  function openConversation(contactId) {
+    state.activeContact = contactId;
+    const c = state.contacts.find(x => x.id === contactId);
+    document.getElementById('convName').textContent = c.name;
+    document.getElementById('convHandle').textContent = '@' + c.username;
+    const av = document.getElementById('convAvatar');
+    av.textContent = c.initial;
+    av.className = 'avatar md ' + colorFor(c.name);
+    renderMessages();
+    show('conversation');
+    setTimeout(() => {
+      const scroll = document.getElementById('msgsScroll');
+      scroll.scrollTop = scroll.scrollHeight;
+    }, 30);
+  }
+
+  function renderMessages() {
+    const list = document.getElementById('msgs');
+    list.innerHTML = '';
+    const thread = state.threads[state.activeContact] || [];
+    if (thread.length === 0) {
+      const c = state.contacts.find(x => x.id === state.activeContact);
+      list.innerHTML = `
+        <div style="margin: auto; text-align:center; color: var(--gray3); padding: 40px 24px;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:0.5;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <div style="margin-top: 12px; font-size: 13px;">Messages are end-to-end encrypted</div>
+          <div class="mono" style="margin-top: 4px; font-size: 11px; color: var(--cobalt);">Say hi to @${c.username}</div>
+        </div>
+      `;
+      return;
+    }
+    thread.forEach(m => {
+      const b = document.createElement('div');
+      b.className = 'bubble ' + (m.who === 'me' ? 'me' : 'them');
+      b.innerHTML = `${escapeHtml(m.text)}<span class="t">${m.time}</span>`;
+      list.appendChild(b);
+    });
+  }
+
+  function show(screenName) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const target = document.querySelector(`[data-screen="${screenName}"]`);
+    if (target) target.classList.add('active');
+  }
+
+  function tab(name) {
+    show(name);
+  }
+
+  function send() {
+    const input = document.getElementById('msgInput');
+    const text = input.value.trim();
+    if (!text) return;
+    const now = new Date();
+    const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+    state.threads[state.activeContact] = state.threads[state.activeContact] || [];
+    state.threads[state.activeContact].push({ who: 'me', text, time });
+    input.value = '';
+    updateSendBtn();
+    renderMessages();
+    const scroll = document.getElementById('msgsScroll');
+    scroll.scrollTop = scroll.scrollHeight;
+    setTimeout(() => {
+      const replies = ['cool','on my way','haha 😅','sounds good','🔒 only you and I can read this','one sec','wait what'];
+      const reply = replies[Math.floor(Math.random()*replies.length)];
+      const t = new Date();
+      const tt = t.getHours().toString().padStart(2,'0') + ':' + t.getMinutes().toString().padStart(2,'0');
+      state.threads[state.activeContact].push({ who: 'them', text: reply, time: tt });
+      renderMessages();
+      scroll.scrollTop = scroll.scrollHeight;
+    }, 1400 + Math.random()*800);
+  }
+
+  function updateSendBtn() {
+    const input = document.getElementById('msgInput');
+    const btn = document.getElementById('sendBtn');
+    const icon = document.getElementById('sendIcon');
+    const hasText = input.value.trim().length > 0;
+    if (hasText) {
+      btn.classList.remove('disabled');
+      icon.innerHTML = '<path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>';
+    } else {
+      btn.classList.add('disabled');
+      icon.innerHTML = '<path d="M12 14a2 2 0 0 0 2-2V6a2 2 0 1 0-4 0v6a2 2 0 0 0 2 2zm5-2c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-4.08c3.39-.49 6-3.39 6-6.92h-2z"/>';
+    }
+  }
+
+  function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+  }
+
+  function openSheet() {
+    document.getElementById('sheetBg').classList.add('open');
+    document.getElementById('newChatInput').value = '';
+    setTimeout(() => document.getElementById('newChatInput').focus(), 80);
+  }
+  function closeSheet(e) {
+    if (e && e.target && e.target.id !== 'sheetBg') return;
+    document.getElementById('sheetBg').classList.remove('open');
+  }
+  function addContact() {
+    const input = document.getElementById('newChatInput');
+    let uname = input.value.trim().replace(/^@/, '');
+    if (!uname) { toast('Enter a username'); return; }
+    const initial = uname[0].toUpperCase();
+    const name = uname[0].toUpperCase() + uname.slice(1);
+    const id = 'u' + (state.contacts.length + 1);
+    state.contacts.push({ id, name, username: uname, initial, preview: null });
+    state.threads[id] = [];
+    renderContacts();
+    document.getElementById('sheetBg').classList.remove('open');
+    toast('Added @' + uname);
+  }
+
+  function demoLogin() { completeLogin(); }
+  function goto(name) { show(name); }
+  function completeLogin() {
+    const usernameInput = document.getElementById('usernameInput');
+    const uname = (usernameInput && usernameInput.value.trim()) || 'ingrid';
+    state.me.username = uname;
+    document.getElementById('profileHandle').textContent = '@' + uname;
+    document.getElementById('profileAvatar').textContent = uname[0].toLowerCase();
+    tab('chats');
+  }
+  function logout() {
+    show('login');
+  }
+
+  function openCall(name, isVideo) {
+    document.getElementById('incomingName').textContent = name;
+    const av = document.getElementById('incomingAv');
+    av.textContent = name[0];
+    av.className = 'avatar ' + colorFor(name);
+    show('incoming-call');
+    if (isVideo) {
+      setTimeout(() => acceptCall(), 800);
+    }
+  }
+  function acceptCall() {
+    const name = document.getElementById('incomingName').textContent;
+    document.getElementById('videoName').textContent = name;
+    const av = document.getElementById('videoAv');
+    av.textContent = name[0];
+    av.className = 'avatar ' + colorFor(name);
+    show('video-call');
+  }
+
+  function toggleVpn() {
+    state.vpnOn = !state.vpnOn;
+    const pane = document.getElementById('vpnPane');
+    const btn = document.getElementById('vpnToggle');
+    if (state.vpnOn) {
+      pane.classList.remove('off');
+      document.getElementById('vpnStatus').textContent = 'CONNECTED · 14m';
+      document.getElementById('vpnCoreOn').textContent = 'on';
+      document.getElementById('vpnCoreSh').textContent = 'SHIELDED';
+      btn.className = 'btn danger';
+      btn.textContent = 'Disconnect';
+    } else {
+      pane.classList.add('off');
+      document.getElementById('vpnStatus').textContent = 'DISCONNECTED';
+      document.getElementById('vpnCoreOn').textContent = 'off';
+      document.getElementById('vpnCoreSh').textContent = 'EXPOSED';
+      btn.className = 'btn cobalt';
+      btn.textContent = 'Connect';
+    }
+  }
+
+  function init() {
+    renderContacts();
+    const input = document.getElementById('msgInput');
+    input.addEventListener('input', updateSendBtn);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') send();
+    });
+    const boxes = document.querySelectorAll('.otp-box');
+    boxes.forEach((b, i) => {
+      b.addEventListener('input', () => {
+        if (b.value && i < boxes.length - 1) boxes[i+1].focus();
+      });
+      b.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !b.value && i > 0) boxes[i-1].focus();
+      });
+    });
+    document.querySelectorAll('.chip[data-filter]').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.chip[data-filter]').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+      });
+    });
+  }
+
+  return {
+    init, send, tab, toast, openSheet, closeSheet, addContact,
+    demoLogin, goto, completeLogin, logout, openCall, acceptCall, toggleVpn,
+  };
+})();
+
+document.addEventListener('DOMContentLoaded', App.init);
+</script>
+</body>
+</html>
